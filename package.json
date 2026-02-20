@@ -1,0 +1,32 @@
+{
+  "name": "viber-mode",
+  "version": "0.1.0",
+  "description": "Vendor-agnostic AI agent development framework",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./agents/*": "./.agents/*"
+  },
+  "files": [
+    "src",
+    ".agents"
+  ],
+  "scripts": {
+    "build:skills": "echo 'Skill export not yet implemented'",
+    "validate": "echo 'Agent validation not yet implemented'"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "cursor",
+    "codex",
+    "framework"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

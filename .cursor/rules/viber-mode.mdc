@@ -1,0 +1,54 @@
+---
+alwaysApply: true
+---
+# ViberMode Framework
+
+This is a vendor-agnostic AI agent development framework. Agents are the source of truth.
+
+## Core Agents
+
+Available agents in `.agents/core/`:
+
+- **spec** — Analyzes requirements, produces implementation specifications
+- **implementer** — Executes specifications, produces working code
+- **reviewer** — Validates implementations against specifications
+
+## Standard Output Contract
+
+All agents produce output in this structure:
+
+```
+## Plan
+Reasoning and approach
+
+## Changes
+List of file modifications
+
+## Patch
+Actual code changes
+
+## Tests
+Verification steps or test code
+```
+
+## Workflow
+
+Standard development flow:
+
+1. **Spec** → Analyze requirements, define approach
+2. **Implement** → Execute the specification
+3. **Review** → Validate against specification
+
+## Usage
+
+Reference agents by name:
+- "Use the spec agent to analyze this feature"
+- "Use the implementer agent to build this"
+- "Use the reviewer agent to check this code"
+
+## Guidelines
+
+- Agents are tool-agnostic — no IDE-specific assumptions
+- Follow the output contract exactly
+- Keep changes minimal and focused
+- Match existing codebase patterns
