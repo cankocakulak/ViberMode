@@ -55,16 +55,32 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 ## Directory Structure
 
 ```
-.agents/
-├── core/           # Code agents: spec, implementer, reviewer
-├── product/        # Product agents: brainstormer, prd, ux-designer, user-stories
-├── skills/         # Generated Codex Skills (export target)
-└── workflows/      # Multi-agent workflow templates
+.agents/                        # Source of truth (tool-agnostic)
+├── core/                       # Code agents
+│   ├── spec.md
+│   ├── implementer.md
+│   └── reviewer.md
+├── product/                    # Product agents
+│   ├── brainstormer.md
+│   ├── prd.md
+│   ├── ux-designer.md
+│   └── user-stories.md
+├── skills/                     # Generated Codex Skills (export target)
+└── workflows/                  # Multi-agent workflow templates
 
 .cursor/
-└── rules/          # Cursor-specific integration
+├── commands/                   # Slash commands (/brainstormer, /prd, etc.)
+│   ├── brainstormer.md
+│   ├── prd.md
+│   ├── ux-designer.md
+│   ├── user-stories.md
+│   ├── spec.md
+│   ├── implementer.md
+│   └── reviewer.md
+└── rules/
+    └── viber-mode.mdc          # Always-on context (agent index + contracts)
 
-src/                # Future runtime code
+src/                            # Future runtime code
 ```
 
 ## Agents
@@ -106,24 +122,51 @@ Brainstormer → PRD → UX Designer → User Stories → Spec → Implementer �
 - Exploration: `Brainstormer → PRD`
 - Design-first: `UX Designer → User Stories → Implementer`
 
-## Usage
+## How It Works in Cursor
 
-### In Cursor
+### Slash Commands — `/agent-name`
 
-Agents are automatically available via `.cursor/rules/`. Reference them:
+Type `/` in chat to invoke any agent:
 
 ```
-Use the brainstormer agent to explore ideas for user onboarding
-Use the prd agent to write requirements for the notification system
-Use the spec agent to analyze the API changes needed
-Use the implementer agent to build the auth module
+/brainstormer    — Rapid ideation
+/prd             — Product requirements
+/ux-designer     — UX flows and patterns
+/user-stories    — Sprint-ready stories
+/spec            — Technical specification
+/implementer     — Code implementation
+/reviewer        — Code review
 ```
 
-### In Your Own Projects
+Each command references its agent file as the operating procedure and passes your message via `{{input}}`. Priority order: agent file rules > command constraints > default behavior.
 
-Copy `.agents/` and `.cursor/rules/` into your project root. Done.
+### Always-On Context — `viber-mode.mdc`
 
-### Export to Codex Skills
+A single rule file (`alwaysApply: true`) stays in context at all times. It tells Cursor what agents exist, what categories they belong to, and what output contracts to follow.
+
+### Architecture
+
+```
+.agents/product/brainstormer.md       ← Source of truth (portable, tool-agnostic)
+         ↕ referenced by
+.cursor/commands/brainstormer.md      ← Slash command (/brainstormer)
+.cursor/rules/viber-mode.mdc         ← Always-on context (agent index)
+```
+
+No duplication. Commands are thin wrappers that point to `.agents/`.
+
+## Using in Your Own Projects
+
+Copy two directories into your project root:
+
+```bash
+cp -r .agents/ /path/to/your-project/.agents/
+cp -r .cursor/ /path/to/your-project/.cursor/
+```
+
+That's it. All agents and Cursor rules are immediately available.
+
+## Export to Codex Skills
 
 ```bash
 npm run build:skills

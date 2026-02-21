@@ -7,7 +7,7 @@ Vendor-agnostic AI agent development framework. Agents are the source of truth.
 
 ## Agent Categories
 
-### Code Agents — `.agents/core/`
+### Code Agents — `viber-mode/.agents/core/`
 
 For software development tasks. Output contract: **Plan → Changes → Patch → Tests**
 
@@ -15,7 +15,7 @@ For software development tasks. Output contract: **Plan → Changes → Patch �
 - **implementer** — Executes specifications, produces working code
 - **reviewer** — Validates implementations against specifications
 
-### Product Agents — `.agents/product/`
+### Product Agents — `viber-mode/.agents/product/`
 
 For product and design tasks. Output contract: **Analysis → Document → Artifacts**
 
