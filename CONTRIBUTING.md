@@ -1,82 +1,137 @@
 # Contributing to ViberMode
 
-## Creating a New Agent
+## Agent Types
 
-Agents are markdown files that define AI behavior in a tool-agnostic way.
+ViberMode has two agent categories with different output contracts:
 
-### Location
+| Category | Location | Output Contract |
+|----------|----------|-----------------|
+| **Code agents** | `.agents/core/` | Plan → Changes → Patch → Tests |
+| **Product agents** | `.agents/product/` | Analysis → Document → Artifacts |
 
-Place agents in the appropriate directory:
+Choose the right category before creating an agent.
 
-- `.agents/core/` — Fundamental agents used across all workflows
-- `.agents/workflows/` — Multi-agent orchestration templates
+---
 
-### Agent Template
+## Creating a Code Agent
+
+Code agents produce technical output: specifications, code changes, reviews.
+
+### Template
 
 ```markdown
 # Agent Name
 
-> One-line description of what this agent does.
+> One-line description.
 
 ## Role
 
-Define the agent's identity and expertise. Be specific about:
-- Domain expertise
-- Behavioral characteristics
-- Decision-making authority
+Who is this agent? What expertise does it have?
+- Specific capabilities
+- What it does NOT do
 
 ## When to Use
 
-Describe the trigger conditions:
-- What user intent activates this agent
-- Prerequisites that must be met
-- Situations where this agent should NOT be used
+**Activate when:**
+- Trigger conditions
+
+**Do NOT use when:**
+- Anti-patterns
 
 ## Input Contract
 
-Define expected inputs:
-
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `context` | string | yes | Description of what this input contains |
+| `input_name` | string | yes | What this input contains |
 
 ## Output Contract
 
-All agents MUST produce output in this exact structure:
-
 ### Plan
-
-Reasoning and approach before taking action.
+Reasoning and approach before acting.
 
 ### Changes
-
-Explicit list of what will be modified.
+Explicit list of file modifications.
 
 ### Patch
-
-Actual implementation (code, config, etc.).
+Complete, working code.
 
 ### Tests
-
 Verification steps or test code.
 
 ## Behavior Guidelines
-
-- Specific instructions for edge cases
-- Quality standards to maintain
-- Constraints and limitations
+- Specific rules for this agent
 
 ## Examples
-
-Provide 1-2 concrete examples of input → output.
+- Input → Output example
 ```
 
-### Design Rules
+---
+
+## Creating a Product Agent
+
+Product agents produce documents: PRDs, user stories, UX specs, ideas.
+
+### Template
+
+```markdown
+# Agent Name
+
+> One-line description.
+
+## Role
+
+Who is this agent? What expertise does it have?
+- Specific capabilities
+- What it does NOT do
+
+## When to Use
+
+**Activate when:**
+- Trigger conditions
+
+**Do NOT use when:**
+- Anti-patterns
+
+## Input Contract
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `input_name` | string | yes | What this input contains |
+
+## Output Contract
+
+### Analysis
+2-3 sentences. Reframe the problem. Identify the real challenge.
+
+### Document
+The main deliverable. Use a clear markdown structure with:
+- Headings that match the document type
+- Checkboxes for actionable items
+- Concrete, specific language
+
+### Artifacts
+Standalone .md file(s) to create:
+```
+File: docs/[type]-[name].md
+Content: [Complete document]
+```
+Or: `No artifacts needed.`
+
+## Behavior Guidelines
+- Specific rules for this agent
+
+## Examples
+- Input → Output example
+```
+
+---
+
+## Design Rules (All Agents)
 
 1. **No Tool Assumptions**
    - Never reference specific IDE features
    - Never assume file system access patterns
-   - Use generic terms (e.g., "modify file" not "use Cursor's edit tool")
+   - Use generic terms: "modify file" not "use Cursor's edit tool"
 
 2. **Explicit Contracts**
    - Every input must be documented
@@ -88,29 +143,33 @@ Provide 1-2 concrete examples of input → output.
    - Keep responsibilities focused
    - Avoid overlapping concerns
 
-4. **Codex Compatibility**
-   - Agents will be wrapped in SKILL.md format
-   - Keep the structure flat and parseable
-   - Avoid complex nested structures
+4. **Be Opinionated**
+   - Always make a recommendation
+   - Never end with "it depends"
+   - Decide, don't defer
 
-### Validation Checklist
+5. **Be Fast**
+   - No unnecessary ceremony
+   - Skip sections that add no value
+   - Shortest complete answer wins
+
+6. **Codex Compatibility**
+   - Keep structure flat and parseable
+   - Avoid complex nesting
+   - Agents can be wrapped in SKILL.md with minimal modification
+
+## Validation Checklist
 
 Before submitting an agent:
 
 - [ ] Has clear Role definition
 - [ ] Has explicit When to Use conditions
 - [ ] Has complete Input Contract table
-- [ ] Has all four Output Contract sections (Plan, Changes, Patch, Tests)
+- [ ] Output follows the correct contract for its category
 - [ ] Contains no tool-specific references
-- [ ] Includes at least one example
+- [ ] Includes at least one complete example
 - [ ] Works standalone (no hidden dependencies)
-
-### Testing Your Agent
-
-1. Use the agent in Cursor with various inputs
-2. Verify output follows the contract exactly
-3. Check that another developer can understand the output
-4. Confirm the output could be parsed programmatically
+- [ ] Is opinionated — makes decisions, not suggestions
 
 ## Creating Workflows
 
@@ -120,34 +179,12 @@ Workflows combine multiple agents. Place them in `.agents/workflows/`.
 # Workflow Name
 
 ## Agents
-
-1. `spec` — Analyze requirements
-2. `implementer` — Execute changes
-3. `reviewer` — Validate results
+1. `agent-a` — What it does in this flow
+2. `agent-b` — What it does in this flow
 
 ## Flow
-
-```
-[Input] → spec → implementer → reviewer → [Output]
-          ↑                        │
-          └────── (if rejected) ───┘
-```
+[Input] → agent-a → agent-b → [Output]
 
 ## Handoff Contracts
-
-Define how output from one agent becomes input for the next.
+How output from one agent becomes input for the next.
 ```
-
-## Code Style
-
-- Use consistent markdown formatting
-- Keep lines under 100 characters
-- Use tables for structured data
-- Use code blocks for examples
-
-## Pull Request Process
-
-1. Create agent in appropriate directory
-2. Run validation (when available): `npm run validate`
-3. Test in Cursor environment
-4. Submit PR with example usage

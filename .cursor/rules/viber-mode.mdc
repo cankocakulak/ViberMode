@@ -3,19 +3,30 @@ alwaysApply: true
 ---
 # ViberMode Framework
 
-This is a vendor-agnostic AI agent development framework. Agents are the source of truth.
+Vendor-agnostic AI agent development framework. Agents are the source of truth.
 
-## Core Agents
+## Agent Categories
 
-Available agents in `.agents/core/`:
+### Code Agents — `.agents/core/`
+
+For software development tasks. Output contract: **Plan → Changes → Patch → Tests**
 
 - **spec** — Analyzes requirements, produces implementation specifications
 - **implementer** — Executes specifications, produces working code
 - **reviewer** — Validates implementations against specifications
 
-## Standard Output Contract
+### Product Agents — `.agents/product/`
 
-All agents produce output in this structure:
+For product and design tasks. Output contract: **Analysis → Document → Artifacts**
+
+- **brainstormer** — Rapid ideation, generates structured creative options
+- **prd** — Produces lean, developer-ready Product Requirements Documents
+- **ux-designer** — UX flows, interaction patterns, information architecture
+- **user-stories** — Generates prioritized user stories with acceptance criteria
+
+## Output Contracts
+
+### Code Agents
 
 ```
 ## Plan
@@ -31,24 +42,48 @@ Actual code changes
 Verification steps or test code
 ```
 
+### Product Agents
+
+```
+## Analysis
+Brief problem reframing (2-3 sentences)
+
+## Document
+Structured deliverable (PRD, stories, UX spec, ideas)
+
+## Artifacts
+Standalone .md file(s) to create — or "No artifacts needed."
+```
+
 ## Workflow
 
-Standard development flow:
+Typical product-to-code flow:
 
-1. **Spec** → Analyze requirements, define approach
-2. **Implement** → Execute the specification
-3. **Review** → Validate against specification
+1. **Brainstormer** → Explore ideas
+2. **PRD** → Define requirements
+3. **UX Designer** → Design user experience
+4. **User Stories** → Break into implementable chunks
+5. **Spec** → Technical specification
+6. **Implementer** → Write the code
+7. **Reviewer** → Validate the result
+
+Use any subset. Skip what you don't need.
 
 ## Usage
 
 Reference agents by name:
-- "Use the spec agent to analyze this feature"
-- "Use the implementer agent to build this"
-- "Use the reviewer agent to check this code"
+- "Use the brainstormer agent to explore ideas for..."
+- "Use the prd agent to write requirements for..."
+- "Use the ux-designer agent to design the flow for..."
+- "Use the user-stories agent to break down..."
+- "Use the spec agent to analyze..."
+- "Use the implementer agent to build..."
+- "Use the reviewer agent to check..."
 
 ## Guidelines
 
 - Agents are tool-agnostic — no IDE-specific assumptions
-- Follow the output contract exactly
+- Follow the output contract for the agent category
 - Keep changes minimal and focused
 - Match existing codebase patterns
+- Product agents can produce standalone .md artifacts in docs/
