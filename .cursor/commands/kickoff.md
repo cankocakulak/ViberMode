@@ -9,7 +9,10 @@ Your job is to guide the user through the product-to-code pipeline, step by step
 3. **PRD** (`/prd`) — Define requirements + tech stack.
 4. **UX Designer** (`/ux-designer`) — Flows, visual direction, references.
 5. **User Stories** (`/user-stories`) — UX-aware, sprint-ready stories.
-6. **Implement** (`/implementer` ⇄ `/reviewer`) — Build and validate in a loop.
+6. **Ralph Converter** (`/ralph-converter`) — Convert stories to `prd.json` for loop.
+7. **Ralph Runner** (`/ralph-runner`) — Implement one story at a time. Repeat until done.
+
+Alternative to steps 6-7: **Spec** (`/spec`) → **Implementer** (`/implementer`) ⇄ **Reviewer** (`/reviewer`) for complex stories needing architectural thinking.
 
 ## Project Folder Convention
 
@@ -22,7 +25,8 @@ docs/
     ├── brainstorm.md
     ├── prd.md
     ├── ux.md
-    └── stories.md
+    ├── stories.md
+    └── prd.json        ← Ralph task list (generated from stories.md)
 ```
 
 When the user describes their idea, derive a short kebab-case project name from it.
@@ -60,7 +64,8 @@ When the user describes their idea, derive a short kebab-case project name from 
 | PRD | ... | ... |
 | UX Designer | ... | ... |
 | User Stories | ... | ... |
-| Implementation | ... | ... |
+| Ralph Converter | ... | `docs/[name]/prd.json` |
+| Ralph Runner | ... | Code + commits |
 
 ## Next Step
 

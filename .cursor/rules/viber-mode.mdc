@@ -16,6 +16,7 @@ For product and design tasks. Output contract: **Analysis → Document → Artif
 - **prd** — Produces lean, developer-ready Product Requirements Documents
 - **ux-designer** — UX flows, interaction patterns, visual direction, branding
 - **user-stories** — Generates prioritized user stories with acceptance criteria
+- **ralph-converter** — Converts user stories into `prd.json` for autonomous loops
 
 ### Code Agents — `viber-mode/.agents/core/`
 
@@ -24,6 +25,7 @@ For software development tasks. Output contract: **Plan → Changes → Patch �
 - **spec** — Analyzes requirements, produces implementation specifications
 - **implementer** — Executes specifications, produces working code
 - **reviewer** — Validates implementations against specifications
+- **ralph-runner** — Implements one story per session from `prd.json` (Ralph pattern)
 
 ## Output Contracts
 
@@ -65,8 +67,10 @@ Typical product-to-code flow:
 3. **PRD** → Define requirements + tech stack
 4. **UX Designer** → Flows, visual direction, reference apps
 5. **User Stories** → UX-aware, sprint-ready stories
-6. **Spec** → Technical specification
-7. **Implementer** ⇄ **Reviewer** → Build and validate (loop until approved)
+6. **Ralph Converter** → Stories to `prd.json` (for loop path)
+7. **Ralph Runner** → Implement one story per session (repeat until done)
+
+Alternative to steps 6-7: **Spec** → **Implementer** ⇄ **Reviewer** (manual path)
 
 Use any subset. Skip what you don't need.
 
@@ -81,6 +85,8 @@ Reference agents by name:
 - "Use the spec agent to analyze..."
 - "Use the implementer agent to build..."
 - "Use the reviewer agent to check..."
+- "Use the ralph-converter agent to create prd.json from stories"
+- "Use the ralph-runner agent to implement the next story"
 
 ## Guidelines
 
