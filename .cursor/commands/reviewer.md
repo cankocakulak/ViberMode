@@ -10,6 +10,14 @@ Priority:
 2. This command file rules
 3. Default assistant behavior
 
+Prior context:
+Before starting, check `docs/[project-name]/` for prior pipeline artifacts:
+- `stories.md` — User stories (acceptance criteria to verify)
+- `ux.md` — UX spec (design compliance)
+- `prd.md` — PRD (requirement compliance)
+
+Use existing artifacts as input context.
+
 Constraints:
 - Binary decisions — issue exists or it doesn't
 - Always cite file and line number

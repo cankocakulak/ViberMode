@@ -31,6 +31,7 @@ You do NOT design, specify, or implement. You open the possibility space and nar
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | `topic` | string | yes | The problem, idea, or question to brainstorm around |
+| `analyzer_output` | string | no | Project analysis from the Analyzer agent (existing projects) |
 | `constraints` | string | no | Boundaries: tech stack, time, audience, budget |
 | `direction` | string | no | Bias toward a particular angle if any |
 
@@ -55,6 +56,15 @@ For each idea (aim for 5-8):
 **Risk**: One-line concern
 **Effort**: Low / Medium / High
 ```
+
+#### Tech Direction
+
+If the project involves choosing or validating a tech stack, include:
+- Recommended stack with one-line reasoning
+- What to reuse from existing project (if analyzer output provided)
+- Key technical bets and why
+
+If tech is already decided or irrelevant, skip this section.
 
 #### Recommendation
 

@@ -13,42 +13,31 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Product Agents                       │
-│             (Analysis → Document → Artifacts)           │
-│                                                         │
-│  ┌────────────┐ ┌─────┐ ┌────────────┐ ┌────────────┐ │
-│  │Brainstormer│ │ PRD │ │UX Designer │ │User Stories│ │
-│  └────────────┘ └─────┘ └────────────┘ └────────────┘ │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────┐
-│                     Code Agents                         │
-│             (Plan → Changes → Patch → Tests)            │
-│                                                         │
-│       ┌──────┐    ┌─────────────┐    ┌──────────┐      │
-│       │ Spec │    │ Implementer │    │ Reviewer │      │
-│       └──────┘    └─────────────┘    └──────────┘      │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────┐
-│                    Adapter Layer                        │
-│              (Future: skill generators)                 │
-│                                                         │
-│       ┌──────────┐         ┌──────────────────┐        │
-│       │  Cursor  │         │   Codex Skills   │        │
-│       │  Rules   │         │ (.agents/skills/) │        │
-│       └──────────┘         └──────────────────┘        │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                       Product Agents                            │
+│              (Analysis → Document → Artifacts)                  │
+│                                                                 │
+│  ┌──────────┐ ┌────────────┐ ┌─────┐ ┌──────────┐ ┌────────┐ │
+│  │ Analyzer │→│Brainstormer│→│ PRD │→│UX Design │→│Stories │ │
+│  └──────────┘ └────────────┘ └─────┘ └──────────┘ └────────┘ │
+└────────────────────────────────┬────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        Code Agents                              │
+│               (Plan → Changes → Patch → Tests)                  │
+│                                                                 │
+│           ┌──────┐    ┌─────────────┐    ┌──────────┐          │
+│           │ Spec │───→│ Implementer │⇄───│ Reviewer │          │
+│           └──────┘    └─────────────┘    └──────────┘          │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Core Principles
 
 1. **Tool-Agnostic** — Agents contain no assumptions about the execution environment
 2. **Contract-Driven** — Two clear output contracts: code and product
-3. **Composable** — Agents can be chained: brainstorm → PRD → stories → spec → implement → review
+3. **Composable** — Agents chain naturally, each feeding the next
 4. **Fast** — No ceremony. Each agent does one thing well
 5. **Exportable** — Agents can be converted to platform-specific formats (Codex Skills, etc.)
 
@@ -61,6 +50,7 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 │   ├── implementer.md
 │   └── reviewer.md
 ├── product/                    # Product agents
+│   ├── analyzer.md
 │   ├── brainstormer.md
 │   ├── prd.md
 │   ├── ux-designer.md
@@ -69,7 +59,8 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 └── workflows/                  # Multi-agent workflow templates
 
 .cursor/
-├── commands/                   # Slash commands (/brainstormer, /prd, etc.)
+├── commands/                   # Slash commands (/analyzer, /prd, etc.)
+│   ├── analyzer.md
 │   ├── brainstormer.md
 │   ├── prd.md
 │   ├── ux-designer.md
@@ -87,12 +78,13 @@ src/                            # Future runtime code
 
 ### Product Agents
 
-| Agent | Purpose | Produces |
-|-------|---------|----------|
-| `brainstormer` | Rapid ideation and creative exploration | Ideas list + recommendation |
-| `prd` | Lean product requirements | PRD document |
-| `ux-designer` | UX flows and interaction design | UX specification |
-| `user-stories` | Sprint-ready user stories | Prioritized story backlog |
+| Agent | Purpose | Input From | Produces |
+|-------|---------|------------|----------|
+| `analyzer` | Discover existing project structure and patterns | — | Project snapshot |
+| `brainstormer` | Rapid ideation, tech direction | Analyzer | Ideas + recommendation |
+| `prd` | Lean product requirements + tech stack | Brainstormer | PRD document |
+| `ux-designer` | Flows, visual direction, branding, references | PRD | UX specification |
+| `user-stories` | Sprint-ready, UX-aware stories | PRD + UX | Story backlog |
 
 **Output contract:** `Analysis → Document → Artifacts`
 
@@ -108,15 +100,15 @@ src/                            # Future runtime code
 
 ## Workflow
 
-Use the full chain or any subset:
+Full pipeline:
 
 ```
-Brainstormer → PRD → UX Designer → User Stories → Spec → Implementer → Reviewer
-     ↑                                                                     │
-     └──────────────────── (if rejected) ──────────────────────────────────┘
+Analyzer → Brainstormer → PRD → UX Designer → User Stories → Spec → Implementer ⇄ Reviewer
 ```
 
 **Common shortcuts:**
+- New project: `Brainstormer → PRD → UX → Stories → Implement`
+- Feature on existing: `Analyzer → PRD → UX → Stories → Implement`
 - Quick feature: `PRD → Spec → Implementer`
 - Bug fix: `Spec → Implementer → Reviewer`
 - Exploration: `Brainstormer → PRD`
@@ -129,10 +121,11 @@ Brainstormer → PRD → UX Designer → User Stories → Spec → Implementer �
 Type `/` in chat to invoke any agent:
 
 ```
+/analyzer        — Discover project structure
 /brainstormer    — Rapid ideation
-/prd             — Product requirements
-/ux-designer     — UX flows and patterns
-/user-stories    — Sprint-ready stories
+/prd             — Product requirements + tech stack
+/ux-designer     — UX flows, visual direction, references
+/user-stories    — UX-aware, sprint-ready stories
 /spec            — Technical specification
 /implementer     — Code implementation
 /reviewer        — Code review
@@ -144,39 +137,39 @@ Each command references its agent file as the operating procedure and passes you
 
 A single rule file (`alwaysApply: true`) stays in context at all times. It tells Cursor what agents exist, what categories they belong to, and what output contracts to follow.
 
-### Architecture
+### How It Connects
 
 ```
-.agents/product/brainstormer.md       ← Source of truth (portable, tool-agnostic)
+viber-mode/.agents/product/brainstormer.md    ← Source of truth (portable)
          ↕ referenced by
-.cursor/commands/brainstormer.md      ← Slash command (/brainstormer)
-.cursor/rules/viber-mode.mdc         ← Always-on context (agent index)
+.cursor/commands/brainstormer.md              ← Slash command (/brainstormer)
+.cursor/rules/viber-mode.mdc                 ← Always-on context (agent index)
 ```
 
-No duplication. Commands are thin wrappers that point to `.agents/`.
+No duplication. Commands are thin wrappers that point to `viber-mode/.agents/`.
 
 ## Using in Your Own Projects
 
-Copy two directories into your project root:
+Add as a git submodule:
 
 ```bash
-cp -r .agents/ /path/to/your-project/.agents/
-cp -r .cursor/ /path/to/your-project/.cursor/
+git submodule add <repo-url> viber-mode
 ```
 
-That's it. All agents and Cursor rules are immediately available.
-
-## Export to Codex Skills
+Then copy the Cursor integration files:
 
 ```bash
-npm run build:skills
+cp -r viber-mode/.cursor/ .cursor/
 ```
+
+All agents referenced via `viber-mode/.agents/` paths — works out of the box.
 
 ## Roadmap
 
 - [x] Core agent definitions (spec, implementer, reviewer)
-- [x] Product agent definitions (brainstormer, prd, ux-designer, user-stories)
-- [x] Cursor rules integration
+- [x] Product agent definitions (analyzer, brainstormer, prd, ux-designer, user-stories)
+- [x] Cursor slash commands + rules integration
+- [x] Full product-to-code pipeline with agent chaining
 - [ ] Codex Skills export adapter
 - [ ] Agent validation tooling
 - [ ] Workflow orchestration

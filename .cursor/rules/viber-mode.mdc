@@ -7,6 +7,16 @@ Vendor-agnostic AI agent development framework. Agents are the source of truth.
 
 ## Agent Categories
 
+### Product Agents — `viber-mode/.agents/product/`
+
+For product and design tasks. Output contract: **Analysis → Document → Artifacts**
+
+- **analyzer** — Discovers project structure, tech stack, patterns, conventions
+- **brainstormer** — Rapid ideation, generates structured creative options
+- **prd** — Produces lean, developer-ready Product Requirements Documents
+- **ux-designer** — UX flows, interaction patterns, visual direction, branding
+- **user-stories** — Generates prioritized user stories with acceptance criteria
+
 ### Code Agents — `viber-mode/.agents/core/`
 
 For software development tasks. Output contract: **Plan → Changes → Patch → Tests**
@@ -15,16 +25,20 @@ For software development tasks. Output contract: **Plan → Changes → Patch �
 - **implementer** — Executes specifications, produces working code
 - **reviewer** — Validates implementations against specifications
 
-### Product Agents — `viber-mode/.agents/product/`
-
-For product and design tasks. Output contract: **Analysis → Document → Artifacts**
-
-- **brainstormer** — Rapid ideation, generates structured creative options
-- **prd** — Produces lean, developer-ready Product Requirements Documents
-- **ux-designer** — UX flows, interaction patterns, information architecture
-- **user-stories** — Generates prioritized user stories with acceptance criteria
-
 ## Output Contracts
+
+### Product Agents
+
+```
+## Analysis
+Brief problem reframing (2-3 sentences)
+
+## Document
+Structured deliverable (PRD, stories, UX spec, ideas)
+
+## Artifacts
+Standalone .md file(s) to create — or "No artifacts needed."
+```
 
 ### Code Agents
 
@@ -42,36 +56,24 @@ Actual code changes
 Verification steps or test code
 ```
 
-### Product Agents
-
-```
-## Analysis
-Brief problem reframing (2-3 sentences)
-
-## Document
-Structured deliverable (PRD, stories, UX spec, ideas)
-
-## Artifacts
-Standalone .md file(s) to create — or "No artifacts needed."
-```
-
 ## Workflow
 
 Typical product-to-code flow:
 
-1. **Brainstormer** → Explore ideas
-2. **PRD** → Define requirements
-3. **UX Designer** → Design user experience
-4. **User Stories** → Break into implementable chunks
-5. **Spec** → Technical specification
-6. **Implementer** → Write the code
-7. **Reviewer** → Validate the result
+1. **Analyzer** → Discover existing project (skip for new projects)
+2. **Brainstormer** → Explore ideas, tech direction
+3. **PRD** → Define requirements + tech stack
+4. **UX Designer** → Flows, visual direction, reference apps
+5. **User Stories** → UX-aware, sprint-ready stories
+6. **Spec** → Technical specification
+7. **Implementer** ⇄ **Reviewer** → Build and validate (loop until approved)
 
 Use any subset. Skip what you don't need.
 
 ## Usage
 
 Reference agents by name:
+- "Use the analyzer agent to explore this project"
 - "Use the brainstormer agent to explore ideas for..."
 - "Use the prd agent to write requirements for..."
 - "Use the ux-designer agent to design the flow for..."

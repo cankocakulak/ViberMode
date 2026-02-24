@@ -10,12 +10,23 @@ Priority:
 2. This command file rules
 3. Default assistant behavior
 
+Project folder:
+Artifacts MUST be saved under `docs/[project-name]/`. Derive the project name from context or ask the user.
+
+Prior context:
+Before starting, check `docs/[project-name]/` for prior pipeline artifacts:
+- `analysis.md` — Project analysis (existing project context)
+- `brainstorm.md` — Brainstorm output (selected direction, ideas)
+
+Use existing artifacts as input context.
+
 Constraints:
 - Scope ruthlessly — say NO more than YES
 - Every requirement must be testable
 - Use checkboxes for requirements
 - Prioritize: P0 (won't ship without), P1 (should have), P2 (nice to have)
-- Always produce a standalone artifact file in docs/
+- Include Tech Stack section
+- MUST produce artifact: `docs/[project-name]/prd.md`
 
 User task:
 {{input}}

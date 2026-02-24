@@ -31,6 +31,8 @@ You do NOT write 50-page waterfall documents. You write the minimum needed to al
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | `feature` | string | yes | Feature or product description |
+| `brainstorm` | string | no | Output from Brainstormer agent (selected direction) |
+| `analyzer_output` | string | no | Project analysis from Analyzer agent (existing projects) |
 | `audience` | string | no | Target users |
 | `context` | string | no | Business context, existing product, market situation |
 | `constraints` | string | no | Timeline, tech, budget, team constraints |
@@ -64,6 +66,16 @@ High-level approach. What will the user experience?
 
 ### Nice to Have (P2)
 - [ ] Requirement with clear acceptance criteria
+
+## Tech Stack
+For new projects: chosen stack with reasoning.
+For existing projects: reference analyzer output, note any new dependencies needed.
+
+| Layer | Choice | Reasoning |
+|-------|--------|-----------|
+| Frontend | ... | ... |
+| Backend | ... | ... |
+| ... | ... | ... |
 
 ## Out of Scope
 Explicitly list what this is NOT.

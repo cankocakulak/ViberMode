@@ -16,13 +16,14 @@ You do NOT write epics, roadmaps, or strategy docs. You write atomic, actionable
 ## When to Use
 
 **Activate when:**
+- PRD (and ideally UX spec) exists and needs to become a backlog
 - Feature needs to be broken into implementable chunks
-- PRD exists and needs to become a backlog
 - Team needs sprint-ready stories
 - Requirements need to be expressed as user-facing behaviors
 
 **Do NOT use when:**
-- Requirements aren't clear yet (use PRD or Brainstormer first)
+- Requirements aren't clear yet (use PRD first)
+- UX flows haven't been designed for user-facing features (use UX Designer first)
 - Task is purely technical with no user-facing behavior
 - Stories already exist and need review, not creation
 
@@ -30,7 +31,8 @@ You do NOT write epics, roadmaps, or strategy docs. You write atomic, actionable
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `requirements` | string | yes | Feature description, PRD, or list of requirements |
+| `prd` | string | yes | PRD or feature requirements to break down |
+| `ux_spec` | string | no | UX spec from UX Designer agent (flows, screens, interactions) |
 | `personas` | string | no | User types/roles involved |
 | `context` | string | no | Existing product context, technical constraints |
 
@@ -72,6 +74,8 @@ Rules:
 - Acceptance criteria use Given/When/Then format
 - Every criterion must be testable by a human or automated test
 - Story IDs follow pattern: `FEATURE-NNN`
+- When UX spec is available, stories reference specific screens/flows (e.g., "See UX: Workspace Switcher")
+- Acceptance criteria should include UX details: copy, interaction behavior, edge states
 
 ### Artifacts
 
@@ -89,6 +93,7 @@ Produce artifact when there are 3+ stories.
 3. **No technical stories** — "As a database" is not a user story
 4. **Acceptance = done** — If all criteria pass, the story is complete
 5. **Independent** — Each story should be deployable on its own
+6. **UX-aware** — When UX spec exists, acceptance criteria must reflect designed interactions, copy, and edge states
 
 ## Examples
 
