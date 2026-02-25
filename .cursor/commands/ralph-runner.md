@@ -1,4 +1,4 @@
-Use `viber-mode/.agents/core/ralph-runner.md` as the operating procedure.
+Use `viber-mode/.agents/product/ralph-runner.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition

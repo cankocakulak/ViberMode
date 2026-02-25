@@ -14,7 +14,7 @@
     ".agents"
   ],
   "scripts": {
-    "build:skills": "echo 'Skill export not yet implemented'",
+    "install:codex": "bash scripts/install-codex-skills.sh",
     "validate": "echo 'Agent validation not yet implemented'"
   },
   "keywords": [

@@ -9,70 +9,47 @@ Vendor-agnostic AI agent development framework. Agents are the source of truth.
 
 ### Product Agents — `viber-mode/.agents/product/`
 
-For product and design tasks. Output contract: **Analysis → Document → Artifacts**
+Sequential pipeline from idea to implementation. Each agent produces artifacts that feed the next.
 
 - **analyzer** — Discovers project structure, tech stack, patterns, conventions
 - **brainstormer** — Rapid ideation, generates structured creative options
 - **prd** — Produces lean, developer-ready Product Requirements Documents
 - **ux-designer** — UX flows, interaction patterns, visual direction, branding
 - **user-stories** — Generates prioritized user stories with acceptance criteria
-- **ralph-converter** — Converts user stories into `prd.json` for autonomous loops
+- **ralph-converter** — Converts user stories into `prd.json` for implementation loop
+- **ralph-runner** — Implements one story per session from `prd.json` (repeat until done)
 
-### Code Agents — `viber-mode/.agents/core/`
+Output contract: **Analysis → Document → Artifacts**
 
-For software development tasks. Output contract: **Plan → Changes → Patch → Tests**
+### Iterate Agents — `viber-mode/.agents/iterate/`
 
-- **spec** — Analyzes requirements, produces implementation specifications
-- **implementer** — Executes specifications, produces working code
-- **reviewer** — Validates implementations against specifications
-- **ralph-runner** — Implements one story per session from `prd.json` (Ralph pattern)
+Standalone tools. Use any agent independently, in any order, anytime.
 
-## Output Contracts
+- **scout** — Quickly reads a module and produces a context summary
+- **planner** — Investigates bugs or plans features. Thinks before acting.
+- **reviewer** — Validates code quality, identifies issues, suggests improvements
+- **ux-tweaker** — UI/UX perspective: design patterns, accessibility, interactions
 
-### Product Agents
-
-```
-## Analysis
-Brief problem reframing (2-3 sentences)
-
-## Document
-Structured deliverable (PRD, stories, UX spec, ideas)
-
-## Artifacts
-Standalone .md file(s) to create — or "No artifacts needed."
-```
-
-### Code Agents
-
-```
-## Plan
-Reasoning and approach
-
-## Changes
-List of file modifications
-
-## Patch
-Actual code changes
-
-## Tests
-Verification steps or test code
-```
+Output contract: **Plan → Changes → Patch → Tests** (varies per agent)
 
 ## Workflow
 
-Typical product-to-code flow:
+### Product Pipeline (new features from scratch)
 
-1. **Analyzer** → Discover existing project (skip for new projects)
-2. **Brainstormer** → Explore ideas, tech direction
-3. **PRD** → Define requirements + tech stack
-4. **UX Designer** → Flows, visual direction, reference apps
-5. **User Stories** → UX-aware, sprint-ready stories
-6. **Ralph Converter** → Stories to `prd.json` (for loop path)
-7. **Ralph Runner** → Implement one story per session (repeat until done)
+```
+Analyzer → Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner ↺
+```
 
-Alternative to steps 6-7: **Spec** → **Implementer** ⇄ **Reviewer** (manual path)
+### Iterate (anytime, any order)
 
-Use any subset. Skip what you don't need.
+```
+Scout     → "What is this code?"
+Planner   → "How should I fix/build this?"
+Reviewer  → "Is this code good?"
+UX Tweaker → "How should this look/feel?"
+```
+
+Use any subset. Skip what you don't need. Iterate agents work standalone.
 
 ## Usage
 
@@ -82,11 +59,12 @@ Reference agents by name:
 - "Use the prd agent to write requirements for..."
 - "Use the ux-designer agent to design the flow for..."
 - "Use the user-stories agent to break down..."
-- "Use the spec agent to analyze..."
-- "Use the implementer agent to build..."
-- "Use the reviewer agent to check..."
 - "Use the ralph-converter agent to create prd.json from stories"
 - "Use the ralph-runner agent to implement the next story"
+- "Use the scout agent to understand this module"
+- "Use the planner agent to investigate / plan..."
+- "Use the reviewer agent to review this code"
+- "Use the ux-tweaker agent to improve the UX"
 
 ## Guidelines
 
@@ -94,4 +72,4 @@ Reference agents by name:
 - Follow the output contract for the agent category
 - Keep changes minimal and focused
 - Match existing codebase patterns
-- Product agents can produce standalone .md artifacts in docs/
+- Product agents produce standalone artifacts in docs/

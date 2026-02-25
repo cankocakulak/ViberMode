@@ -6,7 +6,7 @@ ViberMode has two agent categories with different output contracts:
 
 | Category | Location | Output Contract |
 |----------|----------|-----------------|
-| **Code agents** | `.agents/core/` | Plan → Changes → Patch → Tests |
+| **Iterate agents** | `.agents/iterate/` | Plan → Changes → Patch → Tests |
 | **Product agents** | `.agents/product/` | Analysis → Document → Artifacts |
 
 Choose the right category before creating an agent.

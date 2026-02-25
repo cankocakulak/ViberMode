@@ -14,22 +14,29 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                       Product Agents                            │
-│              (Analysis → Document → Artifacts)                  │
+│                    Product Pipeline                              │
+│              (Sequential: idea → implementation)                 │
 │                                                                 │
-│  ┌──────────┐ ┌────────────┐ ┌─────┐ ┌──────────┐ ┌────────┐ │
-│  │ Analyzer │→│Brainstormer│→│ PRD │→│UX Design │→│Stories │ │
-│  └──────────┘ └────────────┘ └─────┘ └──────────┘ └────────┘ │
-└────────────────────────────────┬────────────────────────────────┘
-                                 │
-                                 ▼
+│  ┌──────────┐ ┌────────────┐ ┌─────┐ ┌────────┐ ┌──────────┐ │
+│  │ Analyzer │→│Brainstormer│→│ PRD │→│UX Design│→│ Stories  │ │
+│  └──────────┘ └────────────┘ └─────┘ └────────┘ └────┬─────┘ │
+│                                                       ↓        │
+│                              ┌───────────┐    ┌──────────────┐ │
+│                              │ Converter │───→│ Ralph Runner │↺│
+│                              └───────────┘    └──────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Code Agents                              │
-│               (Plan → Changes → Patch → Tests)                  │
+│                    Iterate Toolkit                               │
+│              (Standalone: use anytime, any order)                │
 │                                                                 │
-│           ┌──────┐    ┌─────────────┐    ┌──────────┐          │
-│           │ Spec │───→│ Implementer │⇄───│ Reviewer │          │
-│           └──────┘    └─────────────┘    └──────────┘          │
+│  ┌───────┐  ┌─────────┐  ┌──────────┐  ┌──────────┐          │
+│  │ Scout │  │ Planner │  │ Reviewer │  │UX Tweaker│          │
+│  │       │  │         │  │          │  │          │          │
+│  │"What  │  │"How to  │  │"Is this  │  │"How it   │          │
+│  │is it?"│  │fix/add?"│  │good?"    │  │should    │          │
+│  │       │  │         │  │          │  │look?"    │          │
+│  └───────┘  └─────────┘  └──────────┘  └──────────┘          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,31 +52,28 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 
 ```
 .agents/                        # Source of truth (tool-agnostic)
-├── core/                       # Code agents
-│   ├── spec.md
-│   ├── implementer.md
-│   └── reviewer.md
-├── product/                    # Product agents
-│   ├── analyzer.md
-│   ├── brainstormer.md
-│   ├── prd.md
-│   ├── ux-designer.md
-│   └── user-stories.md
-├── skills/                     # Generated Codex Skills (export target)
-└── workflows/                  # Multi-agent workflow templates
-
-.cursor/
-├── commands/                   # Slash commands (/analyzer, /prd, etc.)
+├── product/                    # Pipeline agents (idea → implementation)
 │   ├── analyzer.md
 │   ├── brainstormer.md
 │   ├── prd.md
 │   ├── ux-designer.md
 │   ├── user-stories.md
-│   ├── spec.md
-│   ├── implementer.md
-│   └── reviewer.md
+│   ├── ralph-converter.md
+│   └── ralph-runner.md
+├── iterate/                    # Standalone tools (use anytime, any order)
+│   ├── scout.md
+│   ├── planner.md
+│   ├── reviewer.md
+│   └── ux-tweaker.md
+├── skills/                     # Codex Skills (SKILL.md per agent)
+└── workflows/                  # Multi-agent workflow templates
+
+.cursor/
+├── commands/                   # Slash commands (/analyzer, /prd, etc.)
 └── rules/
     └── viber-mode.mdc          # Always-on context (agent index + contracts)
+
+AGENTS.md                       # Agent index for Codex App, Claude Code, etc.
 
 src/                            # Future runtime code
 ```
@@ -88,15 +92,16 @@ src/                            # Future runtime code
 
 **Output contract:** `Analysis → Document → Artifacts`
 
-### Code Agents
+### Iterate Agents (Standalone Toolkit)
 
-| Agent | Purpose | Produces |
-|-------|---------|----------|
-| `spec` | Technical specification from requirements | Implementation spec |
-| `implementer` | Code from specification | Working code + tests |
-| `reviewer` | Validation against spec | Review verdict + fixes |
+| Agent | Perspective | Produces |
+|-------|-------------|----------|
+| `scout` | "What is this code?" | Context summary |
+| `planner` | "How should I fix/build this?" | Strategy + changes required |
+| `reviewer` | "Is this code good?" | Quality verdict + improvements |
+| `ux-tweaker` | "How should this look/feel?" | UX improvements + accessibility |
 
-**Output contract:** `Plan → Changes → Patch → Tests`
+Four perspectives, use any independently.
 
 ## Workflow
 
@@ -107,16 +112,18 @@ Analyzer → Brainstormer → PRD → UX Designer → User Stories → Spec → 
 ```
 
 **Common shortcuts:**
-- New project: `Brainstormer → PRD → UX → Stories → Implement`
-- Feature on existing: `Analyzer → PRD → UX → Stories → Implement`
+- New project: `Brainstormer → PRD → UX → Stories → Ralph Loop`
+- Feature on existing: `Analyzer → PRD → UX → Stories → Ralph Loop`
 - Quick feature: `PRD → Spec → Implementer`
-- Bug fix: `Spec → Implementer → Reviewer`
+- Bug fix: `Planner → implement`
+- UX improvement: `UX Tweaker → implement`
+- Small addition: `Planner → implement`
 - Exploration: `Brainstormer → PRD`
 - Design-first: `UX Designer → User Stories → Implementer`
 
-## How It Works in Cursor
+## Platform Integration
 
-### Slash Commands — `/agent-name`
+### Cursor — Slash Commands
 
 Type `/` in chat to invoke any agent:
 
@@ -126,27 +133,62 @@ Type `/` in chat to invoke any agent:
 /prd             — Product requirements + tech stack
 /ux-designer     — UX flows, visual direction, references
 /user-stories    — UX-aware, sprint-ready stories
-/spec            — Technical specification
-/implementer     — Code implementation
-/reviewer        — Code review
+/ralph-converter — Convert stories to prd.json
+/ralph-runner    — Implement next story from prd.json
+/scout           — Quick module context summary
+/planner         — Investigate bugs or plan features
+/reviewer        — Code review and quality check
+/ux-tweaker      — UI/UX refinements
 ```
 
-Each command references its agent file as the operating procedure and passes your message via `{{input}}`. Priority order: agent file rules > command constraints > default behavior.
+Integration files: `.cursor/commands/` (slash commands) + `.cursor/rules/viber-mode.mdc` (always-on context)
 
-### Always-On Context — `viber-mode.mdc`
+### Codex App — Skills
 
-A single rule file (`alwaysApply: true`) stays in context at all times. It tells Cursor what agents exist, what categories they belong to, and what output contracts to follow.
+Install ViberMode agents as Codex Skills:
+
+```bash
+npm run install:codex
+# or directly:
+./scripts/install-codex-skills.sh
+```
+
+Then use agents naturally in Codex App:
+
+```
+"Analyze this project"           → viber-analyzer
+"Write a PRD for..."             → viber-prd
+"Design the UX for..."           → viber-ux-designer
+"Create user stories"            → viber-user-stories
+"Convert stories to prd.json"    → viber-ralph-converter
+"Implement the next story"       → viber-ralph-runner
+"Understand this module"          → viber-scout
+"Why is this broken?"            → viber-planner
+"Review this code"               → viber-reviewer
+"Improve the UX of..."           → viber-ux-tweaker
+```
+
+Skills are installed to `~/.codex/skills/` and auto-trigger based on intent.
+
+### Any Other Tool — AGENTS.md
+
+`AGENTS.md` at the repo root tells any AI tool (Claude Code, Amp, etc.) about available agents:
+
+```
+"Use the ralph-runner agent to implement the next story"
+```
 
 ### How It Connects
 
 ```
-viber-mode/.agents/product/brainstormer.md    ← Source of truth (portable)
+.agents/iterate/planner.md              ← Source of truth (portable)
          ↕ referenced by
-.cursor/commands/brainstormer.md              ← Slash command (/brainstormer)
-.cursor/rules/viber-mode.mdc                 ← Always-on context (agent index)
+.cursor/commands/planner.md             ← Cursor: slash command
+.agents/skills/planner/SKILL.md         ← Codex: auto-trigger skill
+AGENTS.md                               ← Others: agent index
 ```
 
-No duplication. Commands are thin wrappers that point to `viber-mode/.agents/`.
+No duplication. All integrations are thin wrappers pointing to `.agents/`.
 
 ## Using in Your Own Projects
 
@@ -170,7 +212,7 @@ All agents referenced via `viber-mode/.agents/` paths — works out of the box.
 - [x] Product agent definitions (analyzer, brainstormer, prd, ux-designer, user-stories)
 - [x] Cursor slash commands + rules integration
 - [x] Full product-to-code pipeline with agent chaining
-- [ ] Codex Skills export adapter
+- [x] Codex Skills export + install script
 - [ ] Agent validation tooling
 - [ ] Workflow orchestration
 - [ ] npm package distribution
