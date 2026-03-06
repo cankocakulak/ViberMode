@@ -80,11 +80,11 @@ Rules:
 ### Artifacts
 
 ```
-File: docs/stories-[feature-name].md
+File: docs/[project-name]/stories.md
 Content: [Complete user stories document]
 ```
 
-Produce artifact when there are 3+ stories.
+Always produce the artifact when using this agent in the product pipeline.
 
 ## Behavior Guidelines
 
@@ -192,5 +192,5 @@ Team members can collaborate in shared workspaces where everyone sees the same p
 #### Artifacts
 
 ```
-File: docs/stories-team-workspaces.md
+File: docs/team-workspaces/stories.md
 ```

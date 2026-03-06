@@ -100,7 +100,7 @@ src/
 ### Artifacts
 
 ```
-File: docs/analysis-[project-name].md
+File: docs/[project-name]/analysis.md
 Content: [Complete analysis document]
 ```
 
@@ -194,5 +194,5 @@ lib/
 #### Artifacts
 
 ```
-File: docs/analysis-my-saas-app.md
+File: docs/my-saas-app/analysis.md
 ```

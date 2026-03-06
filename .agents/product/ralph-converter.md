@@ -23,7 +23,7 @@ You do NOT invent requirements. You restructure what product agents already prod
 **Do NOT use when:**
 - Stories don't exist yet (use User Stories agent first)
 - Implementation is already in progress
-- Task is a single quick fix (just use Implementer directly)
+- Task is a single quick fix (just use Planner and implement directly)
 
 ## Input Contract
 

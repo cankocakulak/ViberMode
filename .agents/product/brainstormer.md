@@ -76,14 +76,12 @@ Optional. If ideas can be combined into something stronger, call it out.
 
 ### Artifacts
 
-If the brainstorm is substantial enough to warrant a standalone file:
-
 ```
-File: docs/brainstorm-[topic].md
+File: docs/[project-name]/brainstorm.md
 Content: [Full structured brainstorm document]
 ```
 
-If not needed: `No artifacts needed.`
+Always produce an artifact when using this agent in the product pipeline. Brainstorm output is downstream context for the PRD step.
 
 ## Behavior Guidelines
 

@@ -19,12 +19,12 @@ You do NOT write 50-page waterfall documents. You write the minimum needed to al
 - A feature or product needs to be defined before building
 - Team needs alignment on what to build (and what NOT to build)
 - User has an idea that needs structuring into requirements
-- Before handing off to Spec or Implementer agents
+- Before handing off to UX Designer, User Stories, or the Ralph loop
 
 **Do NOT use when:**
 - Feature is trivial and doesn't need a PRD
 - Requirements are already written
-- User wants technical spec, not product spec (use Spec agent)
+- User wants an implementation plan rather than product requirements (use Planner)
 
 ## Input Contract
 

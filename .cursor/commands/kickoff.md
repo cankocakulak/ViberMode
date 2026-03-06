@@ -12,8 +12,6 @@ Your job is to guide the user through the product-to-code pipeline, step by step
 6. **Ralph Converter** (`/ralph-converter`) — Convert stories to `prd.json` for loop.
 7. **Ralph Runner** (`/ralph-runner`) — Implement one story at a time. Repeat until done.
 
-Alternative to steps 6-7: **Spec** (`/spec`) → **Implementer** (`/implementer`) ⇄ **Reviewer** (`/reviewer`) for complex stories needing architectural thinking.
-
 ## Project Folder Convention
 
 All artifacts go under `docs/[project-name]/`:

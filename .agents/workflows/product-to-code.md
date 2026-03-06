@@ -114,6 +114,6 @@ See `.agents/iterate/` — four standalone tools, no pipeline required.
 
 The kickoff command will:
 1. Derive a project name (e.g., `habit-tracker`)
-2. Create `docs/habit-tracker/` as the artifact folder
+2. Tell you to use `docs/habit-tracker/` as the artifact folder
 3. Tell you which command to run first
-4. Track pipeline progress across sessions
+4. Summarize progress from any existing artifacts

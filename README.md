@@ -89,6 +89,8 @@ src/                            # Future runtime code
 | `prd` | Lean product requirements + tech stack | Brainstormer | PRD document |
 | `ux-designer` | Flows, visual direction, branding, references | PRD | UX specification |
 | `user-stories` | Sprint-ready, UX-aware stories | PRD + UX | Story backlog |
+| `ralph-converter` | Convert stories into an implementation task list | User Stories | `prd.json` |
+| `ralph-runner` | Implement one story per session from `prd.json` | Ralph Converter | Code changes + commits |
 
 **Output contract:** `Analysis → Document → Artifacts`
 
@@ -108,18 +110,18 @@ Four perspectives, use any independently.
 Full pipeline:
 
 ```
-Analyzer → Brainstormer → PRD → UX Designer → User Stories → Spec → Implementer ⇄ Reviewer
+Analyzer → Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner ↺
 ```
 
 **Common shortcuts:**
 - New project: `Brainstormer → PRD → UX → Stories → Ralph Loop`
 - Feature on existing: `Analyzer → PRD → UX → Stories → Ralph Loop`
-- Quick feature: `PRD → Spec → Implementer`
+- Quick feature: `PRD → Stories → Ralph Loop`
 - Bug fix: `Planner → implement`
 - UX improvement: `UX Tweaker → implement`
 - Small addition: `Planner → implement`
 - Exploration: `Brainstormer → PRD`
-- Design-first: `UX Designer → User Stories → Implementer`
+- Design-first: `UX Designer → User Stories → Ralph Loop`
 
 ## Platform Integration
 
@@ -208,8 +210,8 @@ All agents referenced via `viber-mode/.agents/` paths — works out of the box.
 
 ## Roadmap
 
-- [x] Core agent definitions (spec, implementer, reviewer)
-- [x] Product agent definitions (analyzer, brainstormer, prd, ux-designer, user-stories)
+- [x] Iterate agent definitions (scout, planner, reviewer, ux-tweaker)
+- [x] Product agent definitions (analyzer, brainstormer, prd, ux-designer, user-stories, ralph-converter, ralph-runner)
 - [x] Cursor slash commands + rules integration
 - [x] Full product-to-code pipeline with agent chaining
 - [x] Codex Skills export + install script

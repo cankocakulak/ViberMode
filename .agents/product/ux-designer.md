@@ -108,7 +108,7 @@ Provide actual suggested copy, not descriptions of copy.
 ### Artifacts
 
 ```
-File: docs/ux-[feature-name].md
+File: docs/[project-name]/ux.md
 Content: [Complete UX document]
 ```
 
@@ -222,5 +222,5 @@ Follow existing shadcn/ui spacing. Workspace-specific screens can be slightly mo
 #### Artifacts
 
 ```
-File: docs/ux-team-workspaces.md
+File: docs/team-workspaces/ux.md
 ```
