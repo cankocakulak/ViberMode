@@ -2,7 +2,7 @@ Use `viber-mode/.agents/product/user-stories.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition
-- The required output format (Analysis → Document → Artifacts)
+- The required output format (Analysis → Document → Next Step Handoff → Artifacts)
 - The story structure
 
 Priority:
@@ -29,6 +29,7 @@ Constraints:
 - If a story takes more than 2-3 days, split it
 - Prioritize: P0 first, then P1, then P2
 - MUST produce artifact: `docs/[project-name]/stories.md`
+- MUST leave a next-step handoff for Ralph Converter
 
 User task:
 {{input}}

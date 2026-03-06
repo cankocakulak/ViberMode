@@ -9,6 +9,6 @@ Read and follow the full agent instructions at `viber-mode/.agents/product/ux-de
 
 Before starting, check `docs/[project-name]/` for prior pipeline artifacts (prd.md, analysis.md).
 
-Output contract: **Analysis → Document → Artifacts**
+Output contract: **Analysis → Document → Next Step Handoff → Artifacts**
 
 Artifact output: `docs/[project-name]/ux.md`

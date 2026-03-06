@@ -7,7 +7,7 @@ ViberMode has two agent categories with different output contracts:
 | Category | Location | Output Contract |
 |----------|----------|-----------------|
 | **Iterate agents** | `.agents/iterate/` | Plan → Changes → Patch → Tests |
-| **Product agents** | `.agents/product/` | Analysis → Document → Artifacts |
+| **Product agents** | `.agents/product/` | Analysis → Document → Next Step Handoff → Artifacts |
 
 Choose the right category before creating an agent.
 
@@ -69,7 +69,7 @@ Verification steps or test code.
 
 ## Creating a Product Agent
 
-Product agents produce documents: PRDs, user stories, UX specs, ideas.
+Product agents produce documents: PRDs, user stories, UX specs, ideas, plus a handoff for the next pipeline step.
 
 ### Template
 
@@ -109,13 +109,19 @@ The main deliverable. Use a clear markdown structure with:
 - Checkboxes for actionable items
 - Concrete, specific language
 
+### Next Step Handoff
+Tell the next agent or human what to do next. Include:
+- Recommended next agent
+- Short reason
+- Context that must carry forward
+- A suggested prompt for the next step
+
 ### Artifacts
 Standalone .md file(s) to create:
 ```
 File: docs/[type]-[name].md
 Content: [Complete document]
 ```
-Or: `No artifacts needed.`
 
 ## Behavior Guidelines
 - Specific rules for this agent
@@ -148,12 +154,17 @@ Or: `No artifacts needed.`
    - Never end with "it depends"
    - Decide, don't defer
 
-5. **Be Fast**
+5. **Leave a Handoff**
+   - Product agents should tell the next step what to do
+   - Include a reusable prompt, not just a vague suggestion
+   - Preserve key decisions and constraints explicitly
+
+6. **Be Fast**
    - No unnecessary ceremony
    - Skip sections that add no value
    - Shortest complete answer wins
 
-6. **Codex Compatibility**
+7. **Codex Compatibility**
    - Keep structure flat and parseable
    - Avoid complex nesting
    - Agents can be wrapped in SKILL.md with minimal modification
@@ -166,6 +177,7 @@ Before submitting an agent:
 - [ ] Has explicit When to Use conditions
 - [ ] Has complete Input Contract table
 - [ ] Output follows the correct contract for its category
+- [ ] Product agents include a usable next-step handoff
 - [ ] Contains no tool-specific references
 - [ ] Includes at least one complete example
 - [ ] Works standalone (no hidden dependencies)

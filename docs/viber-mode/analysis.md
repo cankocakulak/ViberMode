@@ -40,6 +40,7 @@ src/
 - **Source of truth**: Agent behavior is defined in `.agents/*`; integrations are wrappers, not separate implementations.
 - **Product pipeline**: `Analyzer → Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner`.
 - **Artifact handoff model**: Product agents are intended to communicate via `docs/[project-name]/` artifacts.
+- **Explicit handoff model**: Product agents now also leave a next-step summary with recommended agent, carry-forward context, and a suggested prompt.
 - **Integration pattern**: Cursor commands and Codex skills mainly restate constraints and point back to the base agent files.
 - **Separation of concerns**: Product agents create documents; iterate agents are standalone operational helpers.
 
@@ -61,7 +62,7 @@ src/
 - **UX Designer** translates requirements into flows, screens, copy, and visual direction.
 - **User Stories** slices the PRD/UX output into sprint-ready stories.
 - **Ralph Converter** reshapes stories into `prd.json` for autonomous execution.
-- **Ralph Runner** is the execution-side contract for implementing one story per session from `prd.json`.
+- **Ralph Runner** is the execution-side contract for implementing one story per session from `prd.json`, then teeing up the next iteration.
 
 ## Technical Debt & Concerns
 - Product pipeline documentation was recently aligned around the folder-based artifact convention `docs/[project-name]/*.md`, but there is still no automated validator to prevent future drift.

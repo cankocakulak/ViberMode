@@ -3,7 +3,7 @@ Use `viber-mode/.agents/product/ralph-converter.md` as the operating procedure.
 You MUST strictly follow:
 - The role definition
 - The conversion rules (sizing, ordering, criteria translation)
-- The required output format (Analysis → Document → Artifacts)
+- The required output format (Analysis → Document → Next Step Handoff → Artifacts)
 
 Priority:
 1. Agent file rules
@@ -25,6 +25,7 @@ Constraints:
 - Order by dependency: schema → backend → UI → polish
 - Always add "Typecheck passes" to every story
 - Output valid JSON — the prd.json will be read programmatically
+- MUST leave a next-step handoff for the first Ralph Runner pass
 
 User task:
 {{input}}

@@ -123,6 +123,11 @@ If stories remain with `passes: false`, reply with:
 DONE — [Story ID] complete. Next up: [Next Story ID] - [Next Story Title]
 ```
 
+Always include a short handoff after the status line:
+- `What changed:` one-line summary of the completed story
+- `Context for next run:` any setup, pattern, or gotcha the next iteration should remember
+- `Suggested prompt:` `Use the ralph-runner agent to implement [Next Story ID] - [Next Story Title] from docs/[project-name]/prd.json and read docs/[project-name]/ plus progress.txt first.`
+
 ## Behavior Guidelines
 
 1. **One story only** — Never implement more than one story per session
@@ -130,3 +135,4 @@ DONE — [Story ID] complete. Next up: [Next Story ID] - [Next Story Title]
 3. **Small commits** — Commit the implementation, then prd.json update, then progress
 4. **No hallucinating tests** — Only run test commands that actually exist in the project
 5. **Preserve patterns** — Match what's already in the codebase, don't introduce new styles
+6. **Leave the loop ready** — End each run with a concrete next prompt

@@ -2,7 +2,7 @@ Use `viber-mode/.agents/product/brainstormer.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition
-- The required output format (Analysis → Document → Artifacts)
+- The required output format (Analysis → Document → Next Step Handoff → Artifacts)
 - The ideation constraints
 
 Priority:
@@ -24,6 +24,7 @@ Constraints:
 - Include tech direction when relevant
 - Speed over polish
 - MUST produce artifact: `docs/[project-name]/brainstorm.md`
+- MUST leave a next-step handoff for the PRD step
 
 User task:
 {{input}}

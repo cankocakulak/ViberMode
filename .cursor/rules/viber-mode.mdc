@@ -19,7 +19,7 @@ Sequential pipeline from idea to implementation. Each agent produces artifacts t
 - **ralph-converter** — Converts user stories into `prd.json` for implementation loop
 - **ralph-runner** — Implements one story per session from `prd.json` (repeat until done)
 
-Output contract: **Analysis → Document → Artifacts**
+Output contract: **Analysis → Document → Next Step Handoff → Artifacts**
 
 ### Iterate Agents — `viber-mode/.agents/iterate/`
 
@@ -72,4 +72,4 @@ Reference agents by name:
 - Follow the output contract for the agent category
 - Keep changes minimal and focused
 - Match existing codebase patterns
-- Product agents produce standalone artifacts in docs/
+- Product agents produce standalone artifacts in docs/ and leave a next-step handoff with context plus a suggested prompt

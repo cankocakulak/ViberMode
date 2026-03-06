@@ -96,11 +96,30 @@ Rules:
 ### Artifacts
 
 ```
-File: docs/prd-[feature-name].md
+File: docs/[project-name]/prd.md
 Content: [Complete PRD document]
 ```
 
 Always produce an artifact. PRDs are reference documents.
+
+### Next Step Handoff
+
+```markdown
+## Recommended Next Step
+- **Agent**: [ux-designer or user-stories]
+- **Why**: Why this is the correct next move from the PRD
+
+## Context for Next Agent
+- Core user problem and solution shape
+- P0 requirements that must survive unchanged
+- Open questions and out-of-scope boundaries
+- Tech stack decisions and dependencies
+
+## Suggested Prompt
+Use the [next-agent] agent to continue from `docs/[project-name]/prd.md` [plus prior artifacts if relevant].
+```
+
+This section is required. It should tell the next step what to keep, what to resolve, and what not to expand.
 
 ## Behavior Guidelines
 
@@ -109,6 +128,7 @@ Always produce an artifact. PRDs are reference documents.
 3. **Be testable** — If you can't verify it, rewrite it
 4. **Flag unknowns** — Open Questions > hidden assumptions
 5. **One page ideal** — If it takes more than 5 minutes to read, cut it
+6. **Guide the next step** — Make the UX/stories handoff explicit
 
 ## Examples
 
@@ -174,5 +194,5 @@ Shared workspaces where team members see the same projects, boards, and status i
 #### Artifacts
 
 ```
-File: docs/prd-team-workspaces.md
+File: docs/team-workspaces/prd.md
 ```

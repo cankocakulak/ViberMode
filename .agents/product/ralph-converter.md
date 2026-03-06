@@ -75,6 +75,25 @@ Content: [Complete prd.json]
 
 Always produce the artifact. This is the input for the implementation loop.
 
+### Next Step Handoff
+
+```markdown
+## Recommended Next Step
+- **Agent**: [ralph-runner]
+- **Why**: Why the task list is ready for implementation
+
+## Context for Next Agent
+- Highest-priority story to pick first
+- Any stories that were split or reordered during conversion
+- Which supporting docs matter most for the first implementation pass
+- Known risks or setup tasks to watch for before coding
+
+## Suggested Prompt
+Use the ralph-runner agent to implement the highest-priority story from `docs/[project-name]/prd.json`, reading `docs/[project-name]/` for context first.
+```
+
+This section is required. It should let the implementation loop start with minimal ambiguity.
+
 ## Conversion Rules
 
 ### Story Sizing
@@ -149,6 +168,7 @@ The implementation prompt reads these files for context beyond what `prd.json` a
 2. **Preserve intent** — Don't add requirements that aren't in the source stories
 3. **Order matters** — A UI story that depends on an API story must come after it
 4. **Be explicit** — Acceptance criteria should be checkable without reading the original stories
+5. **Prepare the first run** — Make the starting story and next prompt obvious
 
 ## Examples
 

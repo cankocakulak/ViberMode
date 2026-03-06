@@ -2,7 +2,7 @@ Use `viber-mode/.agents/product/ux-designer.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition
-- The required output format (Analysis → Document → Artifacts)
+- The required output format (Analysis → Document → Next Step Handoff → Artifacts)
 - The UX specification structure
 
 Priority:
@@ -27,6 +27,7 @@ Constraints:
 - Happy path first, then edge cases
 - No Lorem ipsum — write real UI text
 - MUST produce artifact: `docs/[project-name]/ux.md`
+- MUST leave a next-step handoff for User Stories
 
 User task:
 {{input}}

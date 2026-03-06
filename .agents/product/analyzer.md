@@ -97,6 +97,25 @@ src/
 - Existing infrastructure that helps (auth, layouts, API layer)
 ```
 
+### Next Step Handoff
+
+```markdown
+## Recommended Next Step
+- **Agent**: [brainstormer or prd]
+- **Why**: Why this should happen next
+
+## Context for Next Agent
+- Reusable patterns to preserve
+- Constraints or technical debt that affect the next step
+- Open questions that still need product clarification
+- Which artifact(s) to read next
+
+## Suggested Prompt
+Use the [next-agent] agent to [do the next step] using `docs/[project-name]/analysis.md` as context.
+```
+
+This section is required. The goal is to make the next step obvious for both a human and another agent.
+
 ### Artifacts
 
 ```
@@ -113,6 +132,7 @@ Always produce an artifact. Analysis documents are reference material for all do
 3. **Flag landmines** — Technical debt that will bite during implementation
 4. **Note the good stuff** — Reusable patterns, solid foundations, well-tested areas
 5. **Stay neutral** — Describe the tech stack, don't judge choices (unless they're blockers)
+6. **Leave a handoff** — End with a concrete next-step recommendation and prompt
 
 ## Examples
 

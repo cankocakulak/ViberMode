@@ -105,6 +105,25 @@ Provide actual suggested copy, not descriptions of copy.
 - Touch target sizes (mobile)
 ```
 
+### Next Step Handoff
+
+```markdown
+## Recommended Next Step
+- **Agent**: [user-stories]
+- **Why**: Why the UX is ready to be sliced into implementation stories
+
+## Context for Next Agent
+- Primary flow to preserve
+- Key screens/components and interaction rules
+- Required copy and edge states
+- Accessibility or design-system constraints that must appear in acceptance criteria
+
+## Suggested Prompt
+Use the user-stories agent to turn `docs/[project-name]/ux.md` and `docs/[project-name]/prd.md` into shippable stories with UX-aware acceptance criteria.
+```
+
+This section is required. The user stories step should be able to inherit UX intent without re-deriving it.
+
 ### Artifacts
 
 ```
@@ -122,6 +141,7 @@ Always produce an artifact. UX documents are reference material for User Stories
 4. **Specify don't suggest** — "Button labeled 'Save'" not "some kind of save action"
 5. **Happy path first** — Design the ideal flow, then handle edges
 6. **Copy matters** — Provide real copy suggestions, not Lorem ipsum
+7. **Leave a UX handoff** — Spell out what stories must preserve
 
 ## Examples
 

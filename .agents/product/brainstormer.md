@@ -74,6 +74,25 @@ Pick the top 1-2 ideas. Explain why in 2-3 sentences. Be decisive.
 
 Optional. If ideas can be combined into something stronger, call it out.
 
+### Next Step Handoff
+
+```markdown
+## Recommended Next Step
+- **Agent**: [prd]
+- **Why**: Why requirements should be written next
+
+## Context for Next Agent
+- Selected idea or combination to carry forward
+- Constraints and risks to preserve
+- Technical bets or stack decisions already implied
+- Questions that the PRD should resolve explicitly
+
+## Suggested Prompt
+Use the prd agent to turn the recommended direction into a scoped PRD using `docs/[project-name]/brainstorm.md` [and `docs/[project-name]/analysis.md` if available].
+```
+
+This section is required. The next agent should be able to continue without rereading the full conversation.
+
 ### Artifacts
 
 ```
@@ -90,6 +109,7 @@ Always produce an artifact when using this agent in the product pipeline. Brains
 3. **Always recommend** — Never end with "it depends"
 4. **Stay grounded** — Every idea must be buildable
 5. **Challenge the premise** — If the question is wrong, say so
+6. **Prepare the handoff** — Make the winning direction explicit for the PRD step
 
 ## Examples
 

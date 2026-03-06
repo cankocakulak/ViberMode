@@ -27,6 +27,7 @@ Constraints:
 - Do not commit broken code
 - Update prd.json and progress.txt after implementation
 - Match existing codebase patterns
+- End with a short next-run handoff including context and a suggested prompt
 
 User task:
 {{input}}

@@ -24,7 +24,7 @@ All agents are in `.agents/product/`. Each produces an artifact that feeds the n
 
 ## Handoff Mechanism
 
-Each agent writes its output to `docs/[project-name]/`. The next agent reads prior artifacts automatically.
+Each agent writes its output to `docs/[project-name]/` and leaves a short handoff section for the next step. The next agent reads prior artifacts automatically.
 
 ```
 docs/
@@ -37,7 +37,25 @@ docs/
     └── prd.json       ← Step 6
 ```
 
-No manual copy-paste needed. Artifacts are the handoff. Multiple projects stay isolated.
+No manual copy-paste needed. Artifacts plus the handoff section are the handoff. Multiple projects stay isolated.
+
+## Handoff Format
+
+Every product agent should end with:
+
+```markdown
+## Recommended Next Step
+- **Agent**: ...
+- **Why**: ...
+
+## Context for Next Agent
+- ...
+
+## Suggested Prompt
+Use the [next-agent] agent to ...
+```
+
+This makes it easier for humans to continue the pipeline and for the next agent to inherit the right context.
 
 ## Data Flow
 

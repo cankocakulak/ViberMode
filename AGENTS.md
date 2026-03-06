@@ -47,4 +47,5 @@ When the user says any of the following, read the agent file and follow it:
 - Follow the agent's output contract exactly
 - Check `docs/[project-name]/` for prior pipeline artifacts before starting
 - Product agents produce artifacts in `docs/`
+- Product agents should leave a concise handoff for the next step, including suggested next agent and prompt
 - Iterate agents work standalone — no pipeline required

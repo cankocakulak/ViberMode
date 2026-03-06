@@ -77,6 +77,25 @@ Rules:
 - When UX spec is available, stories reference specific screens/flows (e.g., "See UX: Workspace Switcher")
 - Acceptance criteria should include UX details: copy, interaction behavior, edge states
 
+### Next Step Handoff
+
+```markdown
+## Recommended Next Step
+- **Agent**: [ralph-converter]
+- **Why**: Why the backlog is ready to become an implementation task list
+
+## Context for Next Agent
+- Story ordering that must be preserved
+- Stories that may need splitting before autonomous implementation
+- UX references that should remain attached to specific stories
+- Dependencies or sequencing assumptions
+
+## Suggested Prompt
+Use the ralph-converter agent to convert `docs/[project-name]/stories.md` into `docs/[project-name]/prd.json`, using the PRD and UX artifacts as context.
+```
+
+This section is required. The converter should understand which stories are ready and which need resizing.
+
 ### Artifacts
 
 ```
@@ -94,6 +113,7 @@ Always produce the artifact when using this agent in the product pipeline.
 4. **Acceptance = done** — If all criteria pass, the story is complete
 5. **Independent** — Each story should be deployable on its own
 6. **UX-aware** — When UX spec exists, acceptance criteria must reflect designed interactions, copy, and edge states
+7. **Set up implementation** — Call out stories likely to need splitting before the Ralph loop
 
 ## Examples
 

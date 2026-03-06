@@ -2,7 +2,7 @@ Use `viber-mode/.agents/product/analyzer.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition
-- The required output format (Analysis → Document → Artifacts)
+- The required output format (Analysis → Document → Next Step Handoff → Artifacts)
 - The discovery checklist
 
 Priority:
@@ -19,6 +19,7 @@ Constraints:
 - Flag technical debt that will bite during implementation
 - Note reusable patterns and solid foundations
 - MUST produce artifact: `docs/[project-name]/analysis.md`
+- MUST leave a next-step handoff with recommended agent, context, and suggested prompt
 
 User task:
 {{input}}

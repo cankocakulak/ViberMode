@@ -92,7 +92,7 @@ src/                            # Future runtime code
 | `ralph-converter` | Convert stories into an implementation task list | User Stories | `prd.json` |
 | `ralph-runner` | Implement one story per session from `prd.json` | Ralph Converter | Code changes + commits |
 
-**Output contract:** `Analysis → Document → Artifacts`
+**Output contract:** `Analysis → Document → Next Step Handoff → Artifacts`
 
 ### Iterate Agents (Standalone Toolkit)
 

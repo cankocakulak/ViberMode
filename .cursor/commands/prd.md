@@ -2,7 +2,7 @@ Use `viber-mode/.agents/product/prd.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition
-- The required output format (Analysis → Document → Artifacts)
+- The required output format (Analysis → Document → Next Step Handoff → Artifacts)
 - The PRD structure
 
 Priority:
@@ -27,6 +27,7 @@ Constraints:
 - Prioritize: P0 (won't ship without), P1 (should have), P2 (nice to have)
 - Include Tech Stack section
 - MUST produce artifact: `docs/[project-name]/prd.md`
+- MUST leave a next-step handoff for UX Designer or User Stories
 
 User task:
 {{input}}

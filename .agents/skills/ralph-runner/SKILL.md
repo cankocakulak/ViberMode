@@ -12,4 +12,4 @@ Before starting:
 2. Read `progress.txt` for learnings from previous iterations
 3. Read the docs folder from `prd.json` field `docsPath` for rich context
 
-Output contract: **Plan → Changes → Patch → Tests**
+End each run with a short handoff for the next iteration, including what changed, carry-forward context, and the next suggested prompt.
