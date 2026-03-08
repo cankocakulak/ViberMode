@@ -47,6 +47,8 @@ Follow these steps exactly, in order.
    - `stories.md` — Full user stories with detailed acceptance criteria
    - `analysis.md` — Existing codebase patterns (if present)
 
+4. Read each artifact's `## Summary (for downstream agents)` section first, then read the full document where needed.
+
 These docs give you far more context than `prd.json` alone. **Use them.**
 
 ### Step 2: Pick Story
@@ -61,6 +63,7 @@ Check you're on the correct branch from `prd.json` field `branchName`. If not, c
 
 Implement the story. Follow these rules:
 - Read the acceptance criteria carefully — every criterion must be satisfied
+- Read the story `notes` carefully — they may carry dependencies, implementation boundaries, PRD references, and UX references
 - Check `ux.md` for visual direction on UI stories
 - Check `prd.md` for tech stack and constraints
 - Match existing codebase patterns
@@ -136,3 +139,4 @@ Always include a short handoff after the status line:
 4. **No hallucinating tests** — Only run test commands that actually exist in the project
 5. **Preserve patterns** — Match what's already in the codebase, don't introduce new styles
 6. **Leave the loop ready** — End each run with a concrete next prompt
+7. **Respect story boundaries** — Treat Dependencies and Implementation Boundary as part of the contract, not optional hints

@@ -1,137 +1,363 @@
 # Workflow: Product to Code
 
-> Full pipeline from idea to working implementation.
+> Canonical production workflow for taking a raw product idea through definition, design, story slicing, implementation, and review using ViberMode roles.
 
-## Pipeline
+## Pipeline Overview
 
-```
-Analyzer → Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner ↺
-```
+This workflow is the default path for a new product idea:
 
-## Steps
-
-| # | Agent | Command | Produces | Artifact |
-|---|-------|---------|----------|----------|
-| 1 | Analyzer | `/analyzer` | Project snapshot | `docs/[name]/analysis.md` |
-| 2 | Brainstormer | `/brainstormer` | Ideas + recommendation | `docs/[name]/brainstorm.md` |
-| 3 | PRD | `/prd` | Requirements + tech stack | `docs/[name]/prd.md` |
-| 4 | UX Designer | `/ux-designer` | Flows, visual direction | `docs/[name]/ux.md` |
-| 5 | User Stories | `/user-stories` | Sprint-ready stories | `docs/[name]/stories.md` |
-| 6 | Ralph Converter | `/ralph-converter` | Task list for loop | `docs/[name]/prd.json` |
-| 7 | Ralph Runner | `/ralph-runner` | Working code per story | Code changes + commits |
-
-Canonical product roles live in `.agents/roles/product/`. Legacy `.agents/product/` files remain as compatibility redirects. Each role produces an artifact that feeds the next.
-
-## Handoff Mechanism
-
-Each agent writes its output to `docs/[project-name]/` and leaves a short handoff section for the next step. The next agent reads prior artifacts automatically.
-
-```
-docs/
-└── habit-tracker/
-    ├── analysis.md    ← Step 1
-    ├── brainstorm.md  ← Step 2
-    ├── prd.md         ← Step 3
-    ├── ux.md          ← Step 4
-    ├── stories.md     ← Step 5
-    └── prd.json       ← Step 6
+```text
+idea → brainstorm → PRD → UX → stories → task conversion → implementation → review
 ```
 
-No manual copy-paste needed. Artifacts plus the handoff section are the handoff. Multiple projects stay isolated.
+Canonical role order:
 
-## Handoff Format
-
-Every product agent should end with:
-
-```markdown
-## Recommended Next Step
-- **Agent**: ...
-- **Why**: ...
-
-## Context for Next Agent
-- ...
-
-## Suggested Prompt
-Use the [next-agent] agent to ...
+```text
+Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner ↺ → Reviewer
 ```
 
-This makes it easier for humans to continue the pipeline and for the next agent to inherit the right context.
+This workflow is deterministic:
+- each step reads explicit inputs
+- each step writes a named artifact
+- each step has success criteria before the next step can begin
+- downstream agents rely on artifacts, not chat history
 
-## Data Flow
+## Workflow Scope
 
-```
-Analyzer output ──→ Brainstormer (project context)
-                ──→ PRD (existing tech stack)
-                ──→ UX Designer (current UI patterns)
+Use this workflow when:
+- starting from a raw idea
+- defining a new feature or product slice
+- preparing implementation-ready work with stable artifact handoffs
 
-Brainstormer output ──→ PRD (selected direction, tech ideas)
+Do not use this workflow when:
+- you only need codebase discovery first
+- the task is a small bug fix or isolated iteration task
 
-PRD output ──→ UX Designer (requirements, tech stack)
-           ──→ User Stories (requirements to break down)
+For existing-product work that requires codebase discovery, run `analyzer` first and then enter this workflow at Step 1 with `analysis_artifact`.
 
-UX output ──→ User Stories (screens, flows, copy for acceptance criteria)
+## Artifact Folder Convention
 
-Stories output ──→ Ralph Converter (stories to prd.json)
+All artifacts live under:
 
-Ralph Converter output ──→ Ralph Runner (prd.json task list)
-
-Ralph Runner reads ──→ prd.json (task list + status)
-                   ──→ progress.txt (learnings from previous iterations)
-                   ──→ docs/[name]/*.md (rich context from product agents)
-```
-
-## Ralph Loop
-
-How the autonomous implementation loop works:
-
-1. `/ralph-converter` turns `stories.md` into `prd.json` (one-time)
-2. `/ralph-runner` implements the highest-priority `passes: false` story
-3. Repeat step 2 (new chat each time) until all stories are `passes: true`
-
-Each iteration is a **fresh context** — memory persists via:
-- `prd.json` (which stories are done)
-- `progress.txt` (learnings from previous iterations)
-- Git history (committed code)
-
-**Works with any tool:**
-- **Codex App** — paste the ralph-runner prompt as a task (free with subscription)
-- **Cursor** — run `/ralph-runner` in Agent Mode
-- **Claude Code CLI** — for full automation via bash loop
-- **Amp CLI** — for full automation via bash loop
-
-## Skipping Steps
-
-Not every project needs every step:
-
-| Scenario | Start at | Skip |
-|----------|----------|------|
-| New project from scratch | Brainstormer | Analyzer |
-| Feature on existing project | Analyzer | — |
-| Requirements already clear | PRD | Analyzer, Brainstormer |
-| Design-first | UX Designer | Analyzer, Brainstormer |
-
-## Using Iterate Agents Instead
-
-For quick tasks that don't need the full pipeline, use iterate agents directly:
-
-| Scenario | Use |
-|----------|-----|
-| Understand code first | `/scout` |
-| Bug fix | `/planner` → implement the fix |
-| Small addition | `/planner` → implement the change |
-| UI/UX improvement | `/ux-tweaker` → implement the change |
-| Code review | `/reviewer` |
-
-See `.agents/roles/iterate/` — four standalone tools, no pipeline required. Legacy `.agents/iterate/` files remain as compatibility redirects.
-
-## Quick Start
-
-```
-/kickoff I want to build a habit tracking app with streaks and reminders
+```text
+docs/[project-name]/
 ```
 
-The kickoff command will:
-1. Derive a project name (e.g., `habit-tracker`)
-2. Tell you to use `docs/habit-tracker/` as the artifact folder
-3. Tell you which command to run first
-4. Summarize progress from any existing artifacts
+Canonical artifact set for this workflow:
+
+```text
+docs/[project-name]/
+├── brainstorm.md
+├── prd.md
+├── ux.md
+├── stories.md
+├── prd.json
+├── progress.txt
+└── review.md
+```
+
+Notes:
+- `progress.txt` is produced during repeated `ralph-runner` execution.
+- `architecture.md` is not part of the canonical first production workflow because there is no dedicated architect role in the current system.
+- If an external architecture step is inserted later, it should consume `prd.md`, `ux.md`, and `stories.md` without changing IDs or boundaries.
+
+## Orchestration Rules
+
+1. Derive or confirm `project-name` before starting.
+2. Use artifact paths as primary inputs whenever an upstream artifact exists.
+3. Do not skip a step unless the workflow rules below explicitly allow it.
+4. Do not advance if the current step fails its success criteria.
+5. Prefer each artifact's `## Summary (for downstream agents)` section first, then read the full artifact where needed.
+6. Preserve stable IDs and mappings:
+   - PRD requirement IDs
+   - UX flow names
+   - story IDs
+7. Review is required before calling the workflow production-ready.
+
+## Step 1 — Brainstorm
+
+Role:
+`.agents/roles/product/brainstormer.md`
+
+Purpose:
+Explore solution directions for a raw idea and choose a clear product direction.
+
+Inputs:
+- user goal or raw product idea
+- optional: `docs/[project-name]/analysis.md`
+- optional constraints: audience, budget, timing, platform
+
+Outputs:
+- `docs/[project-name]/brainstorm.md`
+
+Success Criteria:
+- problem framing is clear
+- one recommended direction is chosen
+- constraints and technical bets are explicit
+- artifact includes `## Summary (for downstream agents)`
+- artifact includes `## Handoff Contract`
+
+Next Step:
+`prd`
+
+## Step 2 — PRD
+
+Role:
+`.agents/roles/product/prd.md`
+
+Purpose:
+Turn the selected brainstorm direction into a scoped, testable product contract.
+
+Inputs:
+- `docs/[project-name]/brainstorm.md`
+- optional: `docs/[project-name]/analysis.md`
+- optional audience, business context, constraints
+
+Outputs:
+- `docs/[project-name]/prd.md`
+
+Success Criteria:
+- problem and solution are explicit
+- P0 requirements are defined and testable
+- requirement IDs are stable
+- out-of-scope section is clear
+- artifact includes `## Summary (for downstream agents)`
+- artifact includes `## Handoff Contract`
+
+Next Step:
+`ux-designer`
+
+## Step 3 — UX
+
+Role:
+`.agents/roles/product/ux-designer.md`
+
+Purpose:
+Translate the PRD into user flows, screens, interactions, copy, and accessibility requirements.
+
+Inputs:
+- `docs/[project-name]/prd.md`
+- optional: `docs/[project-name]/brainstorm.md`
+- optional: `docs/[project-name]/analysis.md`
+- optional platform or branding context
+
+Outputs:
+- `docs/[project-name]/ux.md`
+
+Success Criteria:
+- primary flows are defined using the canonical flow structure
+- screens and components are tied to flows
+- PRD requirement references are preserved
+- copy and interaction rules are explicit
+- artifact includes `## Summary (for downstream agents)`
+- artifact includes `## Handoff Contract`
+
+Next Step:
+`user-stories`
+
+## Step 4 — Stories
+
+Role:
+`.agents/roles/product/user-stories.md`
+
+Purpose:
+Break the PRD and UX into independently implementable stories.
+
+Inputs:
+- `docs/[project-name]/prd.md`
+- `docs/[project-name]/ux.md`
+- optional: `docs/[project-name]/analysis.md`
+- optional personas or product context
+
+Outputs:
+- `docs/[project-name]/stories.md`
+
+Success Criteria:
+- every P0 PRD requirement maps to at least one story
+- every primary UX flow maps to at least one story
+- each story has:
+  - stable story ID
+  - Given/When/Then acceptance criteria
+  - Dependencies
+  - Implementation Boundary
+- stories are independently implementable or explicitly flagged for splitting
+- artifact includes `## Coverage Map`
+- artifact includes `## Summary (for downstream agents)`
+- artifact includes `## Handoff Contract`
+
+Next Step:
+`ralph-converter`
+
+## Step 5 — Task Conversion
+
+Role:
+`.agents/roles/product/ralph-converter.md`
+
+Purpose:
+Convert the story artifact into a machine-readable task list for deterministic implementation.
+
+Inputs:
+- `docs/[project-name]/stories.md`
+- `docs/[project-name]/prd.md`
+- optional: `docs/[project-name]/ux.md`
+- optional: `docs/[project-name]/analysis.md`
+
+Outputs:
+- `docs/[project-name]/prd.json`
+
+Success Criteria:
+- all stories are represented in `prd.json`
+- oversized stories are split without losing references
+- story ordering respects dependency chain
+- `notes` preserve dependencies, implementation boundaries, PRD refs, and UX refs
+- first implementation target is obvious
+- artifact handoff points to `ralph-runner`
+
+Next Step:
+`ralph-runner`
+
+## Step 6 — Implementation Loop
+
+Role:
+`.agents/roles/product/ralph-runner.md`
+
+Purpose:
+Implement one story at a time while preserving story boundaries and updating implementation state.
+
+Inputs:
+- `docs/[project-name]/prd.json`
+- `docs/[project-name]/prd.md`
+- `docs/[project-name]/ux.md`
+- `docs/[project-name]/stories.md`
+- optional: `docs/[project-name]/analysis.md`
+- optional: `progress.txt`
+
+Outputs:
+- code changes
+- updated `docs/[project-name]/prd.json`
+- updated `progress.txt`
+
+Success Criteria:
+- exactly one story is implemented per run
+- acceptance criteria for that story are satisfied
+- story boundaries are respected
+- quality checks pass before commit
+- completed story is marked `passes: true`
+- progress is appended for the next run
+
+Next Step:
+- `ralph-runner` again if incomplete stories remain
+- `reviewer` when the target implementation slice is complete or ready for validation
+
+## Step 7 — Review
+
+Role:
+`.agents/roles/iterate/reviewer.md`
+
+Purpose:
+Validate the implementation against product, UX, and story contracts before sign-off.
+
+Inputs:
+- `docs/[project-name]/prd.md`
+- `docs/[project-name]/ux.md`
+- `docs/[project-name]/stories.md`
+- implementation artifact or code diff under review
+- optional contextual notes or standards
+
+Outputs:
+- `docs/[project-name]/review.md`
+
+Success Criteria:
+- review evaluates spec compliance against PRD, UX, and Stories
+- verdict is explicit: APPROVED, CHANGES_REQUESTED, or BLOCKED
+- issues cite files and lines
+- fixes or verification steps are actionable
+
+Next Step:
+- done if `APPROVED`
+- return to `ralph-runner` or implementation work if `CHANGES_REQUESTED`
+
+## Artifact Flow
+
+Primary artifact chain:
+
+```text
+raw idea
+  ↓
+brainstorm.md
+  ↓
+prd.md
+  ↓
+ux.md
+  ↓
+stories.md
+  ↓
+prd.json
+  ↓
+implementation + progress.txt
+  ↓
+review.md
+```
+
+Contract flow:
+
+```text
+brainstorm.md
+  carries selected direction, constraints, and open questions
+
+prd.md
+  carries stable requirement IDs, P0 scope, and primary flows expected
+
+ux.md
+  carries flow definitions, screen references, copy, and accessibility rules
+
+stories.md
+  carries story IDs, requirement/flow coverage, dependencies, and implementation boundaries
+
+prd.json
+  carries implementation ordering and one-story-at-a-time execution state
+
+review.md
+  carries the production validation result
+```
+
+## Deterministic Execution Notes
+
+For orchestrators:
+
+- Start with Step 1 unless `brainstorm.md` already exists and is accepted.
+- Before each step, verify required input artifacts exist.
+- After each step, verify success criteria before continuing.
+- Never infer missing upstream context from memory when the artifact should exist.
+- Use the artifact summaries for routing and quick checks.
+- Use full artifacts for decisions that affect scope, IDs, or implementation boundaries.
+
+## Minimal Skip Rules
+
+Allowed skips:
+
+- Skip Step 1 only if a valid `brainstorm.md` already exists.
+- Skip Step 3 only if the feature is explicitly backend-only and the PRD handoff allows going straight to stories.
+- Skip directly to Step 7 only for re-review of already implemented work.
+
+Not allowed:
+
+- Skipping PRD for a raw idea
+- Writing stories without PRD
+- Writing user-facing stories without UX
+- Implementing directly from brainstorm or PRD when `stories.md` should exist
+
+## Future Workflow Candidates
+
+Likely next workflows:
+
+- `existing-codebase-feature`
+  - `analyzer → brainstormer or prd → ux-designer → user-stories → implementation → review`
+- `product-spec-only`
+  - `brainstormer → prd → ux-designer → user-stories`
+- `implementation-review-only`
+  - `reviewer` against existing PRD, UX, Stories, and code changes
+- `architecture-augmented-product-to-code`
+  - same workflow plus a future architect role between stories and conversion
+
+The current `product-to-code` workflow should remain the canonical default until an architect role exists and proves necessary.

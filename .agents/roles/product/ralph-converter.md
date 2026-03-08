@@ -29,9 +29,13 @@ You do NOT invent requirements. You restructure what product agents already prod
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `stories_file` | string | yes | Path to stories.md (e.g., `docs/my-app/stories.md`) |
-| `prd_file` | string | no | Path to prd.md for project name and tech stack context |
+| `stories_artifact` | path | yes | Path to stories artifact, usually `docs/[project-name]/stories.md` |
+| `prd_artifact` | path | no | Path to PRD artifact for project name and tech stack context |
+| `ux_artifact` | path | no | Path to UX artifact for flow and screen context |
+| `analysis_artifact` | path | no | Path to analysis artifact for codebase patterns |
 | `branch_prefix` | string | no | Git branch prefix (default: `ralph/`) |
+
+If an artifact path is provided, read the file before producing output.
 
 ## Output Contract
 
@@ -60,7 +64,7 @@ The complete `prd.json` content:
       ],
       "priority": 1,
       "passes": false,
-      "notes": ""
+      "notes": "Dependencies: none. Implementation Boundary: [what is included/excluded]. PRD refs: PR-001. UX refs: Flow Name."
     }
   ]
 }
@@ -75,24 +79,15 @@ Content: [Complete prd.json]
 
 Always produce the artifact. This is the input for the implementation loop.
 
-### Next Step Handoff
+### Handoff Contract
 
-```markdown
-## Recommended Next Step
-- **Agent**: [ralph-runner]
-- **Why**: Why the task list is ready for implementation
-
-## Context for Next Agent
-- Highest-priority story to pick first
+Required. It must explicitly state:
+- Next Agent: `ralph-runner`
+- Required Artifacts: `docs/[project-name]/prd.json`
+- Recommended Artifacts: `docs/[project-name]/prd.md`, `docs/[project-name]/ux.md`, `docs/[project-name]/stories.md`, `docs/[project-name]/analysis.md`
+- Critical Inputs that must remain stable
+- Highest-priority story to start with
 - Any stories that were split or reordered during conversion
-- Which supporting docs matter most for the first implementation pass
-- Known risks or setup tasks to watch for before coding
-
-## Suggested Prompt
-Use the ralph-runner agent to implement the highest-priority story from `docs/[project-name]/prd.json`, reading `docs/[project-name]/` for context first.
-```
-
-This section is required. It should let the implementation loop start with minimal ambiguity.
 
 ## Conversion Rules
 
@@ -142,6 +137,13 @@ Rules:
 - For UI stories, add "Verify changes work in browser"
 - Keep criteria verifiable — no "works correctly" or "looks good"
 
+### Coverage Preservation
+
+- Preserve story IDs exactly as written in `stories.md`
+- Carry Dependencies, Implementation Boundary, PRD references, and UX references into the `notes` field
+- If `stories.md` shows a coverage gap for a P0 requirement or UX flow, call it out in Analysis instead of silently converting it
+- If a story is too large, split it without losing the original requirement and flow references
+
 ### The `docsPath` Field
 
 This is ViberMode's advantage over vanilla Ralph. The `docsPath` field tells the implementation agent where to find rich context:
@@ -175,8 +177,8 @@ The implementation prompt reads these files for context beyond what `prd.json` a
 ### Example Input
 
 ```
-stories_file: docs/habit-tracker/stories.md
-prd_file: docs/habit-tracker/prd.md
+stories_artifact: docs/habit-tracker/stories.md
+prd_artifact: docs/habit-tracker/prd.md
 ```
 
 Where stories.md contains:

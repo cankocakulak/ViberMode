@@ -31,9 +31,11 @@ You do NOT design, specify, or implement. You open the possibility space and nar
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | `topic` | string | yes | The problem, idea, or question to brainstorm around |
-| `analyzer_output` | string | no | Project analysis from the Analyzer agent (existing projects) |
+| `analysis_artifact` | path | no | Path to analysis artifact, usually `docs/[project-name]/analysis.md` |
 | `constraints` | string | no | Boundaries: tech stack, time, audience, budget |
 | `direction` | string | no | Bias toward a particular angle if any |
+
+If an artifact path is provided, read the file before producing output.
 
 ## Output Contract
 
@@ -61,7 +63,7 @@ For each idea (aim for 5-8):
 
 If the project involves choosing or validating a tech stack, include:
 - Recommended stack with one-line reasoning
-- What to reuse from existing project (if analyzer output provided)
+- What to reuse from existing project (if `analysis_artifact` is provided)
 - Key technical bets and why
 
 If tech is already decided or irrelevant, skip this section.
@@ -74,24 +76,26 @@ Pick the top 1-2 ideas. Explain why in 2-3 sentences. Be decisive.
 
 Optional. If ideas can be combined into something stronger, call it out.
 
-### Next Step Handoff
+#### Summary (for downstream agents)
 
-```markdown
-## Recommended Next Step
-- **Agent**: [prd]
-- **Why**: Why requirements should be written next
+Include a machine-readable YAML block with:
+- feature or topic
+- selected direction
+- rejected directions worth remembering
+- constraints
+- technical bets
+- open questions for PRD
 
-## Context for Next Agent
-- Selected idea or combination to carry forward
-- Constraints and risks to preserve
-- Technical bets or stack decisions already implied
-- Questions that the PRD should resolve explicitly
+### Handoff Contract
 
-## Suggested Prompt
-Use the prd agent to turn the recommended direction into a scoped PRD using `docs/[project-name]/brainstorm.md` [and `docs/[project-name]/analysis.md` if available].
-```
+Required. It must explicitly state:
+- Next Agent: `prd`
+- Required Artifacts: `docs/[project-name]/brainstorm.md`
+- Recommended Artifacts: `docs/[project-name]/analysis.md` when available
+- Critical Inputs that must remain stable
+- Sections That Must Not Change before PRD
 
-This section is required. The next agent should be able to continue without rereading the full conversation.
+The brainstorm artifact must always end with both `## Summary (for downstream agents)` and `## Handoff Contract`.
 
 ### Artifacts
 

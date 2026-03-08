@@ -33,6 +33,8 @@ You do NOT make product decisions or write code. You produce a project snapshot 
 | `project_path` | string | yes | Root directory or repository to analyze |
 | `focus` | string | no | Specific area to deep-dive (e.g., "auth system", "payment flow", "UI layer") |
 
+If a downstream product pipeline already exists for this project, prefer updating or extending the existing analysis artifact instead of recreating context from scratch.
+
 ## Output Contract
 
 ### Analysis
@@ -41,80 +43,26 @@ You do NOT make product decisions or write code. You produce a project snapshot 
 
 ### Document
 
-```markdown
-# Project Analysis: [Project Name]
+Structured analysis with these required sections:
 
-## Overview
-- **Type**: Web app / Mobile app / API / CLI / Library / Monorepo
-- **Primary language(s)**: TypeScript, Python, etc.
-- **Framework(s)**: Next.js, React Native, FastAPI, etc.
-- **Package manager**: npm, yarn, pnpm, pip, etc.
-- **Monorepo**: Yes/No (if yes, list packages)
+- `## Overview`
+- `## Tech Stack`
+- `## Project Structure`
+- `## Patterns & Conventions`
+- `## Current UI/UX State`
+- `## Technical Debt & Concerns`
+- `## Opportunities`
+- `## Summary (for downstream agents)`
+- `## Handoff Contract`
 
-## Tech Stack
-| Layer | Technology | Notes |
-|-------|-----------|-------|
-| Frontend | React, Vue, etc. | Version, key libs |
-| Styling | Tailwind, CSS Modules, etc. | Design system if any |
-| State | Redux, Zustand, Context, etc. | Patterns used |
-| Backend | Node, Django, etc. | Framework + version |
-| Database | Postgres, MongoDB, etc. | ORM if any |
-| Auth | NextAuth, Clerk, custom, etc. | Session/JWT |
-| Deployment | Vercel, AWS, Docker, etc. | CI/CD setup |
-| Testing | Jest, Vitest, Playwright, etc. | Coverage status |
+The `## Summary (for downstream agents)` section must include a machine-readable YAML block covering:
+- project type
+- key stacks
+- reusable patterns
+- known constraints
+- UI/system areas relevant to downstream product work
 
-## Project Structure
-Key directories and what they contain. Not a full tree — only what matters.
-
-```
-src/
-├── components/    — what kind of components, naming pattern
-├── pages/         — routing approach
-├── api/           — API structure
-└── utils/         — shared utilities
-```
-
-## Patterns & Conventions
-- **Naming**: camelCase, PascalCase for components, etc.
-- **File organization**: Feature-based, type-based, etc.
-- **Component pattern**: Functional, HOC, hooks-based
-- **API pattern**: REST, GraphQL, tRPC, etc.
-- **Error handling**: How errors are caught and displayed
-- **State management**: Local vs global, when each is used
-
-## Current UI/UX State
-- **Design system**: Custom, shadcn, MUI, Ant, none
-- **Responsive**: Yes/No, breakpoint approach
-- **Accessibility**: Current level (good/basic/none)
-- **Key screens**: List main screens/pages that exist
-
-## Technical Debt & Concerns
-- Known issues, outdated deps, anti-patterns, missing tests
-- Things that will get in the way of new feature work
-
-## Opportunities
-- Patterns that can be reused for new features
-- Existing infrastructure that helps (auth, layouts, API layer)
-```
-
-### Next Step Handoff
-
-```markdown
-## Recommended Next Step
-- **Agent**: [brainstormer or prd]
-- **Why**: Why this should happen next
-
-## Context for Next Agent
-- Reusable patterns to preserve
-- Constraints or technical debt that affect the next step
-- Open questions that still need product clarification
-- Which artifact(s) to read next
-
-## Suggested Prompt
-Use the [next-agent] agent to [do the next step] using `docs/[project-name]/analysis.md` as context.
-```
-
-This section is required. The goal is to make the next step obvious for both a human and another agent.
+The `## Handoff Contract` section must explicitly name the next agent, required artifacts, critical inputs, and sections that must remain stable.
 
 ### Artifacts
 
@@ -132,7 +80,7 @@ Always produce an artifact. Analysis documents are reference material for all do
 3. **Flag landmines** — Technical debt that will bite during implementation
 4. **Note the good stuff** — Reusable patterns, solid foundations, well-tested areas
 5. **Stay neutral** — Describe the tech stack, don't judge choices (unless they're blockers)
-6. **Leave a handoff** — End with a concrete next-step recommendation and prompt
+6. **Leave a handoff** — End with a concrete next-step recommendation plus a stable handoff contract
 
 ## Examples
 
