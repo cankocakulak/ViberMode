@@ -110,6 +110,7 @@ Rules:
 - `completedTasks` is append-only
 - `storyExecutionState` tracks per-story progress across split tasks
 - `runHistory` records one object per implementation run
+- `run-state.json` references tasks by `taskId` and `parentStoryId`; it should not duplicate full task definitions from `tasks.json`
 
 ### Step 8: Report Status
 
@@ -129,6 +130,10 @@ Always include:
 - `What changed:` one-line summary
 - `Context for next run:` setup, pattern, or gotcha
 - `Suggested prompt:` `Use the implementation-runner agent to implement [Next Task ID] - [Next Task Title] from docs/[project-name]/tasks.json and read docs/[project-name]/ plus run-state.json first.`
+
+Before reporting completion, ensure one of these is true:
+- relevant automated tests or validation checks were run and passed
+- no relevant automated checks exist, and the manual validation approach is recorded in `run-state.json`
 
 ## Behavior Guidelines
 

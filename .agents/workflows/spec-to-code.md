@@ -29,6 +29,7 @@ Success Criteria:
 - story IDs and dependencies are preserved
 - task splits preserve lineage to parent stories
 - task ordering respects dependency chain
+- `run-state.json` must reference tasks by `taskId` rather than duplicating task definitions
 - first implementation target is obvious
 
 Next Step:
@@ -60,6 +61,8 @@ Success Criteria:
 - task status is updated to `done`
 - run history is appended structurally
 - lineage and dependencies remain intact
+- available tests or validation checks are run and pass before the task is considered complete
+- if no automated tests exist for the affected area, the run must record the validation approach used
 
 Next Step:
 - `implementation-runner` again if tasks remain
@@ -101,3 +104,7 @@ docs/[project-name]/
 ├── run-state.json
 └── review.md
 ```
+
+Relationship note:
+- `tasks.json` is the source of truth for task definitions, dependencies, and lineage.
+- `run-state.json` tracks execution state and run history, and should reference tasks by `taskId` instead of copying full task definitions.

@@ -72,6 +72,7 @@ Notes:
 - `run-state.json` is produced during repeated `implementation-runner` execution.
 - `architecture.md` is not part of the canonical first production workflow because there is no dedicated architect role in the current system.
 - If an external architecture step is inserted later, it should consume `prd.md`, `ux.md`, and `stories.md` without changing IDs or boundaries.
+- In the future, analysis may split into typed artifacts such as `codebase-analysis.md` and `product-analysis.md`, but the current workflow keeps `analysis.md` unchanged for compatibility.
 
 ## Orchestration Rules
 
@@ -222,6 +223,7 @@ Success Criteria:
 - oversized stories are split without losing references
 - story ordering respects dependency chain
 - task lineage preserves parent story references and dependencies
+- `run-state.json` is treated as execution state only and references tasks by `taskId`
 - first implementation target is obvious
 - artifact handoff points to `implementation-runner`
 
@@ -256,6 +258,8 @@ Success Criteria:
 - quality checks pass before commit
 - completed task is marked `status: done`
 - run history is appended structurally for the next run
+- available tests or validation checks pass before completion
+- when automated tests are not available, the validation method is recorded in `run-state.json`
 
 Next Step:
 - `implementation-runner` again if incomplete tasks remain
@@ -330,7 +334,7 @@ tasks.json
   carries implementation ordering, dependencies, and task lineage
 
 run-state.json
-  carries current task, completed tasks, per-story execution state, and run history
+  carries current task, completed tasks, per-story execution state, and run history by task ID rather than duplicating task definitions
 
 review.md
   carries the production validation result
