@@ -5,7 +5,7 @@ description: "Use when the user asks to convert stories to prd.json, prepare sto
 
 # Ralph Converter
 
-Read and follow the full agent instructions at `viber-mode/.agents/product/ralph-converter.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/product/ralph-converter.md`.
 
 Before starting, check `docs/[project-name]/` for prior pipeline artifacts (stories.md, prd.md, ux.md).
 

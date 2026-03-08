@@ -52,21 +52,24 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 
 ```
 .agents/                        # Source of truth (tool-agnostic)
-├── product/                    # Pipeline agents (idea → implementation)
-│   ├── analyzer.md
-│   ├── brainstormer.md
-│   ├── prd.md
-│   ├── ux-designer.md
-│   ├── user-stories.md
-│   ├── ralph-converter.md
-│   └── ralph-runner.md
-├── iterate/                    # Standalone tools (use anytime, any order)
-│   ├── scout.md
-│   ├── planner.md
-│   ├── reviewer.md
-│   └── ux-tweaker.md
+├── roles/                      # Reusable agent roles
+│   ├── product/                # Pipeline roles (idea → implementation)
+│   │   ├── analyzer.md
+│   │   ├── brainstormer.md
+│   │   ├── prd.md
+│   │   ├── ux-designer.md
+│   │   ├── user-stories.md
+│   │   ├── ralph-converter.md
+│   │   └── ralph-runner.md
+│   └── iterate/                # Standalone roles (use anytime, any order)
+│       ├── scout.md
+│       ├── planner.md
+│       ├── reviewer.md
+│       └── ux-tweaker.md
+├── product/                    # Legacy compatibility redirects
+├── iterate/                    # Legacy compatibility redirects
 ├── skills/                     # Codex Skills (SKILL.md per agent)
-└── workflows/                  # Multi-agent workflow templates
+└── workflows/                  # Multi-agent workflow definitions
 
 .cursor/
 ├── commands/                   # Slash commands (/analyzer, /prd, etc.)
@@ -183,7 +186,7 @@ Skills are installed to `~/.codex/skills/` and auto-trigger based on intent.
 ### How It Connects
 
 ```
-.agents/iterate/planner.md              ← Source of truth (portable)
+.agents/roles/iterate/planner.md        ← Source of truth (portable)
          ↕ referenced by
 .cursor/commands/planner.md             ← Cursor: slash command
 .agents/skills/planner/SKILL.md         ← Codex: auto-trigger skill
@@ -206,7 +209,7 @@ Then copy the Cursor integration files:
 cp -r viber-mode/.cursor/ .cursor/
 ```
 
-All agents referenced via `viber-mode/.agents/` paths — works out of the box.
+All agents referenced via `viber-mode/.agents/roles/` paths — works out of the box.
 
 ## Roadmap
 

@@ -5,7 +5,7 @@ description: "Use when the user asks to analyze a project, discover project stru
 
 # Analyzer
 
-Read and follow the full agent instructions at `viber-mode/.agents/product/analyzer.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/product/analyzer.md`.
 
 Output contract: **Analysis → Document → Next Step Handoff → Artifacts**
 

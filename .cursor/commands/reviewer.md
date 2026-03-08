@@ -1,4 +1,4 @@
-Use `viber-mode/.agents/iterate/reviewer.md` as the operating procedure.
+Use `viber-mode/.agents/roles/iterate/reviewer.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition

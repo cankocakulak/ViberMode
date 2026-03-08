@@ -5,7 +5,7 @@ description: "Use when the user asks to review code, validate an implementation 
 
 # Reviewer
 
-Read and follow the full agent instructions at `viber-mode/.agents/iterate/reviewer.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/iterate/reviewer.md`.
 
 Before starting, check `docs/[project-name]/` for prior pipeline artifacts (stories.md, prd.md).
 

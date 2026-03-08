@@ -5,6 +5,6 @@ description: "Use when the user asks to investigate a bug, plan a feature, figur
 
 # Planner
 
-Read and follow the full agent instructions at `viber-mode/.agents/iterate/planner.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/iterate/planner.md`.
 
 Output: Analysis → Strategy (root cause/approach, changes required, implementation hints, verification).

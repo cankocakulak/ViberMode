@@ -10,7 +10,7 @@
 ## Tech Stack
 | Layer | Technology | Notes |
 |-------|-----------|-------|
-| Core definitions | Markdown agent specs | `.agents/product/` and `.agents/iterate/` are the real source of behavior |
+| Core definitions | Markdown agent specs | `.agents/roles/product/` and `.agents/roles/iterate/` are the real source of behavior |
 | Codex integration | Codex Skills (`SKILL.md`) | Thin wrappers in `.agents/skills/` point back to agent files |
 | Cursor integration | Slash command markdown + MDC rules | `.cursor/commands/` and `.cursor/rules/viber-mode.mdc` |
 | Packaging | npm package metadata | `package.json` exports `.agents/*`, but no real runtime yet |
@@ -20,8 +20,11 @@
 ## Project Structure
 ```
 .agents/
-├── product/      — sequential product pipeline from analysis to implementation handoff
-├── iterate/      — standalone investigation/review/design helpers
+├── roles/
+│   ├── product/  — sequential product pipeline from analysis to implementation handoff
+│   └── iterate/  — standalone investigation/review/design helpers
+├── product/      — legacy compatibility redirects to roles/product
+├── iterate/      — legacy compatibility redirects to roles/iterate
 ├── skills/       — Codex skill wrappers for agent specs
 └── workflows/    — pipeline choreography docs
 
@@ -48,10 +51,10 @@ src/
 - **Design system**: N/A, this is primarily a framework/docs repo rather than an end-user app
 - **Responsive**: N/A
 - **Accessibility**: Not applicable at product UI level
-- **Key surfaces**: README, `.agents/product/*`, `.cursor/commands/*`, `AGENTS.md`
+- **Key surfaces**: README, `.agents/roles/product/*`, `.cursor/commands/*`, `AGENTS.md`
 
 ## Product Agents: Current Purpose
-- The `product` folder is the framework's structured delivery pipeline for taking an idea from discovery to implementation.
+- The `roles/product` set is the framework's structured delivery pipeline for taking an idea from discovery to implementation.
 - Its main job is not to run code directly, but to standardize how an AI agent thinks, what it outputs, and which artifact the next step consumes.
 - In practice, the strongest current value is prompt contract design: each product agent has a clear role, input contract, output format, and handoff expectation.
 

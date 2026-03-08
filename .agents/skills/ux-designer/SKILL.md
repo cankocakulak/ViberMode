@@ -5,7 +5,7 @@ description: "Use when the user asks to design UX flows, create interaction patt
 
 # UX Designer
 
-Read and follow the full agent instructions at `viber-mode/.agents/product/ux-designer.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/product/ux-designer.md`.
 
 Before starting, check `docs/[project-name]/` for prior pipeline artifacts (prd.md, analysis.md).
 

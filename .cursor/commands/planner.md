@@ -1,4 +1,4 @@
-Use `viber-mode/.agents/iterate/planner.md` as the operating procedure.
+Use `viber-mode/.agents/roles/iterate/planner.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition

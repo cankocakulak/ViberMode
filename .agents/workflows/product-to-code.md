@@ -20,7 +20,7 @@ Analyzer → Brainstormer → PRD → UX Designer → User Stories → Ralph Con
 | 6 | Ralph Converter | `/ralph-converter` | Task list for loop | `docs/[name]/prd.json` |
 | 7 | Ralph Runner | `/ralph-runner` | Working code per story | Code changes + commits |
 
-All agents are in `.agents/product/`. Each produces an artifact that feeds the next.
+Canonical product roles live in `.agents/roles/product/`. Legacy `.agents/product/` files remain as compatibility redirects. Each role produces an artifact that feeds the next.
 
 ## Handoff Mechanism
 
@@ -122,7 +122,7 @@ For quick tasks that don't need the full pipeline, use iterate agents directly:
 | UI/UX improvement | `/ux-tweaker` → implement the change |
 | Code review | `/reviewer` |
 
-See `.agents/iterate/` — four standalone tools, no pipeline required.
+See `.agents/roles/iterate/` — four standalone tools, no pipeline required. Legacy `.agents/iterate/` files remain as compatibility redirects.
 
 ## Quick Start
 

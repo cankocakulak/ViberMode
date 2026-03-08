@@ -5,7 +5,7 @@ description: "Use when the user asks to create user stories, break down a featur
 
 # User Stories
 
-Read and follow the full agent instructions at `viber-mode/.agents/product/user-stories.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/product/user-stories.md`.
 
 Before starting, check `docs/[project-name]/` for prior pipeline artifacts (prd.md, ux.md).
 

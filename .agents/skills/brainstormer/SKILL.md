@@ -5,7 +5,7 @@ description: "Use when the user asks to brainstorm ideas, explore options for a 
 
 # Brainstormer
 
-Read and follow the full agent instructions at `viber-mode/.agents/product/brainstormer.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/product/brainstormer.md`.
 
 Output contract: **Analysis → Document → Next Step Handoff → Artifacts**
 

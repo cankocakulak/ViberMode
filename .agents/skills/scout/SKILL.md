@@ -5,6 +5,6 @@ description: "Use when the user asks to understand a module, explore a component
 
 # Scout
 
-Read and follow the full agent instructions at `viber-mode/.agents/iterate/scout.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/iterate/scout.md`.
 
 Output: Structured context summary (What It Does, Key Files, Patterns, Dependencies, Gotchas).

@@ -1,4 +1,4 @@
-Use `viber-mode/.agents/product/prd.md` as the operating procedure.
+Use `viber-mode/.agents/roles/product/prd.md` as the operating procedure.
 
 You MUST strictly follow:
 - The role definition

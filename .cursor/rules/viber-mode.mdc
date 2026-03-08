@@ -7,7 +7,7 @@ Vendor-agnostic AI agent development framework. Agents are the source of truth.
 
 ## Agent Categories
 
-### Product Agents — `viber-mode/.agents/product/`
+### Product Agents — `viber-mode/.agents/roles/product/`
 
 Sequential pipeline from idea to implementation. Each agent produces artifacts that feed the next.
 
@@ -21,7 +21,7 @@ Sequential pipeline from idea to implementation. Each agent produces artifacts t
 
 Output contract: **Analysis → Document → Next Step Handoff → Artifacts**
 
-### Iterate Agents — `viber-mode/.agents/iterate/`
+### Iterate Agents — `viber-mode/.agents/roles/iterate/`
 
 Standalone tools. Use any agent independently, in any order, anytime.
 

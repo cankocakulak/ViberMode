@@ -5,7 +5,7 @@ description: "Use when the user asks to implement the next story, run the Ralph 
 
 # Ralph Runner
 
-Read and follow the full agent instructions at `viber-mode/.agents/product/ralph-runner.md`.
+Read and follow the full agent instructions at `viber-mode/.agents/roles/product/ralph-runner.md`.
 
 Before starting:
 1. Read `prd.json` for the task list
