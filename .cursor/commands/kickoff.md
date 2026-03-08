@@ -9,8 +9,12 @@ Your job is to guide the user through the product-to-code pipeline, step by step
 3. **PRD** (`/prd`) — Define requirements + tech stack.
 4. **UX Designer** (`/ux-designer`) — Flows, visual direction, references.
 5. **User Stories** (`/user-stories`) — UX-aware, sprint-ready stories.
-6. **Ralph Converter** (`/ralph-converter`) — Convert stories to `prd.json` for loop.
-7. **Ralph Runner** (`/ralph-runner`) — Implement one story at a time. Repeat until done.
+6. **Task Planner** (`/task-planner`) — Convert stories to `tasks.json` for the implementation pipeline.
+7. **Implementation Runner** (`/implementation-runner`) — Implement one task at a time. Repeat until done.
+
+Legacy aliases still work:
+- `/ralph-converter` → task planner alias
+- `/ralph-runner` → implementation runner alias
 
 ## Project Folder Convention
 
@@ -24,7 +28,9 @@ docs/
     ├── prd.md
     ├── ux.md
     ├── stories.md
-    └── prd.json        ← Ralph task list (generated from stories.md)
+    ├── tasks.json      ← Implementation task list (generated from stories.md)
+    ├── run-state.json  ← Implementation run history/state
+    └── review.md
 ```
 
 When the user describes their idea, derive a short kebab-case project name from it.
@@ -62,8 +68,8 @@ When the user describes their idea, derive a short kebab-case project name from 
 | PRD | ... | ... |
 | UX Designer | ... | ... |
 | User Stories | ... | ... |
-| Ralph Converter | ... | `docs/[name]/prd.json` |
-| Ralph Runner | ... | Code + commits |
+| Task Planner | ... | `docs/[name]/tasks.json` |
+| Implementation Runner | ... | Code + `docs/[name]/run-state.json` |
 
 ## Next Step
 

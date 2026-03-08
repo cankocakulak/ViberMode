@@ -1,9 +1,11 @@
 ---
 name: "viber-ralph-converter"
-description: "Use when the user asks to convert stories to prd.json, prepare stories for Ralph loop, create a task list JSON from user stories, or set up autonomous implementation."
+description: "Legacy alias. Use when the user asks to convert stories into implementation tasks, prepare tasks.json from user stories, or refers to the old Ralph converter flow."
 ---
 
 # Ralph Converter
+
+Legacy alias for `task-planner`.
 
 Read and follow the full agent instructions at `viber-mode/.agents/roles/product/ralph-converter.md`.
 
@@ -11,4 +13,4 @@ Before starting, check `docs/[project-name]/` for prior pipeline artifacts (stor
 
 Output contract: **Analysis → Document → Next Step Handoff → Artifacts**
 
-Artifact output: `docs/[project-name]/prd.json`
+Canonical artifact output: `docs/[project-name]/tasks.json`

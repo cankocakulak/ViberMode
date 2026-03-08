@@ -13,8 +13,15 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **prd** | `.agents/roles/product/prd.md` | Produces lean, developer-ready PRDs |
 | **ux-designer** | `.agents/roles/product/ux-designer.md` | UX flows, interaction patterns, visual direction |
 | **user-stories** | `.agents/roles/product/user-stories.md` | Generates prioritized user stories with acceptance criteria |
-| **ralph-converter** | `.agents/roles/product/ralph-converter.md` | Converts user stories into `prd.json` for implementation loop |
-| **ralph-runner** | `.agents/roles/product/ralph-runner.md` | Implements one story per session from `prd.json` |
+| **task-planner** | `.agents/roles/product/task-planner.md` | Converts user stories into `tasks.json` for the implementation pipeline |
+| **implementation-runner** | `.agents/roles/product/implementation-runner.md` | Implements one task per session from `tasks.json` |
+
+### Legacy Product Aliases
+
+| Alias | File | Description |
+|-------|------|-------------|
+| **ralph-converter** | `.agents/roles/product/ralph-converter.md` | Legacy alias for `task-planner` |
+| **ralph-runner** | `.agents/roles/product/ralph-runner.md` | Legacy alias for `implementation-runner` |
 
 ### Iterate Agents — Standalone tools, use anytime
 
@@ -34,6 +41,8 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **prd** agent" → Read `.agents/roles/product/prd.md`
 - "Use the **ux-designer** agent" → Read `.agents/roles/product/ux-designer.md`
 - "Use the **user-stories** agent" → Read `.agents/roles/product/user-stories.md`
+- "Use the **task-planner** agent" → Read `.agents/roles/product/task-planner.md`
+- "Use the **implementation-runner** agent" → Read `.agents/roles/product/implementation-runner.md`
 - "Use the **ralph-converter** agent" → Read `.agents/roles/product/ralph-converter.md`
 - "Use the **ralph-runner** agent" → Read `.agents/roles/product/ralph-runner.md`
 - "Use the **scout** agent" → Read `.agents/roles/iterate/scout.md`

@@ -1,5 +1,7 @@
 Use `viber-mode/.agents/roles/product/ralph-converter.md` as the operating procedure.
 
+This is a legacy alias for `task-planner`.
+
 You MUST strictly follow:
 - The role definition
 - The conversion rules (sizing, ordering, criteria translation)
@@ -24,7 +26,7 @@ Constraints:
 - Split stories that touch more than 3-4 files
 - Order by dependency: schema → backend → UI → polish
 - Always add "Typecheck passes" to every story
-- Output valid JSON — the prd.json will be read programmatically
+- Output valid JSON — prefer `tasks.json` as the canonical artifact
 - MUST leave a next-step handoff for the first Ralph Runner pass
 
 User task:

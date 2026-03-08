@@ -16,8 +16,10 @@ Sequential pipeline from idea to implementation. Each agent produces artifacts t
 - **prd** — Produces lean, developer-ready Product Requirements Documents
 - **ux-designer** — UX flows, interaction patterns, visual direction, branding
 - **user-stories** — Generates prioritized user stories with acceptance criteria
-- **ralph-converter** — Converts user stories into `prd.json` for implementation loop
-- **ralph-runner** — Implements one story per session from `prd.json` (repeat until done)
+- **task-planner** — Converts user stories into `tasks.json` for the implementation pipeline
+- **implementation-runner** — Implements one task per session from `tasks.json` (repeat until done)
+- **ralph-converter** — Legacy alias for `task-planner`
+- **ralph-runner** — Legacy alias for `implementation-runner`
 
 Output contract: **Analysis → Document → Next Step Handoff → Artifacts**
 
@@ -37,7 +39,7 @@ Output contract: **Plan → Changes → Patch → Tests** (varies per agent)
 ### Product Pipeline (new features from scratch)
 
 ```
-Analyzer → Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner ↺
+Analyzer → Brainstormer → PRD → UX Designer → User Stories → Task Planner → Implementation Runner ↺
 ```
 
 ### Iterate (anytime, any order)
@@ -59,8 +61,10 @@ Reference agents by name:
 - "Use the prd agent to write requirements for..."
 - "Use the ux-designer agent to design the flow for..."
 - "Use the user-stories agent to break down..."
-- "Use the ralph-converter agent to create prd.json from stories"
-- "Use the ralph-runner agent to implement the next story"
+- "Use the task-planner agent to create tasks.json from stories"
+- "Use the implementation-runner agent to implement the next task"
+- "Use the ralph-converter agent to create tasks.json from stories"
+- "Use the ralph-runner agent to implement the next task"
 - "Use the scout agent to understand this module"
 - "Use the planner agent to investigate / plan..."
 - "Use the reviewer agent to review this code"

@@ -1,6 +1,26 @@
 # Ralph Runner Agent
 
-> Autonomous implementation agent. Picks one story from `prd.json`, implements it, commits, and reports progress.
+> Legacy compatibility alias for `implementation-runner`.
+
+## Compatibility Note
+
+Canonical role:
+- `.agents/roles/product/implementation-runner.md`
+
+Canonical artifacts:
+- `docs/[project-name]/tasks.json`
+- `docs/[project-name]/run-state.json`
+
+Legacy compatibility:
+- Older workflows may still refer to `prd.json`
+- Older prompts may still refer to `progress.txt`
+- Older prompts may still use the `ralph-runner` name
+
+Read and follow `.agents/roles/product/implementation-runner.md` instead of this alias.
+
+---
+
+Legacy content below is retained only for backward reference.
 
 ## Role
 

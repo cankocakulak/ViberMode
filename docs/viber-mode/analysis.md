@@ -64,8 +64,8 @@ src/
 - **PRD** turns selected direction into scoped, testable requirements.
 - **UX Designer** translates requirements into flows, screens, copy, and visual direction.
 - **User Stories** slices the PRD/UX output into sprint-ready stories.
-- **Ralph Converter** reshapes stories into `prd.json` for autonomous execution.
-- **Ralph Runner** is the execution-side contract for implementing one story per session from `prd.json`, then teeing up the next iteration.
+- **Task Planner** reshapes stories into `tasks.json` for autonomous execution while preserving story lineage.
+- **Implementation Runner** is the execution-side contract for implementing one task per session from `tasks.json`, then updating `run-state.json` for the next iteration.
 
 ## Technical Debt & Concerns
 - Product pipeline documentation was recently aligned around the folder-based artifact convention `docs/[project-name]/*.md`, but there is still no automated validator to prevent future drift.

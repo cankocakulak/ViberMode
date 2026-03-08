@@ -1,6 +1,26 @@
 # Ralph Converter Agent
 
-> Converts ViberMode product artifacts into `prd.json` for autonomous implementation loops.
+> Legacy compatibility alias for `task-planner`.
+
+## Compatibility Note
+
+Canonical role:
+- `.agents/roles/product/task-planner.md`
+
+Canonical artifacts:
+- `docs/[project-name]/tasks.json`
+- `docs/[project-name]/run-state.json`
+
+Legacy compatibility:
+- Older workflows may still refer to `prd.json`
+- Older prompts may still use the `ralph-converter` name
+- Existing wrappers may continue to point here
+
+Read and follow `.agents/roles/product/task-planner.md` instead of this alias.
+
+---
+
+Legacy content below is retained only for backward reference.
 
 ## Role
 

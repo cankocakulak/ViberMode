@@ -59,6 +59,8 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 │   │   ├── prd.md
 │   │   ├── ux-designer.md
 │   │   ├── user-stories.md
+│   │   ├── task-planner.md
+│   │   ├── implementation-runner.md
 │   │   ├── ralph-converter.md
 │   │   └── ralph-runner.md
 │   └── iterate/                # Standalone roles (use anytime, any order)
@@ -92,8 +94,12 @@ src/                            # Future runtime code
 | `prd` | Lean product requirements + tech stack | Brainstormer | PRD document |
 | `ux-designer` | Flows, visual direction, branding, references | PRD | UX specification |
 | `user-stories` | Sprint-ready, UX-aware stories | PRD + UX | Story backlog |
-| `ralph-converter` | Convert stories into an implementation task list | User Stories | `prd.json` |
-| `ralph-runner` | Implement one story per session from `prd.json` | Ralph Converter | Code changes + commits |
+| `task-planner` | Convert stories into an implementation task list | User Stories | `tasks.json` |
+| `implementation-runner` | Implement one task per session from `tasks.json` | Task Planner | Code changes + `run-state.json` |
+
+Legacy aliases:
+- `ralph-converter` → `task-planner`
+- `ralph-runner` → `implementation-runner`
 
 **Output contract:** `Analysis → Document → Next Step Handoff → Artifacts`
 
@@ -110,21 +116,27 @@ Four perspectives, use any independently.
 
 ## Workflow
 
-Full pipeline:
+Canonical composed pipeline:
 
 ```
-Analyzer → Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner ↺
+product-to-spec → spec-to-code
 ```
+
+Canonical workflow docs:
+- `product-to-spec` — idea to completed specification artifacts
+- `spec-to-code` — completed specs to tasks, implementation loop, and review
+- `product-to-code` — composed workflow that runs both stages
 
 **Common shortcuts:**
-- New project: `Brainstormer → PRD → UX → Stories → Ralph Loop`
-- Feature on existing: `Analyzer → PRD → UX → Stories → Ralph Loop`
-- Quick feature: `PRD → Stories → Ralph Loop`
+- New project: `Brainstormer → PRD → UX → Stories`
+- Existing codebase feature: `Analyzer → product-to-spec → spec-to-code`
+- Spec-only work: `product-to-spec`
+- Implementation-only work: `spec-to-code`
 - Bug fix: `Planner → implement`
 - UX improvement: `UX Tweaker → implement`
 - Small addition: `Planner → implement`
 - Exploration: `Brainstormer → PRD`
-- Design-first: `UX Designer → User Stories → Ralph Loop`
+- Design-first: `UX Designer → User Stories`
 
 ## Platform Integration
 
@@ -138,8 +150,10 @@ Type `/` in chat to invoke any agent:
 /prd             — Product requirements + tech stack
 /ux-designer     — UX flows, visual direction, references
 /user-stories    — UX-aware, sprint-ready stories
-/ralph-converter — Convert stories to prd.json
-/ralph-runner    — Implement next story from prd.json
+/task-planner    — Convert stories to tasks.json
+/implementation-runner — Implement next task from tasks.json
+/ralph-converter — Legacy alias for task-planner
+/ralph-runner    — Legacy alias for implementation-runner
 /scout           — Quick module context summary
 /planner         — Investigate bugs or plan features
 /reviewer        — Code review and quality check
@@ -165,8 +179,10 @@ Then use agents naturally in Codex App:
 "Write a PRD for..."             → viber-prd
 "Design the UX for..."           → viber-ux-designer
 "Create user stories"            → viber-user-stories
-"Convert stories to prd.json"    → viber-ralph-converter
-"Implement the next story"       → viber-ralph-runner
+"Convert stories to tasks.json"  → viber-task-planner
+"Implement the next task"        → viber-implementation-runner
+"Convert stories to prd.json"    → viber-ralph-converter (legacy alias)
+"Implement the next story"       → viber-ralph-runner (legacy alias)
 "Understand this module"          → viber-scout
 "Why is this broken?"            → viber-planner
 "Review this code"               → viber-reviewer
@@ -180,7 +196,7 @@ Skills are installed to `~/.codex/skills/` and auto-trigger based on intent.
 `AGENTS.md` at the repo root tells any AI tool (Claude Code, Amp, etc.) about available agents:
 
 ```
-"Use the ralph-runner agent to implement the next story"
+"Use the implementation-runner agent to implement the next task"
 ```
 
 ### How It Connects
@@ -214,7 +230,7 @@ All agents referenced via `viber-mode/.agents/roles/` paths — works out of the
 ## Roadmap
 
 - [x] Iterate agent definitions (scout, planner, reviewer, ux-tweaker)
-- [x] Product agent definitions (analyzer, brainstormer, prd, ux-designer, user-stories, ralph-converter, ralph-runner)
+- [x] Product agent definitions (analyzer, brainstormer, prd, ux-designer, user-stories, task-planner, implementation-runner)
 - [x] Cursor slash commands + rules integration
 - [x] Full product-to-code pipeline with agent chaining
 - [x] Codex Skills export + install script

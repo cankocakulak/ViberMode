@@ -86,14 +86,14 @@ Always produce the artifact when using this agent in the product pipeline.
 
 ## Handoff Expectations
 
-The stories artifact must tell `ralph-converter` all of the following:
+The stories artifact must tell `task-planner` all of the following:
 
 - Story ordering that must be preserved
 - Which stories depend on which earlier stories
 - Which PRD requirements and UX flows each story covers
 - Which stories may still need splitting for autonomous implementation
 
-Default next agent: `ralph-converter`
+Default next agent: `task-planner`
 
 If your workflow inserts an architect step outside ViberMode, that step should consume `stories.md`, `prd.md`, and `ux.md` without changing story IDs or acceptance intent.
 

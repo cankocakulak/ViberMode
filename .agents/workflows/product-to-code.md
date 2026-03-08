@@ -1,19 +1,19 @@
 # Workflow: Product to Code
 
-> Canonical production workflow for taking a raw product idea through definition, design, story slicing, implementation, and review using ViberMode roles.
+> Canonical composed workflow: `product-to-spec` followed by `spec-to-code`.
 
 ## Pipeline Overview
 
 This workflow is the default path for a new product idea:
 
 ```text
-idea → brainstorm → PRD → UX → stories → task conversion → implementation → review
+idea → product-to-spec → spec-to-code
 ```
 
 Canonical role order:
 
 ```text
-Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner ↺ → Reviewer
+Brainstormer → PRD → UX Designer → User Stories → Task Planner → Implementation Runner ↺ → Reviewer
 ```
 
 This workflow is deterministic:
@@ -21,6 +21,18 @@ This workflow is deterministic:
 - each step writes a named artifact
 - each step has success criteria before the next step can begin
 - downstream agents rely on artifacts, not chat history
+
+## Composed Workflow
+
+Stage 1:
+- `.agents/workflows/product-to-spec.md`
+
+Stage 2:
+- `.agents/workflows/spec-to-code.md`
+
+Use `product-to-code` when you want the full path from idea to reviewed implementation.
+Use `product-to-spec` when you want to stop after specification artifacts are complete.
+Use `spec-to-code` when specs already exist and you only want the implementation pipeline.
 
 ## Workflow Scope
 
@@ -51,13 +63,13 @@ docs/[project-name]/
 ├── prd.md
 ├── ux.md
 ├── stories.md
-├── prd.json
-├── progress.txt
+├── tasks.json
+├── run-state.json
 └── review.md
 ```
 
 Notes:
-- `progress.txt` is produced during repeated `ralph-runner` execution.
+- `run-state.json` is produced during repeated `implementation-runner` execution.
 - `architecture.md` is not part of the canonical first production workflow because there is no dedicated architect role in the current system.
 - If an external architecture step is inserted later, it should consume `prd.md`, `ux.md`, and `stories.md` without changing IDs or boundaries.
 
@@ -186,12 +198,12 @@ Success Criteria:
 - artifact includes `## Handoff Contract`
 
 Next Step:
-`ralph-converter`
+`task-planner`
 
 ## Step 5 — Task Conversion
 
 Role:
-`.agents/roles/product/ralph-converter.md`
+`.agents/roles/product/task-planner.md`
 
 Purpose:
 Convert the story artifact into a machine-readable task list for deterministic implementation.
@@ -203,50 +215,50 @@ Inputs:
 - optional: `docs/[project-name]/analysis.md`
 
 Outputs:
-- `docs/[project-name]/prd.json`
+- `docs/[project-name]/tasks.json`
 
 Success Criteria:
-- all stories are represented in `prd.json`
+- all stories are represented in `tasks.json`
 - oversized stories are split without losing references
 - story ordering respects dependency chain
-- `notes` preserve dependencies, implementation boundaries, PRD refs, and UX refs
+- task lineage preserves parent story references and dependencies
 - first implementation target is obvious
-- artifact handoff points to `ralph-runner`
+- artifact handoff points to `implementation-runner`
 
 Next Step:
-`ralph-runner`
+`implementation-runner`
 
 ## Step 6 — Implementation Loop
 
 Role:
-`.agents/roles/product/ralph-runner.md`
+`.agents/roles/product/implementation-runner.md`
 
 Purpose:
 Implement one story at a time while preserving story boundaries and updating implementation state.
 
 Inputs:
-- `docs/[project-name]/prd.json`
+- `docs/[project-name]/tasks.json`
 - `docs/[project-name]/prd.md`
 - `docs/[project-name]/ux.md`
 - `docs/[project-name]/stories.md`
 - optional: `docs/[project-name]/analysis.md`
-- optional: `progress.txt`
+- optional: `docs/[project-name]/run-state.json`
 
 Outputs:
 - code changes
-- updated `docs/[project-name]/prd.json`
-- updated `progress.txt`
+- updated `docs/[project-name]/tasks.json`
+- updated `docs/[project-name]/run-state.json`
 
 Success Criteria:
-- exactly one story is implemented per run
-- acceptance criteria for that story are satisfied
-- story boundaries are respected
+- exactly one task is implemented per run
+- acceptance criteria for that task are satisfied
+- story boundaries and lineage are respected
 - quality checks pass before commit
-- completed story is marked `passes: true`
-- progress is appended for the next run
+- completed task is marked `status: done`
+- run history is appended structurally for the next run
 
 Next Step:
-- `ralph-runner` again if incomplete stories remain
+- `implementation-runner` again if incomplete tasks remain
 - `reviewer` when the target implementation slice is complete or ready for validation
 
 ## Step 7 — Review
@@ -275,7 +287,7 @@ Success Criteria:
 
 Next Step:
 - done if `APPROVED`
-- return to `ralph-runner` or implementation work if `CHANGES_REQUESTED`
+- return to `implementation-runner` or implementation work if `CHANGES_REQUESTED`
 
 ## Artifact Flow
 
@@ -292,9 +304,9 @@ ux.md
   ↓
 stories.md
   ↓
-prd.json
+tasks.json
   ↓
-implementation + progress.txt
+implementation + run-state.json
   ↓
 review.md
 ```
@@ -314,8 +326,11 @@ ux.md
 stories.md
   carries story IDs, requirement/flow coverage, dependencies, and implementation boundaries
 
-prd.json
-  carries implementation ordering and one-story-at-a-time execution state
+tasks.json
+  carries implementation ordering, dependencies, and task lineage
+
+run-state.json
+  carries current task, completed tasks, per-story execution state, and run history
 
 review.md
   carries the production validation result
@@ -352,12 +367,14 @@ Not allowed:
 Likely next workflows:
 
 - `existing-codebase-feature`
-  - `analyzer → brainstormer or prd → ux-designer → user-stories → implementation → review`
+  - `analyzer → product-to-spec → spec-to-code`
 - `product-spec-only`
-  - `brainstormer → prd → ux-designer → user-stories`
+  - `product-to-spec`
+- `spec-to-code-only`
+  - `spec-to-code`
 - `implementation-review-only`
   - `reviewer` against existing PRD, UX, Stories, and code changes
 - `architecture-augmented-product-to-code`
   - same workflow plus a future architect role between stories and conversion
 
-The current `product-to-code` workflow should remain the canonical default until an architect role exists and proves necessary.
+The current `product-to-code` workflow remains the canonical default, but it now composes `product-to-spec` and `spec-to-code` so product specification and implementation can evolve separately.

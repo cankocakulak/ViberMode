@@ -54,7 +54,7 @@ implementation_risks:
 
 ## Handoff Contract
 
-Next Agent: `ralph-converter`
+Next Agent: `task-planner`
 
 Required Artifacts:
 - `docs/[project-name]/stories.md`
