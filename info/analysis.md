@@ -26,8 +26,6 @@ ViberMode is a documentation-first framework whose real product is the set of ag
 ├── roles/
 │   ├── product/        # Sequential product pipeline roles
 │   └── iterate/        # Standalone investigation/review/design roles
-├── product/            # Legacy compatibility redirects
-├── iterate/            # Legacy compatibility redirects
 ├── skills/             # Codex skill wrappers
 ├── templates/          # PRD, UX, and stories templates
 └── workflows/          # product-to-spec, spec-to-code, product-to-code
@@ -71,15 +69,12 @@ The strongest design choice is that downstream agents are expected to consume st
 
 ## Technical Debt & Concerns
 - `npm run validate` is a placeholder, so drift between roles, wrappers, workflow docs, templates, and README can accumulate silently.
-- Legacy alias files still embed large blocks of pre-migration content that reference `prd.json`, `progress.txt`, `passes`, and `ralph-runner`; this weakens the "no duplication" claim and creates a maintenance hazard even though the files begin with compatibility notes.
 - `task-planner` still defaults branch naming to `ralph/`, which conflicts with the repo's newer canonical terminology and suggests unfinished migration.
-- The current `docs/viber-mode/analysis.md` artifact had been incomplete relative to the analyzer contract before this update, which indicates artifact quality is not being enforced automatically.
 - `scripts/install-codex-skills.sh` performs a destructive replace of target skill folders without a dry-run or verification step; acceptable for local setup, but not hardened.
 - `src/` is empty, so the npm package currently ships definitions rather than an actual runtime or orchestration layer.
 
 ## Opportunities
 - Add a real validator that checks all referenced paths, required sections, artifact names, and cross-file terminology consistency.
-- Reduce alias drift by slimming `ralph-*` files to pure forwarding stubs instead of keeping full legacy bodies inline.
 - Add a small bootstrap/status CLI that can initialize `docs/[project-name]/`, show pipeline progress, and verify required upstream artifacts before each step.
 - Generate wrapper files from canonical role metadata so README, Cursor commands, skill wrappers, and AGENTS docs cannot diverge manually.
 - Add example projects under `docs/examples/` or fixtures so the workflow can be tested end to end.
@@ -100,7 +95,6 @@ reusable_patterns:
 known_constraints:
   - no runtime workflow engine
   - no automated contract validation
-  - legacy-ralph-aliases-still-contain-stale-content
   - npm-package-has-minimal-runtime-code
 relevant_system_areas:
   - .agents/roles/product
@@ -115,8 +109,8 @@ For downstream product work, the most stable assumption is that `.agents/roles/*
 
 ## Handoff Contract
 - **Next Agent**: `planner` for framework improvements, or `brainstormer` if the next step is productizing the runtime/validator roadmap
-- **Required Artifacts**: [analysis.md](/Users/mcan/ViberMode/docs/viber-mode/analysis.md)
+- **Required Artifacts**: [analysis.md](/Users/mcan/ViberMode/info/analysis.md)
 - **Recommended Artifacts**: [product-to-code.md](/Users/mcan/ViberMode/.agents/workflows/product-to-code.md), [product-to-spec.md](/Users/mcan/ViberMode/.agents/workflows/product-to-spec.md), [spec-to-code.md](/Users/mcan/ViberMode/.agents/workflows/spec-to-code.md), [README.md](/Users/mcan/ViberMode/README.md)
 - **Critical Inputs That Must Remain Stable**: Canonical role paths under `.agents/roles/*`, artifact folder convention `docs/[project-name]/`, canonical product-agent order, and the `Summary (for downstream agents)` plus `Handoff Contract` requirement
 - **Sections That Must Remain Stable**: `Tech Stack`, `Patterns & Conventions`, `Workflow & Agent Architecture`, and the YAML block in `Summary (for downstream agents)`
-- **Suggested Next Prompt**: `Use the planner agent to propose how to add validation tooling and reduce ralph alias drift in ViberMode. Read docs/viber-mode/analysis.md and .agents/workflows/product-to-code.md first.`
+- **Suggested Next Prompt**: `Use the planner agent to propose how to add validation tooling in ViberMode. Read info/analysis.md and .agents/workflows/product-to-code.md first.`
