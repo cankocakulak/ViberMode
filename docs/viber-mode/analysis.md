@@ -1,80 +1,122 @@
 # Project Analysis: ViberMode
 
 ## Overview
-- **Type**: AI agent framework / prompt-definition library
-- **Primary language(s)**: Markdown, shell, minimal JavaScript package metadata
-- **Framework(s)**: Tool-agnostic agent definition system with Cursor and Codex integrations
+- **Type**: Vendor-agnostic AI agent framework and workflow-definition repo
+- **Primary language(s)**: Markdown, shell, minimal JSON/package metadata
+- **Framework(s)**: Tool-agnostic agent definitions with Codex and Cursor integration layers
 - **Package manager**: npm
 - **Monorepo**: No
+
+ViberMode is a documentation-first framework whose real product is the set of agent contracts under `.agents/roles/`. The repo is structurally clean and easy to understand, but it currently behaves more like a prompt framework than an executable workflow system because validation, orchestration, and runtime enforcement are still mostly absent.
 
 ## Tech Stack
 | Layer | Technology | Notes |
 |-------|-----------|-------|
-| Core definitions | Markdown agent specs | `.agents/roles/product/` and `.agents/roles/iterate/` are the real source of behavior |
-| Codex integration | Codex Skills (`SKILL.md`) | Thin wrappers in `.agents/skills/` point back to agent files |
-| Cursor integration | Slash command markdown + MDC rules | `.cursor/commands/` and `.cursor/rules/viber-mode.mdc` |
-| Packaging | npm package metadata | `package.json` exports `.agents/*`, but no real runtime yet |
-| Automation/runtime | Shell install script | `scripts/install-codex-skills.sh` copies skills into Codex |
-| Testing/validation | Placeholder only | `npm run validate` is not implemented |
+| Source of truth | Markdown role specs | `.agents/roles/product/` and `.agents/roles/iterate/` define actual behavior |
+| Codex integration | `SKILL.md` wrappers | `.agents/skills/*` forwards intent to canonical role files |
+| Cursor integration | Slash commands + MDC rules | `.cursor/commands/*` and `.cursor/rules/viber-mode.mdc` expose the same roles in Cursor |
+| Workflow definition | Markdown workflow docs | `.agents/workflows/*.md` defines sequencing and artifact contracts |
+| Packaging | npm metadata | `package.json` exports `.agents/*`, but `src/` is effectively empty |
+| Installation | Shell script | `scripts/install-codex-skills.sh` copies skill wrappers into Codex |
+| Validation | Placeholder only | `npm run validate` currently echoes a message and performs no checks |
 
 ## Project Structure
-```
+```text
 .agents/
 ├── roles/
-│   ├── product/  — sequential product pipeline from analysis to implementation handoff
-│   └── iterate/  — standalone investigation/review/design helpers
-├── product/      — legacy compatibility redirects to roles/product
-├── iterate/      — legacy compatibility redirects to roles/iterate
-├── skills/       — Codex skill wrappers for agent specs
-└── workflows/    — pipeline choreography docs
+│   ├── product/        # Sequential product pipeline roles
+│   └── iterate/        # Standalone investigation/review/design roles
+├── product/            # Legacy compatibility redirects
+├── iterate/            # Legacy compatibility redirects
+├── skills/             # Codex skill wrappers
+├── templates/          # PRD, UX, and stories templates
+└── workflows/          # product-to-spec, spec-to-code, product-to-code
 
 .cursor/
-├── commands/     — slash-command wrappers for each agent
-└── rules/        — always-on framework context
+├── commands/           # Slash-command wrappers for each agent
+└── rules/              # Shared framework context for Cursor
+
+docs/
+└── viber-mode/
+    └── analysis.md     # This repo-level analysis artifact
 
 scripts/
-└── install-codex-skills.sh  — installs Codex skill wrappers
+└── install-codex-skills.sh
 
 src/
-└── .gitkeep      — runtime layer not built yet
+└── .gitkeep            # No runtime implementation yet
 ```
 
 ## Patterns & Conventions
-- **Source of truth**: Agent behavior is defined in `.agents/*`; integrations are wrappers, not separate implementations.
-- **Product pipeline**: `Analyzer → Brainstormer → PRD → UX Designer → User Stories → Ralph Converter → Ralph Runner`.
-- **Artifact handoff model**: Product agents are intended to communicate via `docs/[project-name]/` artifacts.
-- **Explicit handoff model**: Product agents now also leave a next-step summary with recommended agent, carry-forward context, and a suggested prompt.
-- **Integration pattern**: Cursor commands and Codex skills mainly restate constraints and point back to the base agent files.
-- **Separation of concerns**: Product agents create documents; iterate agents are standalone operational helpers.
+- **Single source of truth**: Canonical behavior lives in `.agents/roles/*`; skills, Cursor commands, and agent indexes mostly point back to those files.
+- **Artifact handoff model**: Product pipeline is designed around `docs/[project-name]/` artifacts rather than chat history.
+- **Two-tier system**: Product agents form a sequential delivery pipeline; iterate agents are standalone helpers.
+- **Thin integration wrappers**: Platform-specific layers intentionally stay small and mostly reference canonical role files.
+- **Legacy alias retention**: `ralph-converter` and `ralph-runner` remain for backward compatibility even though `task-planner` and `implementation-runner` are the current canonical names.
+- **Prompt-contract orientation**: The repo optimizes for role definitions and output formats rather than executable code.
+
+## Workflow & Agent Architecture
+- **Existing-project path**: `analyzer -> product-to-spec -> spec-to-code`
+- **Spec path**: `brainstormer -> prd -> ux-designer -> user-stories`
+- **Implementation path**: `task-planner -> implementation-runner -> reviewer`
+- **Iterate toolkit**: `scout`, `planner`, `reviewer`, and `ux-tweaker` are intentionally usable outside the main pipeline.
+
+The strongest design choice is that downstream agents are expected to consume stable artifacts, especially each document's `## Summary (for downstream agents)` block and explicit handoff contract. That makes the system portable across tools and reduces dependence on conversation memory.
 
 ## Current UI/UX State
-- **Design system**: N/A, this is primarily a framework/docs repo rather than an end-user app
-- **Responsive**: N/A
-- **Accessibility**: Not applicable at product UI level
-- **Key surfaces**: README, `.agents/roles/product/*`, `.cursor/commands/*`, `AGENTS.md`
-
-## Product Agents: Current Purpose
-- The `roles/product` set is the framework's structured delivery pipeline for taking an idea from discovery to implementation.
-- Its main job is not to run code directly, but to standardize how an AI agent thinks, what it outputs, and which artifact the next step consumes.
-- In practice, the strongest current value is prompt contract design: each product agent has a clear role, input contract, output format, and handoff expectation.
-
-## Product Agents: Current Functionality
-- **Analyzer** maps an existing codebase and is meant to create `analysis.md` for downstream context.
-- **Brainstormer** expands option space, then narrows to a recommendation.
-- **PRD** turns selected direction into scoped, testable requirements.
-- **UX Designer** translates requirements into flows, screens, copy, and visual direction.
-- **User Stories** slices the PRD/UX output into sprint-ready stories.
-- **Task Planner** reshapes stories into `tasks.json` for autonomous execution while preserving story lineage.
-- **Implementation Runner** is the execution-side contract for implementing one task per session from `tasks.json`, then updating `run-state.json` for the next iteration.
+- **End-user UI**: None; this is a framework/documentation repo, not an application product
+- **Primary surfaces**: `README.md`, `AGENTS.md`, `.agents/roles/*`, `.agents/workflows/*`, and `.cursor/commands/*`
+- **UX quality of the framework itself**: Good discoverability and naming, especially in `AGENTS.md` and the workflow docs
+- **Usability constraint**: The framework is easy to read, but not yet easy to execute mechanically because bootstrapping and validation are manual
 
 ## Technical Debt & Concerns
-- Product pipeline documentation was recently aligned around the folder-based artifact convention `docs/[project-name]/*.md`, but there is still no automated validator to prevent future drift.
-- The claimed pipeline is mostly documentation and wrapper orchestration today; there is no runtime validator, no artifact bootstrapper, and no actual workflow engine yet.
-- `src/` is effectively empty, so the package behaves more like a framework definition repo than a software tool with executable internals.
-- `npm run validate` is a placeholder, which means contract drift between agent files, skills, commands, and README can accumulate unnoticed.
+- `npm run validate` is a placeholder, so drift between roles, wrappers, workflow docs, templates, and README can accumulate silently.
+- Legacy alias files still embed large blocks of pre-migration content that reference `prd.json`, `progress.txt`, `passes`, and `ralph-runner`; this weakens the "no duplication" claim and creates a maintenance hazard even though the files begin with compatibility notes.
+- `task-planner` still defaults branch naming to `ralph/`, which conflicts with the repo's newer canonical terminology and suggests unfinished migration.
+- The current `docs/viber-mode/analysis.md` artifact had been incomplete relative to the analyzer contract before this update, which indicates artifact quality is not being enforced automatically.
+- `scripts/install-codex-skills.sh` performs a destructive replace of target skill folders without a dry-run or verification step; acceptable for local setup, but not hardened.
+- `src/` is empty, so the npm package currently ships definitions rather than an actual runtime or orchestration layer.
 
 ## Opportunities
-- Add validation tooling that checks every product agent, skill, command, and README reference for path and contract consistency.
-- Add a small runtime/bootstrap CLI for `kickoff`, artifact creation, and pipeline status so the workflow is executable, not just documented.
-- Keep README, workflow docs, and command wrappers synchronized through generation or linting instead of manual edits.
-- The current separation between source-of-truth agents and thin wrappers is strong and reusable; that architecture is the repo's cleanest asset.
+- Add a real validator that checks all referenced paths, required sections, artifact names, and cross-file terminology consistency.
+- Reduce alias drift by slimming `ralph-*` files to pure forwarding stubs instead of keeping full legacy bodies inline.
+- Add a small bootstrap/status CLI that can initialize `docs/[project-name]/`, show pipeline progress, and verify required upstream artifacts before each step.
+- Generate wrapper files from canonical role metadata so README, Cursor commands, skill wrappers, and AGENTS docs cannot diverge manually.
+- Add example projects under `docs/examples/` or fixtures so the workflow can be tested end to end.
+
+## Summary (for downstream agents)
+```yaml
+project_type: ai-agent-framework
+key_stacks:
+  - markdown-role-specs
+  - codex-skills
+  - cursor-slash-commands
+  - shell-install-script
+reusable_patterns:
+  - canonical-role-files-under-.agents/roles
+  - docs-folder-artifact-handoffs
+  - summary-plus-handoff-contract-per-artifact
+  - thin-platform-wrapper-files
+known_constraints:
+  - no runtime workflow engine
+  - no automated contract validation
+  - legacy-ralph-aliases-still-contain-stale-content
+  - npm-package-has-minimal-runtime-code
+relevant_system_areas:
+  - .agents/roles/product
+  - .agents/roles/iterate
+  - .agents/workflows
+  - .agents/skills
+  - .cursor/commands
+  - README.md
+```
+
+For downstream product work, the most stable assumption is that `.agents/roles/*` and `.agents/workflows/*` are the authoritative sources. For framework-maintenance work, the highest-risk area is contract drift across aliases and wrappers rather than application logic.
+
+## Handoff Contract
+- **Next Agent**: `planner` for framework improvements, or `brainstormer` if the next step is productizing the runtime/validator roadmap
+- **Required Artifacts**: [analysis.md](/Users/mcan/ViberMode/docs/viber-mode/analysis.md)
+- **Recommended Artifacts**: [product-to-code.md](/Users/mcan/ViberMode/.agents/workflows/product-to-code.md), [product-to-spec.md](/Users/mcan/ViberMode/.agents/workflows/product-to-spec.md), [spec-to-code.md](/Users/mcan/ViberMode/.agents/workflows/spec-to-code.md), [README.md](/Users/mcan/ViberMode/README.md)
+- **Critical Inputs That Must Remain Stable**: Canonical role paths under `.agents/roles/*`, artifact folder convention `docs/[project-name]/`, canonical product-agent order, and the `Summary (for downstream agents)` plus `Handoff Contract` requirement
+- **Sections That Must Remain Stable**: `Tech Stack`, `Patterns & Conventions`, `Workflow & Agent Architecture`, and the YAML block in `Summary (for downstream agents)`
+- **Suggested Next Prompt**: `Use the planner agent to propose how to add validation tooling and reduce ralph alias drift in ViberMode. Read docs/viber-mode/analysis.md and .agents/workflows/product-to-code.md first.`
