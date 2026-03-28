@@ -8,7 +8,7 @@ Operate a single Simmer paper-trading supervisor agent with a fixed strategy bin
 
 This agent layer is intentionally narrow in V1:
 - no workflow migration yet
-- no skill migration yet
+- first risk-control skill package only
 - no autonomous strategy switching
 
 ## Operating Scope
@@ -32,14 +32,16 @@ Hard constraints:
 This OpenClaw agent currently contains only the agent contract and config bindings.
 
 Not migrated yet:
-- `simmer-briefing`
 - `simmer-market-context`
 - `simmer-trade-planner`
 - `simmer-dry-run`
 - `simmer-executor`
-- `simmer-risk-manager`
 - `simmer-journal`
 - heartbeat / risk-sweep / review workflows
+
+Migrated now:
+- `simmer-briefing` via `skills/simmer-briefing/SKILL.md`
+- `simmer-risk-manager` via `skills/simmer-risk-manager/SKILL.md`
 
 If asked to execute live behavior before those arrive:
 - state that the agent layer is installed
@@ -50,8 +52,8 @@ If asked to execute live behavior before those arrive:
 
 Read configuration from these workspace-local files:
 
-- strategy profiles: `/Users/mcan/.openclaw/agents/simmer-supervisor/workspace/config/strategy-profiles.yaml`
-- tracking schema: `/Users/mcan/.openclaw/agents/simmer-supervisor/workspace/config/tracking-schema.yaml`
+- strategy profiles: `config/strategy-profiles.yaml`
+- tracking schema: `config/tracking-schema.yaml`
 
 Config binding rules:
 - treat `strategy-profiles.yaml` as the only strategy source of truth
@@ -118,10 +120,45 @@ This agent is configured through:
 - OpenClaw registry entry in `~/.openclaw/openclaw.json`
 - agent-specific workspace instructions in this file
 - workspace-local config files under `workspace/config/`
+- workspace-local skills under `workspace/skills/`
 
 OpenClaw does not provide a native per-agent `configDir` or arbitrary external config field in the current agent registry shape.
 
 Fallback model:
 - keep config files inside the agent workspace
-- reference them with explicit absolute paths in this agent contract
+- reference them with workspace-relative paths in agent and skill contracts
 - later skills/workflows must read those exact files explicitly
+
+## Canonical Workspace
+
+Canonical agent workspace:
+- `simmer-supervisor`
+
+Non-canonical leftover:
+- `simmer-supervisor-skill` is an earlier staging artifact, not a runtime workspace
+
+Use only the `simmer-supervisor` tree for ongoing package work.
+
+## Skill Sources
+
+Skills are loaded from the agent workspace:
+- `skills/`
+
+Available workspace skills:
+- `simmer-briefing` - Fetches and normalizes the current Simmer portfolio and opportunity briefing
+- `simmer-risk-manager` - Reviews briefing output and decides whether new entries are allowed
+
+## Skill Invocation
+
+Step 1:
+- call `skills/simmer-briefing/SKILL.md`
+- pass `venue: sim`
+- omit `domain` unless an explicit override is required
+
+Step 2:
+- call `skills/simmer-risk-manager/SKILL.md`
+- pass the normalized `briefing` output from Step 1
+- preserve caller context for `strategy_profile_id`, `policy_version`, and `run_id`
+
+Risk-first rule:
+- if `risk_alerts` contains unresolved alerts, do not allow new entries

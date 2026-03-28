@@ -1,6 +1,6 @@
 ---
 name: simmer-briefing
-version: "1.0.0"
+version: "1.1.0"
 description: Fetches and normalizes the current Simmer portfolio and opportunity briefing for simmer-supervisor.
 author: cankocakulak
 license: MIT
@@ -55,7 +55,7 @@ Your job is to:
 
 This skill follows the `simmer-supervisor` workspace-local config model.
 
-Read configuration from agent workspace-relative paths:
+Read configuration from workspace-relative paths:
 - `config/strategy-profiles.yaml`
 - `config/tracking-schema.yaml`
 
@@ -120,7 +120,7 @@ Normalization rules:
 - `risk_alerts` must appear before opportunity summaries in the response
 - `opportunities` should remain compact and suitable for downstream shortlist selection
 - `performance` should summarize portfolio-level state, not long narrative commentary
-- `portfolio_constraints` must reflect active policy envelope relevant to the current profile
+- `portfolio_constraints` must reflect the active policy envelope relevant to the current profile
 
 ## Required Normalization Notes
 
