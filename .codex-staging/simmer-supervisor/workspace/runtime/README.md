@@ -13,6 +13,7 @@ Resolution order:
 1. process env
 2. `runtime/env/simmer.env`
 3. `~/.openclaw/.env`
+4. macOS Keychain fallback for `SIMMER_API_KEY` (`service=simmer-supervisor`, `account=SIMMER_API_KEY`)
 
 The adapter is shared by:
 - `simmer-briefing`
@@ -26,6 +27,13 @@ There is no special main-agent-only Simmer privilege. Skills call the same adapt
 
 - `SIMMER_API_BASE_URL`
 - `SIMMER_API_KEY`
+
+Practical default:
+- `SIMMER_API_BASE_URL=https://api.simmer.markets`
+
+Recommended local setup:
+- keep `SIMMER_API_BASE_URL` in `runtime/env/simmer.env`
+- keep `SIMMER_API_KEY` in macOS Keychain instead of plaintext env when possible
 
 Optional overrides:
 - `SIMMER_AUTH_HEADER`

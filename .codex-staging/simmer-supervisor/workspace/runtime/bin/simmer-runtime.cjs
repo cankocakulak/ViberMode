@@ -5,6 +5,7 @@ const os = require('os');
 const path = require('path');
 const http = require('http');
 const https = require('https');
+const { execFileSync } = require('child_process');
 const { URL } = require('url');
 
 const runtimeDir = path.resolve(__dirname, '..');
@@ -58,14 +59,19 @@ function parseDotEnv(text) {
 function readEnvFiles() {
   const vars = {};
   const found = [];
+  const sources = {};
   for (const candidate of envCandidates) {
     if (!fs.existsSync(candidate)) {
       continue;
     }
-    Object.assign(vars, parseDotEnv(fs.readFileSync(candidate, 'utf8')));
+    const parsed = parseDotEnv(fs.readFileSync(candidate, 'utf8'));
+    Object.assign(vars, parsed);
+    Object.keys(parsed).forEach((key) => {
+      sources[key] = candidate;
+    });
     found.push(candidate);
   }
-  return { vars, found };
+  return { vars, found, sources };
 }
 
 const fileEnv = readEnvFiles();
@@ -78,6 +84,31 @@ function envValue(key, fallback = '') {
     return fileEnv.vars[key];
   }
   return fallback;
+}
+
+function envValueWithSource(key, fallback = '') {
+  if (Object.prototype.hasOwnProperty.call(process.env, key) && process.env[key] !== '') {
+    return { value: process.env[key], source: 'process-env' };
+  }
+  if (Object.prototype.hasOwnProperty.call(fileEnv.vars, key) && fileEnv.vars[key] !== '') {
+    return { value: fileEnv.vars[key], source: fileEnv.sources[key] || 'env-file' };
+  }
+  return { value: fallback, source: fallback === '' ? '' : 'binding-config-default' };
+}
+
+function readMacKeychainSecret(service, account) {
+  if (!service || !account) {
+    return '';
+  }
+  try {
+    return execFileSync(
+      'security',
+      ['find-generic-password', '-w', '-s', service, '-a', account],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    ).trim();
+  } catch (_error) {
+    return '';
+  }
 }
 
 function readJson(filePath) {
@@ -142,10 +173,17 @@ function parseTrackingSchema() {
 
 function resolveBinding() {
   const binding = readJson(bindingPath);
+  const apiBaseUrl = envValueWithSource(binding.apiBaseUrlEnv, binding.defaultApiBaseUrl || '');
+  const apiKeyEnv = envValueWithSource(binding.apiKeyEnv, '');
+  const keychainApiKey = apiKeyEnv.value === ''
+    ? readMacKeychainSecret(binding.apiKeyKeychainService, binding.apiKeyKeychainAccount)
+    : '';
   return {
     raw: binding,
-    apiBaseUrl: envValue(binding.apiBaseUrlEnv, ''),
-    apiKey: envValue(binding.apiKeyEnv, ''),
+    apiBaseUrl: apiBaseUrl.value,
+    apiBaseUrlSource: apiBaseUrl.source,
+    apiKey: apiKeyEnv.value || keychainApiKey,
+    apiKeySource: apiKeyEnv.value ? apiKeyEnv.source : (keychainApiKey ? 'macos-keychain' : ''),
     authHeader: envValue('SIMMER_AUTH_HEADER', binding.authHeader || 'Authorization'),
     authScheme: envValue('SIMMER_AUTH_SCHEME', binding.authScheme || 'Bearer'),
     timeoutMs: Number(envValue('SIMMER_TIMEOUT_MS', String(binding.timeoutMs || 15000))),
@@ -416,17 +454,31 @@ function normalizeBriefingResponse(raw, args, policy) {
 
 function normalizeDryRunResponse(raw, args, policy) {
   const source = raw.dry_run || raw.data || raw.result || raw;
-  const policyPass = Boolean(source.policy_pass ?? source.policyPass);
+  const firstTrade = Array.isArray(source.trades) ? source.trades[0] : null;
+  const tradeSource = firstTrade || source;
+  const policyPass = Boolean(
+    source.policy_pass ??
+    source.policyPass ??
+    firstTrade?.policy_pass ??
+    firstTrade?.policyPass ??
+    true
+  );
   return {
     market_id: args['market-id'],
     strategy_profile_id: args['strategy-profile-id'] || policy.id,
     policy_version: args['policy-version'] || policy.policyVersion,
     run_id: args['run-id'],
-    estimated_cost: Number(source.estimated_cost ?? source.estimatedCost ?? source.cost ?? 0),
-    estimated_shares: Number(source.estimated_shares ?? source.estimatedShares ?? source.shares ?? args.size ?? 0),
-    slippage_notes: source.slippage_notes ?? source.slippageNotes ?? '',
+    estimated_cost: Number(tradeSource.estimated_cost ?? tradeSource.estimatedCost ?? tradeSource.cost ?? 0),
+    estimated_shares: Number(tradeSource.estimated_shares ?? tradeSource.estimatedShares ?? tradeSource.shares ?? 0),
+    slippage_notes: tradeSource.slippage_notes ?? tradeSource.slippageNotes ?? '',
     policy_pass: policyPass,
-    policy_fail_reason: policyPass ? '' : (source.policy_fail_reason ?? source.policyFailReason ?? 'dry-run policy rejection'),
+    policy_fail_reason: policyPass ? '' : (
+      source.policy_fail_reason ??
+      source.policyFailReason ??
+      tradeSource.policy_fail_reason ??
+      tradeSource.policyFailReason ??
+      'dry-run policy rejection'
+    ),
   };
 }
 
@@ -448,6 +500,12 @@ function normalizeExecutionResponse(raw, args, policy) {
 function validateVenue(value) {
   if (value !== 'sim') {
     throw new Error(`Venue must be sim. Received: ${value}`);
+  }
+}
+
+function requireApiKey(binding, commandName) {
+  if (!binding.apiKey) {
+    throw new Error(`${commandName} requires SIMMER_API_KEY via process env, runtime/env/simmer.env, ~/.openclaw/.env, or macOS Keychain.`);
   }
 }
 
@@ -553,10 +611,12 @@ async function main() {
 
   if (command === 'health') {
     const health = {
-      status: binding.apiBaseUrl && binding.apiKey ? 'configured' : 'missing-env',
+      status: binding.apiBaseUrl ? 'configured' : 'missing-env',
       transport: binding.raw.transport,
       api_base_url_present: Boolean(binding.apiBaseUrl),
       api_key_present: Boolean(binding.apiKey),
+      api_base_url_source: binding.apiBaseUrlSource || '',
+      api_key_source: binding.apiKeySource || '',
       venue: binding.venue,
       domain: binding.domain,
       active_profile_id: policy.id,
@@ -564,7 +624,7 @@ async function main() {
       env_sources: binding.envSources,
       storage: binding.raw.storage,
     };
-    if (args.ping && binding.apiBaseUrl && binding.apiKey) {
+    if (args.ping && binding.apiBaseUrl) {
       try {
         const endpoint = resolveEndpoint(binding, 'health');
         health.ping = await requestJson({ method: endpoint.method, url: endpoint.url, payload: {}, binding });
@@ -580,17 +640,24 @@ async function main() {
 
   if (command === 'briefing') {
     validateVenue(args.venue);
+    requireApiKey(binding, 'briefing');
     const endpoint = resolveEndpoint(binding, 'briefing');
     const payload = {
+      since: args.since || '',
+    };
+    const metadata = {
       venue: args.venue,
       domain: args.domain || policy.domain,
       strategy_profile_id: args['strategy-profile-id'] || policy.id,
       policy_version: args['policy-version'] || policy.policyVersion,
       run_id: args['run-id'] || '',
     };
-    validateActiveProfile(payload.strategy_profile_id);
+    validateActiveProfile(metadata.strategy_profile_id);
     const raw = await requestJson({ method: endpoint.method, url: endpoint.url, payload, binding });
     const normalized = normalizeBriefingResponse(raw, args, policy);
+    normalized.strategy_profile_id = metadata.strategy_profile_id;
+    normalized.policy_version = metadata.policy_version;
+    normalized.run_id = metadata.run_id;
     const eventPath = maybeWriteEvent({
       workflowName: args['workflow-name'],
       runId: args['run-id'],
@@ -607,17 +674,20 @@ async function main() {
   if (command === 'dry-run') {
     validateVenue(args.venue);
     validateActiveProfile(args['strategy-profile-id']);
+    requireApiKey(binding, 'dry-run');
     const endpoint = resolveEndpoint(binding, 'dryRun');
     const payload = {
-      market_id: args['market-id'],
-      side: args.side,
-      size: Number(args.size),
       venue: args.venue,
-      reasoning: args.reasoning,
       source: args.source,
-      strategy_profile_id: args['strategy-profile-id'],
-      policy_version: args['policy-version'] || policy.policyVersion,
-      run_id: args['run-id'],
+      dry_run: true,
+      trades: [
+        {
+          market_id: args['market-id'],
+          side: args.side,
+          amount: Number(args.size),
+          reasoning: args.reasoning,
+        },
+      ],
     };
     const raw = await requestJson({ method: endpoint.method, url: endpoint.url, payload, binding });
     const normalized = normalizeDryRunResponse(raw, args, policy);
@@ -637,6 +707,7 @@ async function main() {
   if (command === 'execute') {
     validateVenue(args.venue);
     validateActiveProfile(args['strategy-profile-id']);
+    requireApiKey(binding, 'execute');
     if (!args['dry-run-ref-file']) {
       throw new Error('execute requires --dry-run-ref-file');
     }
@@ -648,14 +719,10 @@ async function main() {
     const payload = {
       market_id: args['market-id'],
       side: args.side,
-      size: Number(args.size),
+      amount: Number(args.size),
       venue: args.venue,
       reasoning: args.reasoning,
       source: args.source,
-      dry_run_reference: dryRunReference,
-      strategy_profile_id: args['strategy-profile-id'],
-      policy_version: args['policy-version'] || policy.policyVersion,
-      run_id: args['run-id'],
     };
     const raw = await requestJson({ method: endpoint.method, url: endpoint.url, payload, binding });
     const normalized = normalizeExecutionResponse(raw, args, policy);

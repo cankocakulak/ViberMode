@@ -3,27 +3,30 @@
   "transport": "http-json",
   "venue": "sim",
   "domain": "crypto_event_markets",
+  "defaultApiBaseUrl": "https://api.simmer.markets",
   "apiBaseUrlEnv": "SIMMER_API_BASE_URL",
   "apiKeyEnv": "SIMMER_API_KEY",
+  "apiKeyKeychainService": "simmer-supervisor",
+  "apiKeyKeychainAccount": "SIMMER_API_KEY",
   "authHeader": "Authorization",
   "authScheme": "Bearer",
   "timeoutMs": 15000,
   "endpoints": {
     "health": {
       "method": "GET",
-      "path": "/health"
+      "path": "/api/sdk/health"
     },
     "briefing": {
       "method": "GET",
-      "path": "/briefing"
+      "path": "/api/sdk/briefing"
     },
     "dryRun": {
       "method": "POST",
-      "path": "/dry-run"
+      "path": "/api/sdk/trades/batch"
     },
     "execute": {
       "method": "POST",
-      "path": "/execute"
+      "path": "/api/sdk/trade"
     }
   },
   "storage": {
