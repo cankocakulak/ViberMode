@@ -8,7 +8,7 @@ Operate a single Simmer paper-trading supervisor agent with a fixed strategy bin
 
 This agent layer is intentionally narrow in V1:
 - no workflow migration yet
-- first scouting-and-planning package only
+- first execution-ready skill package only
 - no autonomous strategy switching
 
 ## Operating Scope
@@ -32,9 +32,6 @@ Hard constraints:
 This OpenClaw agent currently contains only the agent contract and config bindings.
 
 Not migrated yet:
-- `simmer-dry-run`
-- `simmer-executor`
-- `simmer-journal`
 - heartbeat / risk-sweep / review workflows
 
 Migrated now:
@@ -42,6 +39,9 @@ Migrated now:
 - `simmer-risk-manager` via `skills/simmer-risk-manager/SKILL.md`
 - `simmer-market-context` via `skills/simmer-market-context/SKILL.md`
 - `simmer-trade-planner` via `skills/simmer-trade-planner/SKILL.md`
+- `simmer-dry-run` via `skills/simmer-dry-run/SKILL.md`
+- `simmer-executor` via `skills/simmer-executor/SKILL.md`
+- `simmer-journal` via `skills/simmer-journal/SKILL.md`
 
 If asked to execute live behavior before those arrive:
 - state that the agent layer is installed
@@ -149,6 +149,9 @@ Available workspace skills:
 - `simmer-risk-manager` - Reviews briefing output and decides whether new entries are allowed
 - `simmer-market-context` - Fetches fresh market-specific context for shortlisted candidates
 - `simmer-trade-planner` - Turns market context plus risk envelope into a structured entry proposal
+- `simmer-dry-run` - Simulates one proposed paper trade before execution
+- `simmer-executor` - Executes a paper trade only after dry-run and policy approval
+- `simmer-journal` - Records compact attributable heartbeat and trade decisions
 
 ## Skill Invocation
 
@@ -171,7 +174,23 @@ Step 4:
 - pass the Step 3 market context plus briefing and risk-envelope context
 - preserve caller context for `strategy_profile_id`, `policy_version`, and `run_id`
 
+Step 5:
+- only if Step 4 returns `decision: enter`, call `skills/simmer-dry-run/SKILL.md`
+- pass `market_id`, `side`, `size`, `venue: sim`, `reasoning`, `source`, `strategy_profile_id`, `policy_version`, and `run_id`
+
+Step 6:
+- only if Step 5 returns `policy_pass: true`, call `skills/simmer-executor/SKILL.md`
+- pass the dry-run-approved proposal and its dry-run reference
+- preserve caller context for `strategy_profile_id`, `policy_version`, and `run_id`
+
+Step 7:
+- after an executed trade or an intentional skip, call `skills/simmer-journal/SKILL.md`
+- pass workflow attribution plus the compact decision record
+- preserve caller context for `strategy_profile_id`, `policy_version`, `run_id`, and `workflow_name`
+
 Risk-first rules:
 - if `risk_alerts` contains unresolved alerts, do not allow new entries
 - do not call `simmer-trade-planner` for entry evaluation if Step 2 blocks entries
 - `simmer-trade-planner` may return `enter` or `skip`, but must not bypass the risk gate
+- do not call `simmer-executor` if `simmer-dry-run` returns `policy_pass: false`
+- venue stays `sim` through planning, dry-run, and execution
