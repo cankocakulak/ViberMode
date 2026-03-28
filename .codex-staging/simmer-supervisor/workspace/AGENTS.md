@@ -8,7 +8,7 @@ Operate a single Simmer paper-trading supervisor agent with a fixed strategy bin
 
 This agent layer is intentionally narrow in V1:
 - no workflow migration yet
-- first risk-control skill package only
+- first scouting-and-planning package only
 - no autonomous strategy switching
 
 ## Operating Scope
@@ -32,8 +32,6 @@ Hard constraints:
 This OpenClaw agent currently contains only the agent contract and config bindings.
 
 Not migrated yet:
-- `simmer-market-context`
-- `simmer-trade-planner`
 - `simmer-dry-run`
 - `simmer-executor`
 - `simmer-journal`
@@ -42,6 +40,8 @@ Not migrated yet:
 Migrated now:
 - `simmer-briefing` via `skills/simmer-briefing/SKILL.md`
 - `simmer-risk-manager` via `skills/simmer-risk-manager/SKILL.md`
+- `simmer-market-context` via `skills/simmer-market-context/SKILL.md`
+- `simmer-trade-planner` via `skills/simmer-trade-planner/SKILL.md`
 
 If asked to execute live behavior before those arrive:
 - state that the agent layer is installed
@@ -147,6 +147,8 @@ Skills are loaded from the agent workspace:
 Available workspace skills:
 - `simmer-briefing` - Fetches and normalizes the current Simmer portfolio and opportunity briefing
 - `simmer-risk-manager` - Reviews briefing output and decides whether new entries are allowed
+- `simmer-market-context` - Fetches fresh market-specific context for shortlisted candidates
+- `simmer-trade-planner` - Turns market context plus risk envelope into a structured entry proposal
 
 ## Skill Invocation
 
@@ -160,5 +162,16 @@ Step 2:
 - pass the normalized `briefing` output from Step 1
 - preserve caller context for `strategy_profile_id`, `policy_version`, and `run_id`
 
-Risk-first rule:
+Step 3:
+- only if Step 2 returns `new_entries_allowed: true`, call `skills/simmer-market-context/SKILL.md`
+- pass `market_id`, `domain`, `current_position`, `run_id`, `strategy_profile_id`, and `policy_version`
+
+Step 4:
+- call `skills/simmer-trade-planner/SKILL.md`
+- pass the Step 3 market context plus briefing and risk-envelope context
+- preserve caller context for `strategy_profile_id`, `policy_version`, and `run_id`
+
+Risk-first rules:
 - if `risk_alerts` contains unresolved alerts, do not allow new entries
+- do not call `simmer-trade-planner` for entry evaluation if Step 2 blocks entries
+- `simmer-trade-planner` may return `enter` or `skip`, but must not bypass the risk gate
