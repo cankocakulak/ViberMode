@@ -1,0 +1,30 @@
+profiles:
+  - id: "crypto_momentum_v1"
+    status: "active"
+    purpose: "Baseline profile for early paper trading."
+    domain: "crypto_event_markets"
+    policy_version: "v1"
+    limits:
+      max_new_trades_per_heartbeat: 1
+      max_open_positions: 3
+      position_sizing: "fixed_small"
+    thresholds:
+      minimum_confidence: 0.68
+      fresh_context_required: true
+    behavior:
+      allow_same_theme_reentry_in_same_cycle: false
+      allow_averaging_down: false
+      catalyst_strictness: "normal"
+      timing_style: "standard"
+      liquidity_filter: "normal"
+
+rollout_policy:
+  run_multiple_profiles_in_parallel_in_v1: false
+  active_profile_id: "crypto_momentum_v1"
+  selection_mode: "fixed"
+  immutable_rules:
+    - "no random strategy selection"
+    - "mandatory dry-run"
+    - "mandatory journaling"
+    - "venue restriction to $SIM"
+    - "risk-first sequencing"
