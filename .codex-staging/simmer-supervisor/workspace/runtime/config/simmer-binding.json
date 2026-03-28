@@ -1,0 +1,34 @@
+{
+  "bindingVersion": 1,
+  "transport": "http-json",
+  "venue": "sim",
+  "domain": "crypto_event_markets",
+  "apiBaseUrlEnv": "SIMMER_API_BASE_URL",
+  "apiKeyEnv": "SIMMER_API_KEY",
+  "authHeader": "Authorization",
+  "authScheme": "Bearer",
+  "timeoutMs": 15000,
+  "endpoints": {
+    "health": {
+      "method": "GET",
+      "path": "/health"
+    },
+    "briefing": {
+      "method": "GET",
+      "path": "/briefing"
+    },
+    "dryRun": {
+      "method": "POST",
+      "path": "/dry-run"
+    },
+    "execute": {
+      "method": "POST",
+      "path": "/execute"
+    }
+  },
+  "storage": {
+    "journalRoot": "runtime/journals",
+    "reviewRoot": "runtime/reviews",
+    "runRoot": "runtime/runs"
+  }
+}

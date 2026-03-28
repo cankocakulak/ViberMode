@@ -70,6 +70,25 @@ Fallback rule:
 - the caller must read workspace files explicitly when config context is needed
 - do not assume OpenClaw injects config objects automatically
 
+## Runtime Storage
+
+This skill writes to the canonical runtime storage convention:
+- journals: `runtime/journals/YYYY/MM/DD/{workflow_name}/`
+- run events: `runtime/runs/{workflow_name}/{run_id}/events/`
+
+Runtime writer:
+- `runtime/bin/simmer-runtime.cjs write-journal`
+
+Use this command shape for real runtime writes:
+
+```bash
+node /Users/mcan/.openclaw/agents/simmer-supervisor/workspace/runtime/bin/simmer-runtime.cjs write-journal --payload-file "$JOURNAL_JSON"
+```
+
+The payload must already align with:
+- `config/tracking-schema.yaml`
+- `/Users/mcan/ViberMode/initiatives/simmer-paper-trading/templates/journal-entry.yaml`
+
 ## Input Contract
 
 Provide a compact journal record aligned with the template and tracking schema.

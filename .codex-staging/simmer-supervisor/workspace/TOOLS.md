@@ -1,9 +1,17 @@
 # TOOLS.md - Local Notes
 
-This agent has no migrated Simmer skills yet.
+Runtime binding for Simmer now uses one shared adapter script:
+- `runtime/bin/simmer-runtime.cjs`
 
-When skills are added later, keep runtime-specific notes here:
+Keep non-secret runtime-specific notes here:
 - Simmer account aliases
 - venue/environment notes
-- journal storage conventions
+- expected env source order:
+  - process env
+  - `runtime/env/simmer.env`
+  - `~/.openclaw/.env`
+- runtime storage conventions:
+  - `runtime/journals/YYYY/MM/DD/{workflow_name}/`
+  - `runtime/reviews/YYYY/Www/`
+  - `runtime/runs/{workflow_name}/{run_id}/events/`
 - non-secret operational reminders

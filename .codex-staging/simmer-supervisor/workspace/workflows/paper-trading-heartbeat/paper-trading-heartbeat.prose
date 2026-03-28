@@ -51,6 +51,7 @@ Required input:
 Required caller context:
 - strategy_profile_id: {strategy_profile_id}
 - policy_version: {policy_version}
+- workflow_name: {effective_workflow_name}
 
 Required output:
 - normalized briefing with:
@@ -140,6 +141,7 @@ Required caller context:
 - run_id: {run_id}
 - strategy_profile_id: {strategy_profile_id}
 - policy_version: {policy_version}
+- workflow_name: {effective_workflow_name}
 
 Rules:
 - If risk_block_gate reports STOP_RISK_BLOCKED, do not continue. Return:
@@ -207,6 +209,7 @@ Required caller context:
 - run_id: {run_id}
 - strategy_profile_id: {strategy_profile_id}
 - policy_version: {policy_version}
+- workflow_name: {effective_workflow_name}
 
 Rules:
 - If candidate_selection does not report CONTINUE, do not call dry-run. Return:
@@ -311,6 +314,7 @@ Required caller context:
 - strategy_profile_id: {strategy_profile_id}
 - policy_version: {policy_version}
 - run_id: {run_id}
+- workflow_name: {effective_workflow_name}
 
 Rules:
 - If execution_result reports SKIPPED_DRY_RUN_FAILED or another non-executed status, return:

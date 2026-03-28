@@ -44,8 +44,7 @@ Migrated now:
 - `paper-strategy-review` via `workflows/paper-strategy-review/paper-strategy-review.prose`
 
 Still environment-dependent:
-- real Simmer connectivity and execution adapters
-- actual journal storage conventions outside the prompt contract
+- a reachable Simmer API base URL and valid auth material in runtime env
 
 If asked to execute behavior that depends on missing runtime integrations:
 - state that the workflow contract is installed
@@ -127,6 +126,32 @@ Fallback model:
 - keep config files inside the agent workspace
 - reference them with workspace-relative paths in agent and skill contracts
 - later skills/workflows must read those exact files explicitly
+
+## Runtime Binding
+
+Real Simmer runtime access is provided through the workspace adapter script:
+- `runtime/bin/simmer-runtime.cjs`
+
+Binding files:
+- `runtime/config/simmer-binding.json` - non-secret transport and storage config
+- `runtime/env/simmer.env` - optional local secret/env override file, not for git
+- `~/.openclaw/.env` - global fallback env source
+
+Resolution order:
+1. process environment
+2. `runtime/env/simmer.env`
+3. `~/.openclaw/.env`
+
+Current binding model:
+- OpenClaw uses the normal native exec/tool path
+- there is no separate main-agent-only Simmer privilege
+- `simmer-supervisor` skills reach Simmer by calling the shared runtime adapter script
+- `simmer-briefing`, `simmer-dry-run`, and `simmer-executor` must all use that same adapter
+
+Storage roots:
+- journals: `runtime/journals/YYYY/MM/DD/{workflow_name}/`
+- reviews: `runtime/reviews/YYYY/Www/`
+- run events: `runtime/runs/{workflow_name}/{run_id}/events/`
 
 ## Canonical Workspace
 

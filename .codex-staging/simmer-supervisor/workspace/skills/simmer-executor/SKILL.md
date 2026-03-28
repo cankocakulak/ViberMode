@@ -13,6 +13,11 @@ triggers:
 metadata:
   openclaw:
     emoji: "✅"
+    requires:
+      env:
+        - SIMMER_API_BASE_URL
+        - SIMMER_API_KEY
+      primaryEnv: SIMMER_API_KEY
     tags:
       - simmer
       - trading
@@ -68,6 +73,28 @@ Fallback rule:
 - the caller must read workspace files explicitly when config context is needed
 - do not assume OpenClaw injects config objects automatically
 
+## Runtime Adapter
+
+This skill is runtime-backed through:
+- `runtime/bin/simmer-runtime.cjs`
+- `runtime/config/simmer-binding.json`
+
+Secret/env sources:
+- `runtime/env/simmer.env`
+- `~/.openclaw/.env`
+- process environment overrides
+
+Use this command shape for real runtime access:
+
+```bash
+node /Users/mcan/.openclaw/agents/simmer-supervisor/workspace/runtime/bin/simmer-runtime.cjs execute --market-id "$MARKET_ID" --side "$SIDE" --size "$SIZE" --venue sim --reasoning "$REASONING" --source "$SOURCE" --dry-run-ref-file "$DRY_RUN_JSON" --strategy-profile-id crypto_momentum_v1 --policy-version "$POLICY_VERSION" --run-id "$RUN_ID" --workflow-name "$WORKFLOW_NAME" --step-name execution_result
+```
+
+Runtime behavior:
+- sends an approved paper trade to the configured Simmer execute endpoint
+- refuses execution if `dry_run_reference.policy_pass` is not true
+- when `workflow_name` and `run_id` are provided, writes a step envelope under `runtime/runs/{workflow_name}/{run_id}/events/execution_result.yaml`
+
 ## Input Contract
 
 | Input | Type | Required | Description |
@@ -82,6 +109,7 @@ Fallback rule:
 | `strategy_profile_id` | string | yes | Must remain `crypto_momentum_v1` |
 | `policy_version` | string | yes | Active policy version from caller context |
 | `run_id` | string | yes | Workflow run identifier from caller context |
+| `workflow_name` | string | no | Optional workflow attribution for runtime event storage |
 
 Input rules:
 - if `venue` is not `sim`, stop and report a contract violation

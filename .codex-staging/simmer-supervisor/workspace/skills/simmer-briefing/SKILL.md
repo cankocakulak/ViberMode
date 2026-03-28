@@ -13,6 +13,11 @@ triggers:
 metadata:
   openclaw:
     emoji: "📘"
+    requires:
+      env:
+        - SIMMER_API_BASE_URL
+        - SIMMER_API_KEY
+      primaryEnv: SIMMER_API_KEY
     tags:
       - simmer
       - trading
@@ -71,6 +76,28 @@ Fallback rule:
 - the caller must read workspace files explicitly when config context is needed
 - do not assume OpenClaw injects config objects automatically
 
+## Runtime Adapter
+
+This skill is runtime-backed through:
+- `runtime/bin/simmer-runtime.cjs`
+- `runtime/config/simmer-binding.json`
+
+Secret/env sources:
+- `runtime/env/simmer.env`
+- `~/.openclaw/.env`
+- process environment overrides
+
+Use this command shape for real runtime access:
+
+```bash
+node /Users/mcan/.openclaw/agents/simmer-supervisor/workspace/runtime/bin/simmer-runtime.cjs briefing --venue sim --run-id "$RUN_ID" --workflow-name "$WORKFLOW_NAME" --step-name initial_briefing
+```
+
+Runtime behavior:
+- fetches the real briefing from the configured Simmer endpoint
+- normalizes the response into the contract shape below
+- when `workflow_name` and `run_id` are provided, writes a step envelope under `runtime/runs/{workflow_name}/{run_id}/events/initial_briefing.yaml`
+
 ## Input Contract
 
 | Input | Type | Required | Description |
@@ -78,6 +105,7 @@ Fallback rule:
 | `venue` | string | yes | Must be `sim` |
 | `domain` | string | no | Optional domain filter; if omitted, use the active profile domain |
 | `run_id` | string | no | Workflow run identifier for downstream attribution continuity |
+| `workflow_name` | string | no | Optional workflow attribution for runtime event storage |
 
 Input rules:
 - if `domain` is omitted, default to the active profile domain from `config/strategy-profiles.yaml`

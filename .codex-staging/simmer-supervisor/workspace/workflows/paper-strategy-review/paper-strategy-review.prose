@@ -14,7 +14,7 @@ let workflow_workspace = "/Users/mcan/.openclaw/agents/simmer-supervisor/workspa
 let strategy_profile_id = "crypto_momentum_v1"
 let policy_version = "v1"
 let effective_workflow_name = "{workflow_name}"
-let default_report_path = "{workflow_workspace}/reviews/{run_id}-paper-strategy-review.yaml"
+let default_report_root = "{workflow_workspace}/runtime/reviews"
 
 agent strategy-review-runner:
   model: sonnet
@@ -88,7 +88,7 @@ Required output shape, aligned to the template:
 - do_not_change
 
 Write the report to:
-- {default_report_path} if report_path is empty
+- a path under `{default_report_root}/YYYY/Www/` derived from `review_window_end` if report_path is empty
 - otherwise to {report_path}
 
 Return at least:
@@ -99,5 +99,5 @@ Return at least:
 
 output workflow_name_output = effective_workflow_name
 output run_id_output = run_id
-output default_report_path_output = default_report_path
+output default_report_root_output = default_report_root
 output review_report_output = review_report
