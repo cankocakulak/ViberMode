@@ -1,0 +1,29 @@
+# Example weekly review output shape.
+
+review_window:
+  start: "2026-03-21T00:00:00Z"
+  end: "2026-03-28T00:00:00Z"
+workflow_name: "paper-strategy-review"
+profiles_reviewed:
+  - "crypto_momentum_v1"
+  - "crypto_momentum_conservative_v1"
+best_profiles:
+  - profile_id: "crypto_momentum_v1"
+    policy_version: "1.0.0"
+    reason: "Higher hit rate on catalyst-driven entries."
+weak_profiles:
+  - profile_id: "crypto_momentum_conservative_v1"
+    policy_version: "1.0.0"
+    reason: "Too selective, insufficient opportunity capture."
+good_patterns:
+  - "Entries with fresh context outperformed stale-context setups."
+bad_patterns:
+  - "Low-conviction entries were consistently weak."
+recommended_policy_changes:
+  - profile_id: "crypto_momentum_v1"
+    current_policy_version: "1.0.0"
+    proposed_change: "Raise minimum confidence from 0.68 to 0.72."
+changes_to_test_next:
+  - "Run one comparison week with tighter confidence threshold."
+do_not_change:
+  - "Keep risk-first sequencing and mandatory dry-run."

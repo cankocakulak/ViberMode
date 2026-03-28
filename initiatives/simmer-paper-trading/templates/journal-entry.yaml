@@ -1,0 +1,25 @@
+# Example runtime journal entry shape.
+
+run_id: "2026-03-28T08-00Z-paper-trading-heartbeat-001"
+workflow_name: "paper-trading-heartbeat"
+strategy_profile_id: "crypto_momentum_v1"
+policy_version: "1.0.0"
+decision_timestamp: "2026-03-28T08:00:00Z"
+market_id: "market-123"
+trade_id: "trade-456"
+position_id: "position-789"
+action: "enter"
+side: "yes"
+size: 25
+confidence: 0.74
+entry_reason: "fresh catalyst with supportive context"
+exit_reason: null
+skip_reason: null
+thesis: "Market underprices the probability of the catalyst landing this week."
+invalidation: "Counter-catalyst lands or context weakens materially."
+result: "open"
+realized_pnl: 0
+unrealized_pnl: 0
+portfolio_state:
+  open_positions: 1
+  new_entries_allowed: true

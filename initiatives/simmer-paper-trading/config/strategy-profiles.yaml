@@ -1,0 +1,67 @@
+profiles:
+  - id: "crypto_momentum_v1"
+    status: "default"
+    purpose: "Baseline profile for early paper trading."
+    domain: "crypto_event_markets"
+    limits:
+      max_new_trades_per_heartbeat: 1
+      max_open_positions: 3
+      position_sizing: "fixed_small"
+    thresholds:
+      minimum_confidence: 0.68
+      fresh_context_required: true
+    behavior:
+      allow_same_theme_reentry_in_same_cycle: false
+      allow_averaging_down: false
+      catalyst_strictness: "normal"
+      timing_style: "standard"
+      liquidity_filter: "normal"
+
+  - id: "crypto_momentum_conservative_v1"
+    status: "candidate"
+    purpose: "Lower-frequency profile for cleaner signal quality."
+    domain: "crypto_event_markets"
+    limits:
+      max_new_trades_per_heartbeat: 1
+      max_open_positions: 2
+      position_sizing: "fixed_small"
+    thresholds:
+      minimum_confidence: 0.75
+      fresh_context_required: true
+    behavior:
+      allow_same_theme_reentry_in_same_cycle: false
+      allow_averaging_down: false
+      catalyst_strictness: "high"
+      timing_style: "standard"
+      liquidity_filter: "strict"
+
+  - id: "crypto_momentum_fast_react_v1"
+    status: "candidate"
+    purpose: "More aggressive profile for shorter catalyst windows."
+    domain: "crypto_event_markets"
+    limits:
+      max_new_trades_per_heartbeat: 1
+      max_open_positions: 3
+      position_sizing: "fixed_small"
+    thresholds:
+      minimum_confidence: 0.72
+      fresh_context_required: true
+    behavior:
+      allow_same_theme_reentry_in_same_cycle: false
+      allow_averaging_down: false
+      catalyst_strictness: "normal"
+      timing_style: "fast"
+      liquidity_filter: "normal"
+
+rollout_policy:
+  run_multiple_profiles_in_parallel_in_v1: false
+  recommended_order:
+    - "crypto_momentum_v1"
+    - "crypto_momentum_conservative_v1"
+    - "crypto_momentum_fast_react_v1"
+  immutable_rules:
+    - "workflow order"
+    - "mandatory dry-run"
+    - "mandatory journaling"
+    - "venue restriction to $SIM"
+    - "risk-first sequencing"
