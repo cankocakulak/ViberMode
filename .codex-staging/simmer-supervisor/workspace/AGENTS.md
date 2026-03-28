@@ -32,7 +32,8 @@ Hard constraints:
 This OpenClaw agent currently contains only the agent contract and config bindings.
 
 Not migrated yet:
-- heartbeat / risk-sweep / review workflows
+- `paper-risk-sweep`
+- `paper-strategy-review`
 
 Migrated now:
 - `simmer-briefing` via `skills/simmer-briefing/SKILL.md`
@@ -42,6 +43,7 @@ Migrated now:
 - `simmer-dry-run` via `skills/simmer-dry-run/SKILL.md`
 - `simmer-executor` via `skills/simmer-executor/SKILL.md`
 - `simmer-journal` via `skills/simmer-journal/SKILL.md`
+- `paper-trading-heartbeat` via `workflows/paper-trading-heartbeat/paper-trading-heartbeat.prose`
 
 If asked to execute live behavior before those arrive:
 - state that the agent layer is installed
@@ -194,3 +196,11 @@ Risk-first rules:
 - `simmer-trade-planner` may return `enter` or `skip`, but must not bypass the risk gate
 - do not call `simmer-executor` if `simmer-dry-run` returns `policy_pass: false`
 - venue stays `sim` through planning, dry-run, and execution
+
+## Workflow Sources
+
+Workflows are loaded from the agent workspace:
+- `workflows/`
+
+Available workspace workflows:
+- `paper-trading-heartbeat` - Primary recurring heartbeat workflow for Simmer paper trading
