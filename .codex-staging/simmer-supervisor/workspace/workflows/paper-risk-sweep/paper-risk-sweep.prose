@@ -1,0 +1,253 @@
+# Simmer Paper Risk Sweep
+# Recurring reduce-or-exit workflow for open paper positions in the canonical simmer-supervisor workspace.
+
+input run_id: "Unique workflow run identifier that must be preserved across all decisions"
+input workflow_name: "Workflow name for attribution; pass paper-risk-sweep unless explicitly overridden"
+
+let workflow_workspace = "/Users/mcan/.openclaw/agents/simmer-supervisor/workspace"
+let strategy_profile_id = "crypto_momentum_v1"
+let policy_version = "v1"
+let venue = "sim"
+let effective_workflow_name = "{workflow_name}"
+
+agent risk-sweep-runner:
+  model: sonnet
+  prompt: """You execute exactly one paper-risk-sweep cycle inside the simmer-supervisor workspace.
+
+Before acting:
+1. Read the referenced skill file and treat it as the operating contract.
+2. Read workspace config files when policy context is relevant:
+   - {workflow_workspace}/config/strategy-profiles.yaml
+   - {workflow_workspace}/config/tracking-schema.yaml
+3. Preserve caller context fields exactly:
+   - strategy_profile_id
+   - policy_version
+   - run_id
+
+Execution rules:
+- Venue is always sim.
+- Active strategy profile is always crypto_momentum_v1.
+- Random strategy selection is forbidden.
+- This workflow never opens a new position.
+- Only `reduce` or `exit` actions from simmer-risk-manager are eligible.
+- Every eligible reduce or exit action must pass dry-run before execution.
+- Never average down.
+- Never use rescue logic.
+- If briefing fails, stop safely and journal the failure when possible.
+- If dry-run fails for one action, journal the failure and skip that action.
+- If executor fails, journal the failure and stop further execution.
+- If an optional input is empty, ignore it rather than inventing detail.
+"""
+
+let initial_briefing = session: risk-sweep-runner
+  prompt: """Step 1: fetch the current Simmer briefing.
+
+Skill name: simmer-briefing
+Skill file: {workflow_workspace}/skills/simmer-briefing/SKILL.md
+
+Required input:
+- venue: {venue}
+- run_id: {run_id}
+
+Required caller context:
+- strategy_profile_id: {strategy_profile_id}
+- policy_version: {policy_version}
+
+Required output:
+- normalized briefing with:
+  - timestamp
+  - positions
+  - open_orders
+  - risk_alerts
+  - opportunities
+  - performance
+  - portfolio_constraints
+
+If briefing cannot be fetched, return:
+- status: STOP_BRIEFING_FAILED
+- reason: concise blocker
+"""
+
+let risk_review = session: risk-sweep-runner
+  prompt: """Step 2: run the risk manager against the current briefing.
+
+Skill name: simmer-risk-manager
+Skill file: {workflow_workspace}/skills/simmer-risk-manager/SKILL.md
+
+Required input:
+- briefing: {initial_briefing}
+
+Required caller context:
+- strategy_profile_id: {strategy_profile_id}
+- policy_version: {policy_version}
+- run_id: {run_id}
+
+Required output:
+- new_entries_allowed
+- actions
+- portfolio_note
+
+Rules:
+- If the incoming briefing already reports STOP_BRIEFING_FAILED, do not continue risk evaluation.
+- This workflow ignores any entry-oriented output and only consumes `reduce` or `exit` actions.
+"""
+
+let actionable_actions = session: risk-sweep-runner
+  prompt: """Step 3: filter the risk-manager output down to actionable reduce or exit instructions.
+
+Inputs:
+- briefing: {initial_briefing}
+- risk_evaluation: {risk_review}
+
+Required caller context:
+- run_id: {run_id}
+- strategy_profile_id: {strategy_profile_id}
+- policy_version: {policy_version}
+
+Rules:
+- If briefing reports STOP_BRIEFING_FAILED, return:
+  - status: STOP_BRIEFING_FAILED
+- Keep only action objects whose `decision` is `reduce` or `exit`.
+- Preserve the original action ordering by `priority`.
+- If no actionable reduce or exit decision remains, return:
+  - status: STOP_NO_ACTIONABLE_RISK
+  - actions: []
+  - reason: no actionable reduce-or-exit decision
+- Otherwise return:
+  - status: CONTINUE
+  - actions: actionable reduce-or-exit list
+
+Critical rule:
+- Never transform this workflow into an opportunity scanner.
+"""
+
+let action_execution = session: risk-sweep-runner
+  prompt: """Step 4 through Step 6: process actionable risk actions with dry-run and execution.
+
+Skills involved:
+- simmer-dry-run
+- simmer-executor
+
+Skill files:
+- {workflow_workspace}/skills/simmer-dry-run/SKILL.md
+- {workflow_workspace}/skills/simmer-executor/SKILL.md
+
+Inputs:
+- briefing: {initial_briefing}
+- risk_evaluation: {risk_review}
+- actionable_actions: {actionable_actions}
+
+Required caller context:
+- run_id: {run_id}
+- strategy_profile_id: {strategy_profile_id}
+- policy_version: {policy_version}
+
+Rules:
+- If actionable_actions does not report CONTINUE, do not call dry-run or executor. Return the same stop status.
+- Process each actionable item in priority order.
+- For each action:
+  1. derive the existing position and execution intent
+  2. derive `side` from the existing position being reduced or exited
+  3. derive `size` from the action scope and current position sizing
+  4. call simmer-dry-run with:
+     - market_id
+     - side
+     - size
+     - venue: {venue}
+     - reasoning: action.reason
+     - source: paper-risk-sweep
+     - strategy_profile_id
+     - policy_version
+     - run_id
+  5. if dry-run returns `policy_pass: false`, record the failure, do not execute that action, and continue to the next action
+  6. if dry-run returns `policy_pass: true`, call simmer-executor
+- If executor fails for any action, record the failure and stop further execution after that action.
+- Never call simmer-trade-planner.
+- Never emit `enter`.
+
+Required output:
+- status
+- processed_actions
+- executed_actions
+- skipped_actions
+- failed_actions
+- execution_summary
+
+Status expectations:
+- CONTINUE if at least one action executed and no executor failure stopped the run
+- STOP_DRY_RUN_FAILED if no action executed because all eligible actions failed dry-run
+- STOP_EXECUTOR_FAILED if an executor failure stopped the run
+- STOP_NO_ACTIONABLE_RISK if there were no eligible actions
+"""
+
+let refreshed_briefing = session: risk-sweep-runner
+  prompt: """Step 7: refresh the Simmer briefing after any successful reduce or exit execution.
+
+Skill name: simmer-briefing
+Skill file: {workflow_workspace}/skills/simmer-briefing/SKILL.md
+
+Inputs:
+- action_execution: {action_execution}
+
+Required caller context:
+- strategy_profile_id: {strategy_profile_id}
+- policy_version: {policy_version}
+- run_id: {run_id}
+
+Rules:
+- If action_execution reports no executed actions, return:
+  - status: SKIPPED_NO_EXECUTION
+- Otherwise call simmer-briefing with:
+  - venue: {venue}
+  - run_id: {run_id}
+"""
+
+let final_journal = session: risk-sweep-runner
+  prompt: """Step 8: write journal entries for this risk sweep.
+
+Skill name: simmer-journal
+Skill file: {workflow_workspace}/skills/simmer-journal/SKILL.md
+
+Inputs:
+- briefing: {initial_briefing}
+- risk_evaluation: {risk_review}
+- actionable_actions: {actionable_actions}
+- action_execution: {action_execution}
+- refreshed_briefing: {refreshed_briefing}
+
+Required caller context:
+- run_id: {run_id}
+- workflow_name: {effective_workflow_name}
+- strategy_profile_id: {strategy_profile_id}
+- policy_version: {policy_version}
+
+Rules:
+- If briefing failed, write one failure journal record when enough attribution context exists and return:
+  - status: STOP_BRIEFING_FAILED
+- If there are no actionable reduce or exit actions, write one no-action journal record and return:
+  - status: STOP_NO_ACTIONABLE_RISK
+- For each executed action, call simmer-journal once with the executed trade identifiers and refreshed portfolio state when available.
+- For each dry-run failure, call simmer-journal once with:
+  - action: skip
+  - skip_reason: dry-run policy failure
+  - result: no_trade
+- For each executor failure, call simmer-journal once with:
+  - action matching the attempted reduce or exit
+  - skip_reason or exit_reason derived from the failure
+  - result: execution_failed
+- Return:
+  - status: final risk-sweep terminal status
+  - journal_entries: list of journal outputs
+
+Critical rule:
+- Preserve attribution fields for every journaled action or failure.
+"""
+
+output workflow_name_output = effective_workflow_name
+output run_id_output = run_id
+output initial_briefing_output = initial_briefing
+output risk_review_output = risk_review
+output actionable_actions_output = actionable_actions
+output action_execution_output = action_execution
+output refreshed_briefing_output = refreshed_briefing
+output final_journal_output = final_journal
