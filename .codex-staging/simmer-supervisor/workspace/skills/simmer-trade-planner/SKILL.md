@@ -63,6 +63,7 @@ Binding rules:
 - preserve caller context for `strategy_profile_id`, `policy_version`, and `run_id`
 - never produce averaging-down or rescue logic
 - do not rotate, rank, or randomly choose among profiles
+- enforce the active profile minimum actionable timing window deterministically
 
 OpenClaw skill format does not provide a native external-config loader for this skill type.
 
@@ -115,7 +116,9 @@ Input rules:
 - if `strategy_profile_id` is present and is not `crypto_momentum_v1`, stop and report a contract violation
 - if `risk_evaluation.new_entries_allowed` is `false`, return `decision: skip`
 - if `briefing.risk_alerts` still contains unresolved alerts, return `decision: skip`
+- if `market_context.risk_notes` or upstream shortlist marks the candidate as out-of-domain for `crypto_event_markets`, return `decision: skip`
 - if `market_context.context_freshness` is stale or thin, return `decision: skip`
+- if the market is inside the active profile minimum actionable timing window, return `decision: skip`
 
 ## Output Contract
 
@@ -164,7 +167,9 @@ Use this order:
 
 Expected `skip_reason` themes:
 - `risk gate blocked new entries`
+- `market outside active domain`
 - `context too stale`
+- `timing window too short`
 - `liquidity too thin`
 - `confidence below threshold`
 - `setup conflicts with active position risk`

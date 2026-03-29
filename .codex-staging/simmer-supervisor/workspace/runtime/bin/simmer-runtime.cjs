@@ -145,6 +145,7 @@ function parseStrategyProfile() {
     maxNewTradesPerHeartbeat: extractNumberValue(activeBlock, 'max_new_trades_per_heartbeat') || 1,
     maxOpenPositions: extractNumberValue(activeBlock, 'max_open_positions') || 3,
     minimumConfidence: extractNumberValue(activeBlock, 'minimum_confidence') || 0.68,
+    minimumActionableMinutesToResolution: extractNumberValue(activeBlock, 'minimum_actionable_minutes_to_resolution') || 60,
     freshContextRequired: extractBoolValue(activeBlock, 'fresh_context_required'),
     allowAveragingDown: extractBoolValue(activeBlock, 'allow_averaging_down'),
   };
@@ -364,6 +365,7 @@ function buildPortfolioConstraints(policy) {
     max_new_trades_per_heartbeat: policy.maxNewTradesPerHeartbeat,
     max_open_positions: policy.maxOpenPositions,
     minimum_confidence: policy.minimumConfidence,
+    minimum_actionable_minutes_to_resolution: policy.minimumActionableMinutesToResolution,
     fresh_context_required: policy.freshContextRequired,
     allow_averaging_down: policy.allowAveragingDown,
   };
@@ -377,6 +379,58 @@ function asArray(value) {
     return [];
   }
   return [value];
+}
+
+function minutesUntil(timestamp) {
+  if (!timestamp) {
+    return null;
+  }
+  const millis = new Date(timestamp).getTime() - Date.now();
+  if (Number.isNaN(millis)) {
+    return null;
+  }
+  return Math.floor(millis / 60000);
+}
+
+function marketMatchesDomain(market, domain) {
+  if (domain !== 'crypto_event_markets') {
+    return true;
+  }
+  const haystack = [
+    market.question,
+    market.headline_summary,
+    market.event_name,
+    market.market_source,
+    ...(Array.isArray(market.tags) ? market.tags : []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return /\b(bitcoin|btc|ethereum|eth|solana|sol|dogecoin|doge|xrp|ripple|crypto|cryptocurrency|altcoin|memecoin)\b/.test(haystack);
+}
+
+function normalizeOpportunity(market, policy) {
+  const resolvesAt = market.resolves_at || market.resolve_time || market.end_time || '';
+  const minutesToResolution = (
+    typeof market.minutes_to_resolution === 'number'
+      ? market.minutes_to_resolution
+      : minutesUntil(resolvesAt)
+  );
+  const domainMatch = marketMatchesDomain(market, policy.domain);
+  const timingActionable = (
+    minutesToResolution === null
+    || minutesToResolution >= policy.minimumActionableMinutesToResolution
+  );
+  return {
+    ...market,
+    domain_match: domainMatch,
+    timing_actionable: timingActionable,
+    minutes_to_resolution: minutesToResolution,
+    opportunity_blockers: [
+      ...(domainMatch ? [] : [`domain_mismatch:${policy.domain}`]),
+      ...(timingActionable ? [] : [`timing_window_too_short:${minutesToResolution}m_remaining_below_${policy.minimumActionableMinutesToResolution}m_minimum`]),
+    ],
+  };
 }
 
 function maybeWriteEvent({ workflowName, runId, stepName, payload }) {
@@ -488,8 +542,58 @@ function summarizeResolutionTiming(resolvesAt) {
   return `Resolves in about ${(hours / 24).toFixed(1)} days at ${resolvesAt}.`;
 }
 
+function minutesUntil(timestamp) {
+  if (!timestamp) {
+    return null;
+  }
+  const ts = Date.parse(timestamp);
+  if (Number.isNaN(ts)) {
+    return null;
+  }
+  return Math.max(0, Math.round((ts - Date.now()) / 60000));
+}
+
+function evaluateRiskEnvelope(briefing, policy) {
+  const riskAlerts = asArray(briefing.risk_alerts);
+  const positions = asArray(briefing.positions);
+  const openOrders = asArray(briefing.open_orders);
+  const actions = [];
+  let newEntriesAllowed = true;
+  let portfolioNote = 'risk contained, no intervention required';
+
+  if (riskAlerts.length > 0) {
+    newEntriesAllowed = false;
+    portfolioNote = 'entries blocked by unresolved alerts';
+  } else if (positions.length >= policy.maxOpenPositions) {
+    newEntriesAllowed = false;
+    portfolioNote = 'entries blocked by active position count';
+  } else if (openOrders.length > 0) {
+    portfolioNote = 'open orders present; no new position-level intervention required';
+  }
+
+  positions.forEach((position) => {
+    const marketId = position.market_id || position.id || position.market?.id || '';
+    actions.push({
+      market_id: marketId,
+      decision: riskAlerts.length > 0 ? 'reduce' : 'hold',
+      reason: riskAlerts.length > 0 ? 'unresolved portfolio alert' : 'position within envelope',
+      priority: riskAlerts.length > 0 ? 'high' : 'low',
+    });
+  });
+
+  return {
+    strategy_profile_id: briefing.strategy_profile_id || policy.id,
+    policy_version: briefing.policy_version || policy.policyVersion,
+    run_id: briefing.run_id || '',
+    new_entries_allowed: newEntriesAllowed,
+    actions,
+    portfolio_note: portfolioNote,
+  };
+}
+
 function buildFallbackContext({ marketId, marketRaw, positionsRaw, tradesRaw, args, policy, nativeContextError }) {
   const market = marketRaw.market || marketRaw;
+  const minutesToResolution = minutesUntil(market.resolves_at);
   const positions = asArray(positionsRaw.positions);
   const relatedPosition = positions.find((position) => (
     position.market_id === marketId
@@ -550,6 +654,12 @@ function buildFallbackContext({ marketId, marketRaw, positionsRaw, tradesRaw, ar
   if (market.volume_24h === null || market.volume_24h === undefined) {
     riskNotes.push('volume_24h unavailable; liquidity confidence is limited');
   }
+  if (
+    minutesToResolution !== null
+    && minutesToResolution < policy.minimumActionableMinutesToResolution
+  ) {
+    riskNotes.push(`timing_window_too_short:${minutesToResolution}m_remaining_below_${policy.minimumActionableMinutesToResolution}m_minimum`);
+  }
   if (nativeContextError?.responseBody?.detail) {
     riskNotes.push(`native_context_error:${nativeContextError.responseBody.detail}`);
   }
@@ -564,7 +674,12 @@ function buildFallbackContext({ marketId, marketRaw, positionsRaw, tradesRaw, ar
     liquidity_notes: liquidityBits.join('; '),
     timing_notes: summarizeResolutionTiming(market.resolves_at),
     risk_notes: riskNotes,
-    context_freshness: nativeContextError ? 'fallback_live_market_snapshot' : 'market_snapshot_live',
+    context_freshness: (
+      minutesToResolution !== null
+      && minutesToResolution < policy.minimumActionableMinutesToResolution
+    )
+      ? 'timing_window_too_short'
+      : (nativeContextError ? 'fallback_live_market_snapshot' : 'market_snapshot_live'),
     lookup_mode: 'fallback_market_positions_trades',
   };
 }
@@ -581,6 +696,7 @@ function normalizeBriefingResponse(raw, args, policy) {
   if (!Array.isArray(opportunities.new_markets)) {
     opportunities.new_markets = asArray(opportunities.new_markets);
   }
+  opportunities.new_markets = opportunities.new_markets.map((market) => normalizeOpportunity(market, policy));
   return {
     timestamp: source.timestamp || source.generated_at || source.as_of || new Date().toISOString(),
     strategy_profile_id: args['strategy-profile-id'] || policy.id,
@@ -744,6 +860,7 @@ function usage() {
 Usage:
   node simmer-runtime.js health [--ping]
   node simmer-runtime.js briefing --venue sim [--domain DOMAIN] [--run-id RUN_ID] [--workflow-name WORKFLOW] [--step-name STEP]
+  node simmer-runtime.js risk-review --payload-file FILE | --briefing-file FILE
   node simmer-runtime.js context --market-id ID --venue sim --domain DOMAIN --run-id RUN_ID --strategy-profile-id crypto_momentum_v1 --policy-version VERSION [--workflow-name WORKFLOW] [--step-name STEP]
   node simmer-runtime.js dry-run --market-id ID --side SIDE --size SIZE --venue sim --reasoning TEXT --source TEXT --strategy-profile-id crypto_momentum_v1 --policy-version VERSION --run-id RUN_ID [--workflow-name WORKFLOW] [--step-name STEP]
   node simmer-runtime.js execute --market-id ID --side SIDE --size SIZE --venue sim --reasoning TEXT --source TEXT --dry-run-ref-file FILE --strategy-profile-id crypto_momentum_v1 --policy-version VERSION --run-id RUN_ID [--workflow-name WORKFLOW] [--step-name STEP]
@@ -798,14 +915,22 @@ async function main() {
     validateVenue(args.venue);
     requireApiKey(binding, 'briefing');
     const endpoint = resolveEndpoint(binding, 'briefing');
+    const strategyProfileId = args['strategy-profile-id'] || policy.id;
+    const policyVersion = args['policy-version'] || policy.policyVersion;
+    const domain = args.domain || policy.domain;
     const payload = {
       since: args.since || '',
+      venue: args.venue,
+      domain,
+      strategy_profile_id: strategyProfileId,
+      policy_version: policyVersion,
+      run_id: args['run-id'] || '',
     };
     const metadata = {
       venue: args.venue,
-      domain: args.domain || policy.domain,
-      strategy_profile_id: args['strategy-profile-id'] || policy.id,
-      policy_version: args['policy-version'] || policy.policyVersion,
+      domain,
+      strategy_profile_id: strategyProfileId,
+      policy_version: policyVersion,
       run_id: args['run-id'] || '',
     };
     validateActiveProfile(metadata.strategy_profile_id);
@@ -827,6 +952,25 @@ async function main() {
       normalized.event_path = eventPath;
     }
     console.log(JSON.stringify(normalized, null, 2));
+    return;
+  }
+
+  if (command === 'risk-review') {
+    const payload = args['briefing-file']
+      ? JSON.parse(fs.readFileSync(args['briefing-file'], 'utf8'))
+      : await readPayload(args);
+    validateActiveProfile(payload.strategy_profile_id || policy.id);
+    const evaluation = evaluateRiskEnvelope(payload, policy);
+    const eventPath = maybeWriteEvent({
+      workflowName: args['workflow-name'],
+      runId: payload.run_id || args['run-id'],
+      stepName: args['step-name'] || 'risk_review',
+      payload: evaluation,
+    });
+    if (eventPath) {
+      evaluation.event_path = eventPath;
+    }
+    console.log(JSON.stringify(evaluation, null, 2));
     return;
   }
 
@@ -865,7 +1009,9 @@ async function main() {
     });
     if (nativeContextRaw) {
       context.lookup_mode = 'market_snapshot_plus_native_context';
-      context.context_freshness = 'native_context_live';
+      if (context.context_freshness !== 'timing_window_too_short') {
+        context.context_freshness = 'native_context_live';
+      }
       context.catalysts = [
         ...context.catalysts,
         ...asArray(nativeContextRaw.catalysts || nativeContextRaw.drivers || nativeContextRaw.signals),

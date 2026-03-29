@@ -62,6 +62,7 @@ Binding rules:
 - preserve caller context for `strategy_profile_id`, `policy_version`, and `run_id`
 - do not issue trade advice inside this skill
 - do not rotate, rank, or randomly choose among profiles
+- treat `minimum_actionable_minutes_to_resolution` from the active profile as binding timing policy
 
 OpenClaw skill format does not provide a native external-config loader for this skill type.
 
@@ -112,7 +113,9 @@ Rules:
 Input rules:
 - if `strategy_profile_id` is not `crypto_momentum_v1`, stop and report a contract violation
 - if `domain` does not align with `crypto_event_markets`, mark context as out-of-policy
+- if upstream shortlist marks the market as `domain_match: false`, stop and return out-of-policy rather than attempting context lookup
 - if `current_position` implies averaging down or rescue logic would be required, do not suggest a remedy here; record it only as risk context
+- if remaining time is below the active profile minimum actionable window, mark the context as timing-blocked
 
 ## Output Contract
 
@@ -150,6 +153,7 @@ Field rules:
 - `timing_notes` should explain why timing is immediate, unclear, or stale
 - `risk_notes` should highlight context-specific downside or ambiguity
 - `context_freshness` must clearly mark whether context is fresh, thin, or stale
+- if the market is too close to resolution for the active profile, mark `context_freshness` as timing-blocked or equivalent
 - if the adapter had to synthesize fallback context, make that explicit in `risk_notes` or an equivalent metadata field
 
 ## Tracking Compatibility

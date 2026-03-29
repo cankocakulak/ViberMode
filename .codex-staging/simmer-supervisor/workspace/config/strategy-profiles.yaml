@@ -11,6 +11,7 @@ profiles:
     thresholds:
       minimum_confidence: 0.68
       fresh_context_required: true
+      minimum_actionable_minutes_to_resolution: 60
     behavior:
       allow_same_theme_reentry_in_same_cycle: false
       allow_averaging_down: false

@@ -147,6 +147,8 @@ Rules:
 - If risk_block_gate reports STOP_RISK_BLOCKED, do not continue. Return:
   - status: SKIPPED_BY_RISK_BLOCK
 - Shortlist at most {candidate_limit} candidate markets from briefing.opportunities.new_markets.
+- Before shortlisting, drop any market whose `domain_match` is not true for `briefing.portfolio_constraints.domain`.
+- Before shortlisting, drop any market whose remaining time is below `briefing.portfolio_constraints.minimum_actionable_minutes_to_resolution`.
 - For each shortlisted market:
   1. call simmer-market-context
   2. call simmer-trade-planner with market_context + briefing + risk_evaluation

@@ -70,6 +70,25 @@ Fallback rule:
 - the caller must read workspace files explicitly when config context is needed
 - do not assume OpenClaw injects config objects automatically
 
+## Runtime Binding
+
+Live risk evaluation must go through the shared workspace adapter:
+- `runtime/bin/simmer-runtime.cjs`
+
+Canonical invocation:
+
+```bash
+node runtime/bin/simmer-runtime.cjs risk-review \
+  --briefing-file "$BRIEFING_JSON" \
+  --workflow-name paper-trading-heartbeat \
+  --step-name risk_review
+```
+
+Rules:
+- treat the normalized `briefing` payload as the runtime source of truth
+- preserve `strategy_profile_id`, `policy_version`, and `run_id`
+- do not manually re-derive policy state outside the adapter if this command is available
+
 ## Input Contract
 
 | Input | Type | Required | Description |
