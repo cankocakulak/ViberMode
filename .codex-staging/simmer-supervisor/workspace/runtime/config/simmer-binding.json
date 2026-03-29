@@ -24,6 +24,10 @@
       "method": "GET",
       "path": "/api/sdk/markets/{market_id}"
     },
+    "searchMarkets": {
+      "method": "GET",
+      "path": "/api/sdk/markets"
+    },
     "positions": {
       "method": "GET",
       "path": "/api/sdk/positions"
@@ -43,6 +47,12 @@
     "execute": {
       "method": "POST",
       "path": "/api/sdk/trade"
+    }
+  },
+  "fallbackDiscovery": {
+    "crypto_event_markets": {
+      "queries": ["bitcoin", "ethereum", "solana", "dogecoin"],
+      "limit": 8
     }
   },
   "storage": {

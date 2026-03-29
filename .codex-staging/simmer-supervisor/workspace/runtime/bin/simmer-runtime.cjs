@@ -199,6 +199,7 @@ function resolveEndpoint(binding, name) {
     health: 'HEALTH',
     briefing: 'BRIEFING',
     getMarket: 'GET_MARKET',
+    searchMarkets: 'SEARCH_MARKETS',
     positions: 'POSITIONS',
     trades: 'TRADES',
     context: 'CONTEXT',
@@ -409,6 +410,21 @@ function marketMatchesDomain(market, domain) {
   return /\b(bitcoin|btc|ethereum|eth|solana|sol|dogecoin|doge|xrp|ripple|crypto|cryptocurrency|altcoin|memecoin)\b/.test(haystack);
 }
 
+function normalizeTags(value) {
+  return asArray(value).flatMap((item) => {
+    if (!item) {
+      return [];
+    }
+    if (typeof item === 'string') {
+      return [item];
+    }
+    if (typeof item === 'object') {
+      return [item.name || item.label || item.slug || item.id].filter(Boolean);
+    }
+    return [];
+  });
+}
+
 function normalizeOpportunity(market, policy) {
   const resolvesAt = market.resolves_at || market.resolve_time || market.end_time || '';
   const minutesToResolution = (
@@ -430,6 +446,87 @@ function normalizeOpportunity(market, policy) {
       ...(domainMatch ? [] : [`domain_mismatch:${policy.domain}`]),
       ...(timingActionable ? [] : [`timing_window_too_short:${minutesToResolution}m_remaining_below_${policy.minimumActionableMinutesToResolution}m_minimum`]),
     ],
+  };
+}
+
+function countEligibleOpportunities(markets) {
+  return asArray(markets).filter((market) => market.domain_match && market.timing_actionable).length;
+}
+
+function extractMarketsArray(raw) {
+  if (Array.isArray(raw)) {
+    return raw;
+  }
+  const source = (raw && typeof raw === 'object')
+    ? (raw.data || raw.result || raw)
+    : {};
+  if (Array.isArray(source)) {
+    return source;
+  }
+  return asArray(
+    source.markets
+    || source.results
+    || source.items
+    || source.data
+  );
+}
+
+function normalizeSearchMarket(market, query, policy) {
+  const marketId = market.market_id || market.id || market.marketId || market.uuid || '';
+  return normalizeOpportunity({
+    market_id: marketId,
+    question: market.question || market.title || market.name || market.headline_summary || market.slug || marketId,
+    url: market.url || (marketId ? `https://simmer.markets/${marketId}` : ''),
+    resolves_at: (
+      market.resolves_at
+      || market.resolve_time
+      || market.resolution_time
+      || market.ends_at
+      || market.expiration_time
+      || market.end_date
+      || market.close_time
+      || ''
+    ),
+    market_source: market.market_source || market.source || 'markets_search',
+    opportunity_score: Number(market.opportunity_score ?? market.score ?? market.rank ?? 0),
+    tags: normalizeTags(market.tags || market.categories || market.topics),
+    discovery_query: query,
+  }, policy);
+}
+
+function fallbackDiscoveryConfig(binding, policy) {
+  const configured = ((binding.raw || {}).fallbackDiscovery || {})[policy.domain] || {};
+  return {
+    queries: Array.isArray(configured.queries) && configured.queries.length > 0
+      ? configured.queries
+      : ['bitcoin', 'ethereum', 'solana', 'dogecoin'],
+    limit: Number(configured.limit || 8),
+  };
+}
+
+async function discoverFallbackOpportunities(binding, policy) {
+  const config = fallbackDiscoveryConfig(binding, policy);
+  const endpoint = resolveEndpoint(binding, 'searchMarkets');
+  const seen = new Map();
+  for (const query of config.queries) {
+    const raw = await requestJson({
+      method: endpoint.method,
+      url: endpoint.url,
+      payload: { q: query, limit: config.limit },
+      binding,
+    });
+    for (const market of extractMarketsArray(raw)) {
+      const normalized = normalizeSearchMarket(market, query, policy);
+      if (!normalized.market_id || seen.has(normalized.market_id)) {
+        continue;
+      }
+      seen.set(normalized.market_id, normalized);
+    }
+  }
+  return {
+    queries: config.queries,
+    candidates: Array.from(seen.values())
+      .filter((market) => market.domain_match && market.timing_actionable),
   };
 }
 
@@ -711,6 +808,33 @@ function normalizeBriefingResponse(raw, args, policy) {
   };
 }
 
+async function applyBriefingFallbackDiscovery(normalized, binding, policy) {
+  const existingMarkets = asArray(normalized.opportunities?.new_markets);
+  const existingEligible = countEligibleOpportunities(existingMarkets);
+  normalized.opportunities.discovery_metadata = {
+    source: 'briefing',
+    briefing_candidate_count: existingMarkets.length,
+    briefing_eligible_count: existingEligible,
+    fallback_used: false,
+  };
+  if (existingEligible > 0) {
+    return normalized;
+  }
+  const fallback = await discoverFallbackOpportunities(binding, policy);
+  normalized.opportunities.discovery_metadata = {
+    source: fallback.candidates.length > 0 ? 'markets_search_fallback' : 'briefing',
+    briefing_candidate_count: existingMarkets.length,
+    briefing_eligible_count: existingEligible,
+    fallback_used: fallback.candidates.length > 0,
+    fallback_candidate_count: fallback.candidates.length,
+    fallback_queries: fallback.queries,
+  };
+  if (fallback.candidates.length > 0) {
+    normalized.opportunities.new_markets = fallback.candidates;
+  }
+  return normalized;
+}
+
 function normalizeDryRunResponse(raw, args, policy) {
   const source = (raw.dry_run && typeof raw.dry_run === 'object')
     ? raw.dry_run
@@ -938,7 +1062,11 @@ async function main() {
     if (args['debug-raw']) {
       console.error(JSON.stringify(raw, null, 2));
     }
-    const normalized = normalizeBriefingResponse(raw, args, policy);
+    const normalized = await applyBriefingFallbackDiscovery(
+      normalizeBriefingResponse(raw, args, policy),
+      binding,
+      policy
+    );
     normalized.strategy_profile_id = metadata.strategy_profile_id;
     normalized.policy_version = metadata.policy_version;
     normalized.run_id = metadata.run_id;

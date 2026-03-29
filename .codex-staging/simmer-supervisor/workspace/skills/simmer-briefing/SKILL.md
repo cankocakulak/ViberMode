@@ -96,6 +96,7 @@ node /Users/mcan/.openclaw/agents/simmer-supervisor/workspace/runtime/bin/simmer
 Runtime behavior:
 - fetches the real briefing from the configured Simmer endpoint
 - normalizes the response into the contract shape below
+- if the native briefing returns zero in-domain actionable candidates for `crypto_event_markets`, the runtime adapter may fill `opportunities.new_markets` from the official Simmer markets search surface as a shortlist-only fallback
 - when `workflow_name` and `run_id` are provided, writes a step envelope under `runtime/runs/{workflow_name}/{run_id}/events/initial_briefing.yaml`
 
 ## Input Contract

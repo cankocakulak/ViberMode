@@ -132,6 +132,10 @@ Fallback model:
 Real Simmer runtime access is provided through the workspace adapter script:
 - `runtime/bin/simmer-runtime.cjs`
 
+Briefing discovery rule:
+- prefer the native Simmer briefing surface
+- if native briefing returns zero actionable in-domain candidates for `crypto_event_markets`, use the adapter's official markets-search fallback to populate shortlist candidates without changing downstream workflow order
+
 Binding files:
 - `runtime/config/simmer-binding.json` - non-secret transport and storage config
 - `runtime/env/simmer.env` - optional local secret/env override file, not for git
