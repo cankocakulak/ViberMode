@@ -197,6 +197,9 @@ function resolveEndpoint(binding, name) {
   const endpointKeyMap = {
     health: 'HEALTH',
     briefing: 'BRIEFING',
+    getMarket: 'GET_MARKET',
+    positions: 'POSITIONS',
+    trades: 'TRADES',
     context: 'CONTEXT',
     dryRun: 'DRY_RUN',
     execute: 'EXECUTE',
@@ -208,13 +211,40 @@ function resolveEndpoint(binding, name) {
   const explicitMethod = envValue(`SIMMER_${envPrefix}_METHOD`, '');
   const method = (explicitMethod || endpoint.method || 'GET').toUpperCase();
   if (explicitUrl) {
-    return { method, url: explicitUrl };
+    return { method, url: explicitUrl, pathTemplate: explicitUrl };
   }
   if (!binding.apiBaseUrl) {
     throw new Error(`Missing ${binding.raw.apiBaseUrlEnv}; cannot resolve ${name} endpoint.`);
   }
   const endpointPath = explicitPath || endpoint.path;
-  return { method, url: new URL(endpointPath, binding.apiBaseUrl).toString() };
+  return {
+    method,
+    url: new URL(endpointPath, binding.apiBaseUrl).toString(),
+    pathTemplate: endpointPath,
+  };
+}
+
+function applyPathParams(template, pathParams = {}) {
+  let resolved = template;
+  Object.entries(pathParams).forEach(([key, value]) => {
+    resolved = resolved.replaceAll(`{${key}}`, encodeURIComponent(String(value)));
+  });
+  return resolved;
+}
+
+function resolveEndpointUrl(binding, name, pathParams = {}) {
+  const endpoint = resolveEndpoint(binding, name);
+  const template = endpoint.pathTemplate || endpoint.url;
+  if (/^https?:\/\//.test(template)) {
+    return {
+      method: endpoint.method,
+      url: applyPathParams(template, pathParams),
+    };
+  }
+  return {
+    method: endpoint.method,
+    url: new URL(applyPathParams(template, pathParams), binding.apiBaseUrl).toString(),
+  };
 }
 
 function ensureDir(dirPath) {
@@ -416,7 +446,11 @@ function requestJson({ method, url, payload, binding }) {
             resolve(parsedBody);
             return;
           }
-          reject(new Error(`Simmer request failed (${res.statusCode}): ${text.slice(0, 500)}`));
+          const error = new Error(`Simmer request failed (${res.statusCode}): ${text.slice(0, 500)}`);
+          error.statusCode = res.statusCode;
+          error.responseText = text;
+          error.responseBody = parsedBody;
+          reject(error);
         });
       }
     );
@@ -429,6 +463,110 @@ function requestJson({ method, url, payload, binding }) {
     }
     req.end();
   });
+}
+
+function isNotFoundError(error) {
+  return Boolean(error && error.statusCode === 404);
+}
+
+function summarizeResolutionTiming(resolvesAt) {
+  if (!resolvesAt) {
+    return 'Resolution timing unavailable.';
+  }
+  const now = Date.now();
+  const ts = Date.parse(resolvesAt);
+  if (Number.isNaN(ts)) {
+    return `Resolution scheduled at ${resolvesAt}.`;
+  }
+  const hours = Math.max(0, (ts - now) / 3600000);
+  if (hours < 1) {
+    return `Resolves in under 1 hour at ${resolvesAt}.`;
+  }
+  if (hours < 24) {
+    return `Resolves in about ${hours.toFixed(1)} hours at ${resolvesAt}.`;
+  }
+  return `Resolves in about ${(hours / 24).toFixed(1)} days at ${resolvesAt}.`;
+}
+
+function buildFallbackContext({ marketId, marketRaw, positionsRaw, tradesRaw, args, policy, nativeContextError }) {
+  const market = marketRaw.market || marketRaw;
+  const positions = asArray(positionsRaw.positions);
+  const relatedPosition = positions.find((position) => (
+    position.market_id === marketId
+    || position.id === marketId
+    || position.market?.id === marketId
+    || position.market_question === market.question
+  )) || null;
+  const recentTrades = asArray(tradesRaw.trades).filter((trade) => trade.market_id === marketId);
+  const catalysts = [];
+  if (market.import_source) {
+    catalysts.push(`import_source:${market.import_source}`);
+  }
+  if (Array.isArray(market.tags)) {
+    market.tags.slice(0, 5).forEach((tag) => catalysts.push(`tag:${tag}`));
+  }
+  if (market.opportunity_score !== undefined && market.opportunity_score !== null) {
+    catalysts.push(`opportunity_score:${market.opportunity_score}`);
+  }
+  if (market.divergence !== undefined && market.divergence !== null) {
+    catalysts.push(`divergence:${market.divergence}`);
+  }
+  if (market.external_price_yes !== undefined && market.external_price_yes !== null) {
+    catalysts.push(`external_price_yes:${market.external_price_yes}`);
+  }
+
+  const liquidityBits = [];
+  if (market.spread !== undefined && market.spread !== null) {
+    liquidityBits.push(`spread=${market.spread}`);
+  }
+  if (market.volume_24h !== undefined && market.volume_24h !== null) {
+    liquidityBits.push(`volume_24h=${market.volume_24h}`);
+  } else {
+    liquidityBits.push('volume_24h unavailable');
+  }
+  if (market.tick_size !== undefined && market.tick_size !== null) {
+    liquidityBits.push(`tick_size=${market.tick_size}`);
+  }
+  if (market.fee_rate_bps !== undefined && market.fee_rate_bps !== null) {
+    liquidityBits.push(`fee_rate_bps=${market.fee_rate_bps}`);
+  }
+
+  const riskNotes = [];
+  if (nativeContextError) {
+    riskNotes.push('Native Simmer context lookup returned 404 for this market_id; using fallback live synthesis from market, positions, and trades endpoints.');
+  }
+  if (market.status && market.status !== 'active') {
+    riskNotes.push(`market_status:${market.status}`);
+  }
+  if (relatedPosition) {
+    riskNotes.push('Existing position history detected for this market.');
+  }
+  if (recentTrades.length > 0) {
+    riskNotes.push(`recent_sim_trades:${recentTrades.length}`);
+  }
+  if (market.spread !== undefined && market.spread !== null && Number(market.spread) > 0.05) {
+    riskNotes.push(`wide_spread:${market.spread}`);
+  }
+  if (market.volume_24h === null || market.volume_24h === undefined) {
+    riskNotes.push('volume_24h unavailable; liquidity confidence is limited');
+  }
+  if (nativeContextError?.responseBody?.detail) {
+    riskNotes.push(`native_context_error:${nativeContextError.responseBody.detail}`);
+  }
+
+  return {
+    market_id: marketId,
+    strategy_profile_id: args['strategy-profile-id'] || policy.id,
+    policy_version: args['policy-version'] || policy.policyVersion,
+    run_id: args['run-id'] || '',
+    headline_summary: market.question || market.event_name || marketId,
+    catalysts,
+    liquidity_notes: liquidityBits.join('; '),
+    timing_notes: summarizeResolutionTiming(market.resolves_at),
+    risk_notes: riskNotes,
+    context_freshness: nativeContextError ? 'fallback_live_market_snapshot' : 'market_snapshot_live',
+    lookup_mode: 'fallback_market_positions_trades',
+  };
 }
 
 function normalizeBriefingResponse(raw, args, policy) {
@@ -696,24 +834,55 @@ async function main() {
     validateVenue(args.venue);
     validateActiveProfile(args['strategy-profile-id'] || policy.id);
     requireApiKey(binding, 'context');
-    const endpoint = resolveEndpoint(binding, 'context');
-    const url = endpoint.url.replace('{market_id}', encodeURIComponent(args['market-id']));
-    const raw = await requestJson({ method: endpoint.method, url, payload: {}, binding });
-    if (args['debug-raw']) {
-      console.error(JSON.stringify(raw, null, 2));
+    const marketEndpoint = resolveEndpointUrl(binding, 'getMarket', { market_id: args['market-id'] });
+    const positionsEndpoint = resolveEndpoint(binding, 'positions');
+    const tradesEndpoint = resolveEndpoint(binding, 'trades');
+    const [marketRaw, positionsRaw, tradesRaw] = await Promise.all([
+      requestJson({ method: marketEndpoint.method, url: marketEndpoint.url, payload: {}, binding }),
+      requestJson({ method: positionsEndpoint.method, url: positionsEndpoint.url, payload: {}, binding }),
+      requestJson({ method: tradesEndpoint.method, url: tradesEndpoint.url, payload: { venue: 'sim', limit: 20 }, binding }),
+    ]);
+
+    let nativeContextRaw = null;
+    let nativeContextError = null;
+    try {
+      const endpoint = resolveEndpointUrl(binding, 'context', { market_id: args['market-id'] });
+      nativeContextRaw = await requestJson({ method: endpoint.method, url: endpoint.url, payload: {}, binding });
+    } catch (error) {
+      nativeContextError = error;
     }
-    const context = {
-      market_id: args['market-id'],
-      strategy_profile_id: args['strategy-profile-id'] || policy.id,
-      policy_version: args['policy-version'] || policy.policyVersion,
-      run_id: args['run-id'] || '',
-      headline_summary: raw.summary || raw.headline || raw.question || raw.market?.question || '',
-      catalysts: asArray(raw.catalysts || raw.drivers || raw.signals),
-      liquidity_notes: raw.liquidity_notes || raw.liquidity || raw.market_microstructure || '',
-      timing_notes: raw.timing_notes || raw.timing || raw.time_horizon || '',
-      risk_notes: raw.risk_notes || raw.risks || raw.watchouts || '',
-      context_freshness: raw.context_freshness || raw.freshness || 'fresh',
-    };
+    if (args['debug-raw']) {
+      console.error(JSON.stringify({ nativeContextRaw, nativeContextError: nativeContextError?.responseBody || nativeContextError?.message || null, marketRaw, positionsRaw, tradesRaw }, null, 2));
+    }
+    const context = buildFallbackContext({
+      marketId: args['market-id'],
+      marketRaw,
+      positionsRaw,
+      tradesRaw,
+      args,
+      policy,
+      nativeContextError,
+    });
+    if (nativeContextRaw) {
+      context.lookup_mode = 'market_snapshot_plus_native_context';
+      context.context_freshness = 'native_context_live';
+      context.catalysts = [
+        ...context.catalysts,
+        ...asArray(nativeContextRaw.catalysts || nativeContextRaw.drivers || nativeContextRaw.signals),
+      ];
+      context.liquidity_notes = nativeContextRaw.liquidity_notes || nativeContextRaw.liquidity || context.liquidity_notes;
+      context.timing_notes = nativeContextRaw.timing_notes || nativeContextRaw.timing || nativeContextRaw.market?.time_to_resolution || context.timing_notes;
+      context.risk_notes = [
+        ...asArray(context.risk_notes),
+        ...asArray(nativeContextRaw.risk_notes || nativeContextRaw.risks || nativeContextRaw.watchouts || nativeContextRaw.warnings),
+      ];
+      context.context_freshness = nativeContextRaw.context_freshness || nativeContextRaw.freshness || context.context_freshness;
+    } else if (nativeContextError && !isNotFoundError(nativeContextError)) {
+      context.risk_notes = [
+        ...asArray(context.risk_notes),
+        `native_context_error:${nativeContextError.message}`,
+      ];
+    }
     const eventPath = maybeWriteEvent({
       workflowName: args['workflow-name'],
       runId: args['run-id'],

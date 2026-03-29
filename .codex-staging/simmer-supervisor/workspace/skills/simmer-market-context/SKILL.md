@@ -92,6 +92,11 @@ Rules:
 - never call Simmer context through a different ad-hoc endpoint from this skill
 - preserve `strategy_profile_id`, `policy_version`, and `run_id` in the normalized output
 - if runtime auth is missing, fail clearly instead of fabricating context
+- if native `GET /api/sdk/context/{market_id}` returns a live 404 for a valid Simmer `market_id`, the adapter may fall back to a synthesized live context using:
+  - `GET /api/sdk/markets/{market_id}`
+  - `GET /api/sdk/positions`
+  - `GET /api/sdk/trades?venue=sim`
+- in that fallback mode, `market_id` remains the canonical lookup key; do not swap to `event_ref`, slug, URL, or token id in the skill contract
 
 ## Input Contract
 
@@ -145,6 +150,7 @@ Field rules:
 - `timing_notes` should explain why timing is immediate, unclear, or stale
 - `risk_notes` should highlight context-specific downside or ambiguity
 - `context_freshness` must clearly mark whether context is fresh, thin, or stale
+- if the adapter had to synthesize fallback context, make that explicit in `risk_notes` or an equivalent metadata field
 
 ## Tracking Compatibility
 

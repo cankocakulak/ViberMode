@@ -20,6 +20,18 @@
       "method": "GET",
       "path": "/api/sdk/briefing"
     },
+    "getMarket": {
+      "method": "GET",
+      "path": "/api/sdk/markets/{market_id}"
+    },
+    "positions": {
+      "method": "GET",
+      "path": "/api/sdk/positions"
+    },
+    "trades": {
+      "method": "GET",
+      "path": "/api/sdk/trades"
+    },
     "context": {
       "method": "GET",
       "path": "/api/sdk/context/{market_id}"

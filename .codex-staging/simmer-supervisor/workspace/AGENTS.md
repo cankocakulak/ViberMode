@@ -192,6 +192,8 @@ Step 2:
 Step 3:
 - only if Step 2 returns `new_entries_allowed: true`, call `skills/simmer-market-context/SKILL.md`
 - pass `market_id`, `domain`, `current_position`, `run_id`, `strategy_profile_id`, and `policy_version`
+- `market_id` is the canonical lookup key
+- if Simmer native context lookup returns 404 for a valid `market_id`, the runtime adapter may synthesize fallback context from market, positions, and recent trade endpoints without changing the caller-visible key
 
 Step 4:
 - call `skills/simmer-trade-planner/SKILL.md`
