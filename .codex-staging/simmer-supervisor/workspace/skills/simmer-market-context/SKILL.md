@@ -69,6 +69,30 @@ Fallback rule:
 - the caller must read workspace files explicitly when config context is needed
 - do not assume OpenClaw injects config objects automatically
 
+## Runtime Binding
+
+Live Simmer context reads must go through the shared workspace adapter:
+- `runtime/bin/simmer-runtime.cjs`
+
+Canonical invocation:
+
+```bash
+node runtime/bin/simmer-runtime.cjs context \
+  --market-id "$MARKET_ID" \
+  --venue sim \
+  --domain crypto_event_markets \
+  --run-id "$RUN_ID" \
+  --strategy-profile-id crypto_momentum_v1 \
+  --policy-version "$POLICY_VERSION" \
+  --workflow-name paper-trading-heartbeat \
+  --step-name market_context
+```
+
+Rules:
+- never call Simmer context through a different ad-hoc endpoint from this skill
+- preserve `strategy_profile_id`, `policy_version`, and `run_id` in the normalized output
+- if runtime auth is missing, fail clearly instead of fabricating context
+
 ## Input Contract
 
 | Input | Type | Required | Description |

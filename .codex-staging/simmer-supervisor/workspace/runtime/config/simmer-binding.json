@@ -20,6 +20,10 @@
       "method": "GET",
       "path": "/api/sdk/briefing"
     },
+    "context": {
+      "method": "GET",
+      "path": "/api/sdk/context/{market_id}"
+    },
     "dryRun": {
       "method": "POST",
       "path": "/api/sdk/trades/batch"

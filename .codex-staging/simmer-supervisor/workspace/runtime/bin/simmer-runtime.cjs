@@ -197,6 +197,7 @@ function resolveEndpoint(binding, name) {
   const endpointKeyMap = {
     health: 'HEALTH',
     briefing: 'BRIEFING',
+    context: 'CONTEXT',
     dryRun: 'DRY_RUN',
     execute: 'EXECUTE',
   };
@@ -431,7 +432,11 @@ function requestJson({ method, url, payload, binding }) {
 }
 
 function normalizeBriefingResponse(raw, args, policy) {
-  const source = raw.briefing || raw.data || raw.result || raw;
+  const source = (raw.briefing && typeof raw.briefing === 'object')
+    ? raw.briefing
+    : ((raw.data && typeof raw.data === 'object')
+      ? raw.data
+      : ((raw.result && typeof raw.result === 'object') ? raw.result : raw));
   const opportunities = source.opportunities && typeof source.opportunities === 'object'
     ? source.opportunities
     : { new_markets: asArray(source.new_markets) };
@@ -453,14 +458,21 @@ function normalizeBriefingResponse(raw, args, policy) {
 }
 
 function normalizeDryRunResponse(raw, args, policy) {
-  const source = raw.dry_run || raw.data || raw.result || raw;
-  const firstTrade = Array.isArray(source.trades) ? source.trades[0] : null;
+  const source = (raw.dry_run && typeof raw.dry_run === 'object')
+    ? raw.dry_run
+    : ((raw.data && typeof raw.data === 'object')
+      ? raw.data
+      : ((raw.result && typeof raw.result === 'object') ? raw.result : raw));
+  const firstTrade = Array.isArray(source.trades)
+    ? source.trades[0]
+    : (Array.isArray(source.results) ? source.results[0] : null);
   const tradeSource = firstTrade || source;
   const policyPass = Boolean(
     source.policy_pass ??
     source.policyPass ??
     firstTrade?.policy_pass ??
     firstTrade?.policyPass ??
+    firstTrade?.success ??
     true
   );
   return {
@@ -470,20 +482,25 @@ function normalizeDryRunResponse(raw, args, policy) {
     run_id: args['run-id'],
     estimated_cost: Number(tradeSource.estimated_cost ?? tradeSource.estimatedCost ?? tradeSource.cost ?? 0),
     estimated_shares: Number(tradeSource.estimated_shares ?? tradeSource.estimatedShares ?? tradeSource.shares ?? 0),
-    slippage_notes: tradeSource.slippage_notes ?? tradeSource.slippageNotes ?? '',
+    slippage_notes: tradeSource.slippage_notes ?? tradeSource.slippageNotes ?? asArray(source.warnings).join('; '),
     policy_pass: policyPass,
     policy_fail_reason: policyPass ? '' : (
       source.policy_fail_reason ??
       source.policyFailReason ??
       tradeSource.policy_fail_reason ??
       tradeSource.policyFailReason ??
+      tradeSource.error ??
       'dry-run policy rejection'
     ),
   };
 }
 
 function normalizeExecutionResponse(raw, args, policy) {
-  const source = raw.execution || raw.data || raw.result || raw;
+  const source = (raw.execution && typeof raw.execution === 'object')
+    ? raw.execution
+    : ((raw.data && typeof raw.data === 'object')
+      ? raw.data
+      : ((raw.result && typeof raw.result === 'object') ? raw.result : raw));
   return {
     trade_id: source.trade_id || source.tradeId || source.id || '',
     market_id: args['market-id'],
@@ -589,6 +606,7 @@ function usage() {
 Usage:
   node simmer-runtime.js health [--ping]
   node simmer-runtime.js briefing --venue sim [--domain DOMAIN] [--run-id RUN_ID] [--workflow-name WORKFLOW] [--step-name STEP]
+  node simmer-runtime.js context --market-id ID --venue sim --domain DOMAIN --run-id RUN_ID --strategy-profile-id crypto_momentum_v1 --policy-version VERSION [--workflow-name WORKFLOW] [--step-name STEP]
   node simmer-runtime.js dry-run --market-id ID --side SIDE --size SIZE --venue sim --reasoning TEXT --source TEXT --strategy-profile-id crypto_momentum_v1 --policy-version VERSION --run-id RUN_ID [--workflow-name WORKFLOW] [--step-name STEP]
   node simmer-runtime.js execute --market-id ID --side SIDE --size SIZE --venue sim --reasoning TEXT --source TEXT --dry-run-ref-file FILE --strategy-profile-id crypto_momentum_v1 --policy-version VERSION --run-id RUN_ID [--workflow-name WORKFLOW] [--step-name STEP]
   node simmer-runtime.js write-journal --payload-file FILE
@@ -654,6 +672,9 @@ async function main() {
     };
     validateActiveProfile(metadata.strategy_profile_id);
     const raw = await requestJson({ method: endpoint.method, url: endpoint.url, payload, binding });
+    if (args['debug-raw']) {
+      console.error(JSON.stringify(raw, null, 2));
+    }
     const normalized = normalizeBriefingResponse(raw, args, policy);
     normalized.strategy_profile_id = metadata.strategy_profile_id;
     normalized.policy_version = metadata.policy_version;
@@ -668,6 +689,41 @@ async function main() {
       normalized.event_path = eventPath;
     }
     console.log(JSON.stringify(normalized, null, 2));
+    return;
+  }
+
+  if (command === 'context') {
+    validateVenue(args.venue);
+    validateActiveProfile(args['strategy-profile-id'] || policy.id);
+    requireApiKey(binding, 'context');
+    const endpoint = resolveEndpoint(binding, 'context');
+    const url = endpoint.url.replace('{market_id}', encodeURIComponent(args['market-id']));
+    const raw = await requestJson({ method: endpoint.method, url, payload: {}, binding });
+    if (args['debug-raw']) {
+      console.error(JSON.stringify(raw, null, 2));
+    }
+    const context = {
+      market_id: args['market-id'],
+      strategy_profile_id: args['strategy-profile-id'] || policy.id,
+      policy_version: args['policy-version'] || policy.policyVersion,
+      run_id: args['run-id'] || '',
+      headline_summary: raw.summary || raw.headline || raw.question || raw.market?.question || '',
+      catalysts: asArray(raw.catalysts || raw.drivers || raw.signals),
+      liquidity_notes: raw.liquidity_notes || raw.liquidity || raw.market_microstructure || '',
+      timing_notes: raw.timing_notes || raw.timing || raw.time_horizon || '',
+      risk_notes: raw.risk_notes || raw.risks || raw.watchouts || '',
+      context_freshness: raw.context_freshness || raw.freshness || 'fresh',
+    };
+    const eventPath = maybeWriteEvent({
+      workflowName: args['workflow-name'],
+      runId: args['run-id'],
+      stepName: args['step-name'] || 'market_context',
+      payload: context,
+    });
+    if (eventPath) {
+      context.event_path = eventPath;
+    }
+    console.log(JSON.stringify(context, null, 2));
     return;
   }
 
@@ -690,6 +746,9 @@ async function main() {
       ],
     };
     const raw = await requestJson({ method: endpoint.method, url: endpoint.url, payload, binding });
+    if (args['debug-raw']) {
+      console.error(JSON.stringify(raw, null, 2));
+    }
     const normalized = normalizeDryRunResponse(raw, args, policy);
     const eventPath = maybeWriteEvent({
       workflowName: args['workflow-name'],
@@ -725,6 +784,9 @@ async function main() {
       source: args.source,
     };
     const raw = await requestJson({ method: endpoint.method, url: endpoint.url, payload, binding });
+    if (args['debug-raw']) {
+      console.error(JSON.stringify(raw, null, 2));
+    }
     const normalized = normalizeExecutionResponse(raw, args, policy);
     const eventPath = maybeWriteEvent({
       workflowName: args['workflow-name'],

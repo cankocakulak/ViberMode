@@ -146,7 +146,7 @@ Current binding model:
 - OpenClaw uses the normal native exec/tool path
 - there is no separate main-agent-only Simmer privilege
 - `simmer-supervisor` skills reach Simmer by calling the shared runtime adapter script
-- `simmer-briefing`, `simmer-dry-run`, and `simmer-executor` must all use that same adapter
+- `simmer-briefing`, `simmer-market-context`, `simmer-dry-run`, `simmer-executor`, and `simmer-journal` must all use that same adapter
 
 Storage roots:
 - journals: `runtime/journals/YYYY/MM/DD/{workflow_name}/`
