@@ -761,6 +761,9 @@ function evaluateRiskEnvelope(briefing, policy) {
   ) {
     newEntriesAllowed = false;
     portfolioNote = 'entries blocked by total exposure cap';
+  } else if (positions.some((position) => normalizePositionSide(position.side) === 'both')) {
+    newEntriesAllowed = false;
+    portfolioNote = 'entries blocked by hedged both-side position';
   } else if (positions.length >= policy.maxOpenPositions) {
     newEntriesAllowed = false;
     portfolioNote = 'entries blocked by active position count';
@@ -770,17 +773,23 @@ function evaluateRiskEnvelope(briefing, policy) {
 
   positions.forEach((position) => {
     const marketId = position.market_id || position.id || position.market?.id || '';
+    const positionSide = normalizePositionSide(position.side);
+    const hedgedBothSides = positionSide === 'both';
     actions.push({
       market_id: marketId,
-      decision: (
-        riskAlerts.length > 0
+      decision: hedgedBothSides
+        ? 'exit'
+        : (
+          riskAlerts.length > 0
         || (
           balanceSnapshot.max_total_exposure_notional !== null
           && balanceSnapshot.current_open_exposure > balanceSnapshot.max_total_exposure_notional
         )
       ) ? 'reduce' : 'hold',
-      reason: riskAlerts.length > 0
-        ? 'unresolved portfolio alert'
+      reason: hedgedBothSides
+        ? 'both-sided hedge requires explicit close-only unwind'
+        : riskAlerts.length > 0
+          ? 'unresolved portfolio alert'
         : (
           balanceSnapshot.max_total_exposure_notional !== null
           && balanceSnapshot.current_open_exposure > balanceSnapshot.max_total_exposure_notional
@@ -788,7 +797,8 @@ function evaluateRiskEnvelope(briefing, policy) {
           ? 'total exposure exceeds percent-of-balance cap'
           : 'position within envelope',
       priority: (
-        riskAlerts.length > 0
+        hedgedBothSides
+        || riskAlerts.length > 0
         || (
           balanceSnapshot.max_total_exposure_notional !== null
           && balanceSnapshot.current_open_exposure > balanceSnapshot.max_total_exposure_notional
@@ -804,6 +814,120 @@ function evaluateRiskEnvelope(briefing, policy) {
     new_entries_allowed: newEntriesAllowed,
     actions,
     portfolio_note: portfolioNote,
+  };
+}
+
+function isRiskSweepSource(args) {
+  return String(args.source || '').trim() === 'paper-risk-sweep'
+    || String(args['workflow-name'] || '').trim() === 'paper-risk-sweep';
+}
+
+function supportsExplicitClose(binding) {
+  return binding.raw?.binaryMarketExecution?.supportsExplicitClose === true;
+}
+
+function findBriefingPositionByMarketId(briefing, marketId) {
+  return asArray(briefing.positions).find((position) => (
+    position.market_id === marketId
+    || position.id === marketId
+    || position.market?.id === marketId
+  )) || null;
+}
+
+function buildRiskReductionGuard({ briefing, args, binding }) {
+  const position = findBriefingPositionByMarketId(briefing, args['market-id']);
+  const positionSide = normalizePositionSide(position?.side);
+  const requestedSide = normalizePositionSide(args.side);
+  const currentGrossExposure = position ? positionExposureValue(position) : 0;
+
+  if (!position) {
+    return {
+      pass: false,
+      reason: 'no live position found for requested reduce/exit market',
+      execution_mode: 'blocked_no_position',
+      current_position_side: '',
+      current_gross_exposure: 0,
+      post_trade_gross_exposure_estimate: null,
+      gross_exposure_guard_pass: false,
+    };
+  }
+  if (positionSide === 'both') {
+    return {
+      pass: false,
+      reason: 'both-sided position requires explicit close reconciliation; automatic hedge reduction is blocked',
+      execution_mode: 'blocked_both_position',
+      current_position_side: positionSide,
+      current_gross_exposure: currentGrossExposure,
+      post_trade_gross_exposure_estimate: null,
+      gross_exposure_guard_pass: false,
+    };
+  }
+  if (requestedSide && requestedSide !== positionSide) {
+    return {
+      pass: false,
+      reason: 'opposite-side hedge is forbidden for reduce/exit because it can increase gross exposure',
+      execution_mode: 'blocked_opposite_side_hedge',
+      current_position_side: positionSide,
+      current_gross_exposure: currentGrossExposure,
+      post_trade_gross_exposure_estimate: null,
+      gross_exposure_guard_pass: false,
+    };
+  }
+  if (!supportsExplicitClose(binding)) {
+    return {
+      pass: false,
+      reason: 'sim binding does not expose explicit sell/close semantics; reduce/exit is fail-closed to prevent gross exposure growth',
+      execution_mode: 'blocked_no_close_support',
+      current_position_side: positionSide,
+      current_gross_exposure: currentGrossExposure,
+      post_trade_gross_exposure_estimate: null,
+      gross_exposure_guard_pass: false,
+    };
+  }
+  return {
+    pass: true,
+    reason: '',
+    execution_mode: 'explicit_close',
+    current_position_side: positionSide,
+    current_gross_exposure: currentGrossExposure,
+    post_trade_gross_exposure_estimate: null,
+    gross_exposure_guard_pass: true,
+  };
+}
+
+function buildRiskReductionFailureDryRun(args, policy, balanceSnapshot, guard) {
+  return {
+    market_id: args['market-id'],
+    strategy_profile_id: args['strategy-profile-id'] || policy.id,
+    policy_version: args['policy-version'] || policy.policyVersion,
+    run_id: args['run-id'],
+    estimated_cost: 0,
+    estimated_shares: 0,
+    slippage_notes: '',
+    policy_pass: false,
+    policy_fail_reason: guard.reason,
+    reference_price: 0,
+    share_estimation_source: 'not_attempted',
+    raw_response_summary: {
+      response_keys: [],
+      trade_keys: [],
+      has_price: false,
+      has_shares: false,
+    },
+    balance_basis: balanceSnapshot.balance_basis,
+    balance_basis_field: balanceSnapshot.balance_basis_field,
+    current_open_exposure: balanceSnapshot.current_open_exposure,
+    max_position_notional: balanceSnapshot.max_position_notional,
+    max_total_exposure_notional: balanceSnapshot.max_total_exposure_notional,
+    remaining_new_exposure_capacity: balanceSnapshot.remaining_new_exposure_capacity,
+    venue_cap_notional: balanceSnapshot.venue_cap_notional,
+    final_proposed_size_cap: balanceSnapshot.final_proposed_size_cap,
+    proposed_size: Number(args.size),
+    current_position_side: guard.current_position_side,
+    current_gross_exposure: guard.current_gross_exposure,
+    post_trade_gross_exposure_estimate: guard.post_trade_gross_exposure_estimate,
+    gross_exposure_guard_pass: guard.gross_exposure_guard_pass,
+    execution_mode: guard.execution_mode,
   };
 }
 
@@ -993,6 +1117,30 @@ function summarizeResponseKeys(source) {
   return Object.keys(source || {});
 }
 
+function normalizePositionSide(value) {
+  const side = String(value || '').trim().toLowerCase();
+  if (['yes', 'long', 'up'].includes(side)) {
+    return 'yes';
+  }
+  if (['no', 'short', 'down'].includes(side)) {
+    return 'no';
+  }
+  if (['both', 'hedged', 'mixed'].includes(side)) {
+    return 'both';
+  }
+  return side;
+}
+
+function positionExposureValue(position) {
+  return roundMetric(numberOrNull(
+    position?.gross_exposure,
+    position?.current_value,
+    position?.market_value,
+    position?.value,
+    0
+  ));
+}
+
 function findPositionByMarketId(positionsRaw, marketId) {
   const source = (positionsRaw && typeof positionsRaw === 'object')
     ? (positionsRaw.positions || positionsRaw.data || positionsRaw.result || positionsRaw)
@@ -1009,41 +1157,84 @@ function normalizeExposurePosition(position, marketId) {
   if (!position) {
     return {};
   }
+  const side = normalizePositionSide(position.side || position.position_side);
   return {
     market_id: marketId,
+    side,
     shares: numberOrNull(position.shares, position.quantity, position.position_size, position.size, 0),
     avg_cost: numberOrNull(position.avg_cost, position.average_price, position.avgPrice, position.cost_basis, null),
-    current_value: numberOrNull(position.current_value, position.market_value, position.value, null),
+    current_value: roundMetric(estimatePositionCurrentValue(position), 4),
+    gross_exposure: roundMetric(estimateGrossExposure(position), 4),
     pnl: numberOrNull(position.pnl, position.unrealized_pnl, position.profit_loss, null),
     status: position.status || 'active',
   };
 }
 
 function estimatePositionCurrentValue(position) {
+  const side = normalizePositionSide(position.side || position.position_side);
   const explicitValue = numberOrNull(position.current_value, position.market_value, position.value, null);
   if (explicitValue !== null && explicitValue > 0) {
     return explicitValue;
   }
   const shares = numberOrNull(position.shares, position.quantity, position.position_size, position.size, 0);
+  const yesShares = numberOrNull(position.yes_shares, position.yesShares, position.yes_position_shares, null);
+  const noShares = numberOrNull(position.no_shares, position.noShares, position.no_position_shares, null);
+  const yesPrice = numberOrNull(position.yes_price, position.current_price_yes, position.mark_price_yes, position.external_price_yes, null);
+  const noPrice = numberOrNull(position.no_price, position.current_price_no, position.mark_price_no, position.external_price_no, null);
   const currentPrice = numberOrNull(position.current_price, position.mark_price, position.price, null);
   const avgEntry = numberOrNull(position.avg_entry, position.avg_cost, position.average_price, null);
   const pnl = numberOrNull(position.pnl, position.unrealized_pnl, 0);
   const markToMarket = shares > 0 && currentPrice !== null ? shares * currentPrice : null;
+  const pairedMarkToMarket = (
+    (yesShares !== null && yesShares > 0 && yesPrice !== null ? yesShares * yesPrice : 0)
+    + (noShares !== null && noShares > 0 && noPrice !== null ? noShares * noPrice : 0)
+  );
   const costPlusPnl = shares > 0 && avgEntry !== null ? (shares * avgEntry) + pnl : null;
-  const candidates = [markToMarket, costPlusPnl].filter((value) => value !== null && value > 0);
+  if (side === 'both') {
+    const candidates = [pairedMarkToMarket, costPlusPnl].filter((value) => value !== null && value > 0);
+    return candidates.length > 0 ? Math.max(...candidates) : 0;
+  }
+  const candidates = [markToMarket, pairedMarkToMarket, costPlusPnl].filter((value) => value !== null && value > 0);
   return candidates.length > 0 ? Math.max(...candidates) : 0;
 }
 
+function estimateGrossExposure(position) {
+  const explicitGross = numberOrNull(
+    position.gross_exposure,
+    position.total_exposure,
+    position.total_value,
+    null
+  );
+  if (explicitGross !== null && explicitGross > 0) {
+    return explicitGross;
+  }
+  const side = normalizePositionSide(position.side || position.position_side);
+  const yesShares = numberOrNull(position.yes_shares, position.yesShares, position.yes_position_shares, null);
+  const noShares = numberOrNull(position.no_shares, position.noShares, position.no_position_shares, null);
+  const yesPrice = numberOrNull(position.yes_price, position.current_price_yes, position.mark_price_yes, position.external_price_yes, null);
+  const noPrice = numberOrNull(position.no_price, position.current_price_no, position.mark_price_no, position.external_price_no, null);
+  const pairedMarkToMarket = (
+    (yesShares !== null && yesShares > 0 && yesPrice !== null ? yesShares * yesPrice : 0)
+    + (noShares !== null && noShares > 0 && noPrice !== null ? noShares * noPrice : 0)
+  );
+  if (side === 'both' && pairedMarkToMarket > 0) {
+    return pairedMarkToMarket;
+  }
+  return estimatePositionCurrentValue(position);
+}
+
 function normalizeBriefingPosition(position) {
+  const side = normalizePositionSide(position.side || position.position_side);
   return {
     market_id: position.market_id || position.id || position.market?.id || '',
     question: position.question || position.market_question || position.market?.question || '',
-    side: position.side || position.position_side || '',
+    side,
     shares: numberOrNull(position.shares, position.quantity, position.position_size, position.size, 0),
     avg_entry: numberOrNull(position.avg_entry, position.avg_cost, position.average_price, null),
     current_price: numberOrNull(position.current_price, position.mark_price, position.price, null),
     pnl: numberOrNull(position.pnl, position.unrealized_pnl, 0),
     current_value: roundMetric(estimatePositionCurrentValue(position), 4),
+    gross_exposure: roundMetric(estimateGrossExposure(position), 4),
     market_source: position.market_source || position.source || '',
     resolves_at: position.resolves_at || position.market?.resolves_at || '',
   };
@@ -1076,11 +1267,11 @@ function buildBalanceSnapshot(source, positions, policy) {
   const balanceCandidates = [
     { field: 'venues.sim.balance', value: numberOrNull(simVenue.balance, null) },
     { field: 'portfolio_value', value: numberOrNull(source.portfolio_value, source.balance, null) },
-    { field: 'positions.current_value_sum', value: roundMetric(positions.reduce((sum, position) => sum + numberOrNull(position.current_value, 0), 0), 4) },
+    { field: 'positions.gross_exposure_sum', value: roundMetric(positions.reduce((sum, position) => sum + positionExposureValue(position), 0), 4) },
   ];
   const selected = balanceCandidates.find((candidate) => candidate.value !== null && candidate.value > 0) || { field: '', value: null };
   const openExposure = roundMetric(
-    positions.reduce((sum, position) => sum + numberOrNull(position.current_value, 0), 0),
+    positions.reduce((sum, position) => sum + positionExposureValue(position), 0),
     4
   );
   const basis = selected.value;
@@ -1589,6 +1780,23 @@ async function main() {
     });
     const sizingBriefing = normalizeBriefingResponse(sizingBriefingRaw, args, policy);
     const sizingGate = evaluateSizingPolicyGate(sizingBriefing.balance_snapshot, Number(args.size), policy);
+    if (isRiskSweepSource(args)) {
+      const reductionGuard = buildRiskReductionGuard({ briefing: sizingBriefing, args, binding });
+      if (!reductionGuard.pass) {
+        const blocked = buildRiskReductionFailureDryRun(args, policy, sizingBriefing.balance_snapshot, reductionGuard);
+        const eventPath = maybeWriteEvent({
+          workflowName: args['workflow-name'],
+          runId: args['run-id'],
+          stepName: args['step-name'] || 'dry_run_result',
+          payload: blocked,
+        });
+        if (eventPath) {
+          blocked.event_path = eventPath;
+        }
+        console.log(JSON.stringify(blocked, null, 2));
+        return;
+      }
+    }
     const endpoint = resolveEndpoint(binding, 'dryRun');
     const payload = {
       venue: args.venue,
@@ -1617,6 +1825,11 @@ async function main() {
     normalized.venue_cap_notional = sizingBriefing.balance_snapshot.venue_cap_notional;
     normalized.final_proposed_size_cap = sizingBriefing.balance_snapshot.final_proposed_size_cap;
     normalized.proposed_size = Number(args.size);
+    normalized.current_position_side = '';
+    normalized.current_gross_exposure = null;
+    normalized.post_trade_gross_exposure_estimate = null;
+    normalized.gross_exposure_guard_pass = true;
+    normalized.execution_mode = 'entry_or_generic';
     normalized.policy_pass = normalized.policy_pass && sizingGate.pass;
     if (!sizingGate.pass) {
       normalized.policy_fail_reason = normalized.policy_fail_reason || sizingGate.reason;
@@ -1644,6 +1857,14 @@ async function main() {
     const dryRunReference = JSON.parse(fs.readFileSync(args['dry-run-ref-file'], 'utf8'));
     if (dryRunReference.policy_pass !== true) {
       throw new Error('execute requires dry_run_reference.policy_pass === true');
+    }
+    if (isRiskSweepSource(args)) {
+      if (dryRunReference.gross_exposure_guard_pass !== true) {
+        throw new Error('execute blocked: gross exposure guard did not pass for reduce/exit');
+      }
+      if (dryRunReference.execution_mode !== 'explicit_close') {
+        throw new Error('execute blocked: sim binding does not currently expose explicit close-only semantics for risk reduction');
+      }
     }
     const endpoint = resolveEndpoint(binding, 'execute');
     const payload = {

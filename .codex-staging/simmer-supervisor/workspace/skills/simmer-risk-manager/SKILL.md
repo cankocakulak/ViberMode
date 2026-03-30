@@ -172,6 +172,11 @@ Use this order:
 3. determine whether any open order increases risk in a disallowed way
 4. decide if fresh entries are allowed only after the first three checks pass
 
+Binary-position rule:
+- if a normalized position reports `side: both`, treat it as a hedged two-sided state, not a healthy single position
+- for `side: both`, prefer `exit` over `reduce`
+- do not assume a same-market opposite-side hedge is a valid reduction
+
 Expected portfolio note themes:
 - `entries blocked by unresolved alerts`
 - `entries blocked by total exposure cap`

@@ -55,6 +55,11 @@
       "limit": 8
     }
   },
+  "binaryMarketExecution": {
+    "supportsExplicitClose": false,
+    "reduceExitMode": "fail_closed_without_close_support",
+    "grossExposureGuard": true
+  },
   "storage": {
     "journalRoot": "runtime/journals",
     "reviewRoot": "runtime/reviews",

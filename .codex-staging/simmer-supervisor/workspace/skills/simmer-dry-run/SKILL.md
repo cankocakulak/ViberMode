@@ -117,6 +117,9 @@ Input rules:
 - if the proposal implies averaging down or rescue logic, mark `policy_pass: false`
 - enforce `max_position_pct_of_balance` and `max_total_exposure_pct_of_balance` using the current live balance basis
 - enforce `max_trade_notional_for_sim` as an operational venue cap
+- for `paper-risk-sweep` reduce or exit actions, never simulate a generic opposite-side notional buy as a reduction
+- if the runtime binding does not expose explicit binary close/sell semantics, fail closed instead of hedging
+- a reduce or exit action must never pass if it would increase pre-trade gross exposure
 
 ## Output Contract
 
@@ -151,6 +154,7 @@ Output rules:
 - if `policy_pass: true`, keep `policy_fail_reason` empty
 - if `policy_pass: false`, `policy_fail_reason` must be explicit
 - include the live balance basis and computed sizing caps when available
+- include gross-exposure guard fields when the source is `paper-risk-sweep`
 
 ## Policy Rules
 

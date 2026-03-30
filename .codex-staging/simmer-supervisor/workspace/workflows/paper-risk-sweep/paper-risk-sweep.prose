@@ -151,6 +151,8 @@ Rules:
   1. derive the existing position and execution intent
   2. derive `side` from the existing position being reduced or exited
   3. derive `size` from the action scope and current position sizing
+  4. for binary markets, never turn `reduce` or `exit` into an opposite-side notional buy
+  5. only continue if the runtime adapter confirms an explicit close-only reduction path or another path that does not increase gross exposure
   4. call simmer-dry-run with:
      - market_id
      - side
@@ -161,11 +163,16 @@ Rules:
      - strategy_profile_id
      - policy_version
      - run_id
-  5. if dry-run returns `policy_pass: false`, record the failure, do not execute that action, and continue to the next action
-  6. if dry-run returns `policy_pass: true`, call simmer-executor
+  6. if dry-run returns `policy_pass: false`, record the failure, do not execute that action, and continue to the next action
+  7. if dry-run returns `policy_pass: true`, call simmer-executor
 - If executor fails for any action, record the failure and stop further execution after that action.
 - Never call simmer-trade-planner.
 - Never emit `enter`.
+
+Gross exposure guard:
+- `reduce` must never increase pre-trade gross exposure
+- `exit` must never use a same-market hedge path that increases gross exposure
+- if the current position is already `both`, treat it as a close-only/manual-reconciliation problem and fail closed unless the runtime adapter exposes an explicit close path
 
 Required output:
 - status

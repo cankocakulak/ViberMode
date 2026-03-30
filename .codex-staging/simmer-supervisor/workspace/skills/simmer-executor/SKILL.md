@@ -116,6 +116,8 @@ Input rules:
 - if `strategy_profile_id` is not `crypto_momentum_v1`, stop and report a contract violation
 - if `dry_run_reference.policy_pass` is not `true`, do not execute
 - if the proposed trade would amount to averaging down or rescue logic, do not execute
+- for `paper-risk-sweep`, never convert `reduce` or `exit` into an opposite-side notional buy
+- only execute binary reduction if the dry-run reference proves an explicit close-only path and `gross_exposure_guard_pass: true`
 
 ## Output Contract
 
