@@ -168,12 +168,13 @@ These rules are mandatory:
 
 Use this order:
 1. evaluate unresolved portfolio or venue alerts
-2. evaluate open positions that violate the current envelope
+2. evaluate open positions that violate the current envelope, including `max_total_exposure_pct_of_balance`
 3. determine whether any open order increases risk in a disallowed way
 4. decide if fresh entries are allowed only after the first three checks pass
 
 Expected portfolio note themes:
 - `entries blocked by unresolved alerts`
+- `entries blocked by total exposure cap`
 - `entries blocked by active position risk`
 - `risk contained, no intervention required`
 

@@ -102,7 +102,7 @@ Runtime behavior:
 |-------|------|----------|-------------|
 | `market_id` | string | yes | The market being simulated |
 | `side` | string | yes | Proposed side from the planner |
-| `size` | number | yes | Proposed fixed-size paper position |
+| `size` | number | yes | Proposed policy-sized paper notional |
 | `venue` | string | yes | Must be `sim` |
 | `reasoning` | string | yes | Concise proposal rationale |
 | `source` | string | yes | Upstream origin, typically planner output reference |
@@ -115,6 +115,7 @@ Input rules:
 - if `venue` is not `sim`, stop and report a contract violation
 - if `strategy_profile_id` is not `crypto_momentum_v1`, stop and report a contract violation
 - if the proposal implies averaging down or rescue logic, mark `policy_pass: false`
+- enforce `max_position_pct_of_balance` and `max_total_exposure_pct_of_balance` using the current live balance basis
 
 ## Output Contract
 
@@ -148,6 +149,7 @@ Output rules:
 - if cost or size breaches policy, return `policy_pass: false`
 - if `policy_pass: true`, keep `policy_fail_reason` empty
 - if `policy_pass: false`, `policy_fail_reason` must be explicit
+- include the live balance basis and computed sizing caps when available
 
 ## Policy Rules
 

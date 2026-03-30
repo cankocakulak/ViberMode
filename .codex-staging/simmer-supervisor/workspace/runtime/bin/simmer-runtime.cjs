@@ -142,6 +142,9 @@ function parseStrategyProfile() {
     status: extractQuotedValue(activeBlock, 'status') || 'active',
     domain: extractQuotedValue(activeBlock, 'domain') || 'crypto_event_markets',
     policyVersion: extractQuotedValue(activeBlock, 'policy_version') || 'v1',
+    positionSizingMode: extractQuotedValue(activeBlock, 'position_sizing_mode') || 'percent_of_balance',
+    maxPositionPctOfBalance: extractNumberValue(activeBlock, 'max_position_pct_of_balance') || 0.10,
+    maxTotalExposurePctOfBalance: extractNumberValue(activeBlock, 'max_total_exposure_pct_of_balance') || 0.20,
     maxNewTradesPerHeartbeat: extractNumberValue(activeBlock, 'max_new_trades_per_heartbeat') || 1,
     maxOpenPositions: extractNumberValue(activeBlock, 'max_open_positions') || 3,
     minimumConfidence: extractNumberValue(activeBlock, 'minimum_confidence') || 0.68,
@@ -357,18 +360,27 @@ async function readPayload(args) {
   throw new Error('Missing JSON payload. Provide --payload-file, --payload, or JSON on stdin.');
 }
 
-function buildPortfolioConstraints(policy) {
+function buildPortfolioConstraints(policy, sizingSnapshot = {}) {
   return {
     venue: 'sim',
     domain: policy.domain,
     strategy_profile_id: policy.id,
     policy_version: policy.policyVersion,
+    position_sizing_mode: policy.positionSizingMode,
+    max_position_pct_of_balance: policy.maxPositionPctOfBalance,
+    max_total_exposure_pct_of_balance: policy.maxTotalExposurePctOfBalance,
     max_new_trades_per_heartbeat: policy.maxNewTradesPerHeartbeat,
     max_open_positions: policy.maxOpenPositions,
     minimum_confidence: policy.minimumConfidence,
     minimum_actionable_minutes_to_resolution: policy.minimumActionableMinutesToResolution,
     fresh_context_required: policy.freshContextRequired,
     allow_averaging_down: policy.allowAveragingDown,
+    balance_basis: sizingSnapshot.balance_basis ?? null,
+    balance_basis_field: sizingSnapshot.balance_basis_field || '',
+    max_position_notional: sizingSnapshot.max_position_notional ?? null,
+    max_total_exposure_notional: sizingSnapshot.max_total_exposure_notional ?? null,
+    current_open_exposure: sizingSnapshot.current_open_exposure ?? null,
+    remaining_new_exposure_capacity: sizingSnapshot.remaining_new_exposure_capacity ?? null,
   };
 }
 
@@ -728,6 +740,7 @@ function evaluateRiskEnvelope(briefing, policy) {
   const riskAlerts = asArray(briefing.risk_alerts);
   const positions = asArray(briefing.positions);
   const openOrders = asArray(briefing.open_orders);
+  const balanceSnapshot = briefing.balance_snapshot || {};
   const actions = [];
   let newEntriesAllowed = true;
   let portfolioNote = 'risk contained, no intervention required';
@@ -735,6 +748,15 @@ function evaluateRiskEnvelope(briefing, policy) {
   if (riskAlerts.length > 0) {
     newEntriesAllowed = false;
     portfolioNote = 'entries blocked by unresolved alerts';
+  } else if (!balanceSnapshot.sizing_basis_reliable) {
+    newEntriesAllowed = false;
+    portfolioNote = 'entries blocked by missing balance basis';
+  } else if (
+    balanceSnapshot.max_total_exposure_notional !== null
+    && balanceSnapshot.current_open_exposure > balanceSnapshot.max_total_exposure_notional
+  ) {
+    newEntriesAllowed = false;
+    portfolioNote = 'entries blocked by total exposure cap';
   } else if (positions.length >= policy.maxOpenPositions) {
     newEntriesAllowed = false;
     portfolioNote = 'entries blocked by active position count';
@@ -746,9 +768,28 @@ function evaluateRiskEnvelope(briefing, policy) {
     const marketId = position.market_id || position.id || position.market?.id || '';
     actions.push({
       market_id: marketId,
-      decision: riskAlerts.length > 0 ? 'reduce' : 'hold',
-      reason: riskAlerts.length > 0 ? 'unresolved portfolio alert' : 'position within envelope',
-      priority: riskAlerts.length > 0 ? 'high' : 'low',
+      decision: (
+        riskAlerts.length > 0
+        || (
+          balanceSnapshot.max_total_exposure_notional !== null
+          && balanceSnapshot.current_open_exposure > balanceSnapshot.max_total_exposure_notional
+        )
+      ) ? 'reduce' : 'hold',
+      reason: riskAlerts.length > 0
+        ? 'unresolved portfolio alert'
+        : (
+          balanceSnapshot.max_total_exposure_notional !== null
+          && balanceSnapshot.current_open_exposure > balanceSnapshot.max_total_exposure_notional
+        )
+          ? 'total exposure exceeds percent-of-balance cap'
+          : 'position within envelope',
+      priority: (
+        riskAlerts.length > 0
+        || (
+          balanceSnapshot.max_total_exposure_notional !== null
+          && balanceSnapshot.current_open_exposure > balanceSnapshot.max_total_exposure_notional
+        )
+      ) ? 'high' : 'low',
     });
   });
 
@@ -906,17 +947,21 @@ function normalizeBriefingResponse(raw, args, policy) {
     opportunities.new_markets = asArray(opportunities.new_markets);
   }
   opportunities.new_markets = opportunities.new_markets.map((market) => normalizeOpportunity(market, policy));
+  const positions = extractPositionsFromBriefing(source);
+  const balanceSnapshot = buildBalanceSnapshot(source, positions, policy);
+  const performance = extractPerformanceFromBriefing(source, source.venues?.sim || {});
   return {
     timestamp: source.timestamp || source.generated_at || source.as_of || new Date().toISOString(),
     strategy_profile_id: args['strategy-profile-id'] || policy.id,
     policy_version: args['policy-version'] || policy.policyVersion,
     run_id: args['run-id'] || '',
-    positions: asArray(source.positions || source.open_positions),
+    positions,
     open_orders: asArray(source.open_orders || source.orders),
     risk_alerts: asArray(source.risk_alerts || source.alerts),
     opportunities,
-    performance: source.performance || source.portfolio_performance || {},
-    portfolio_constraints: source.portfolio_constraints || buildPortfolioConstraints(policy),
+    performance,
+    balance_snapshot: balanceSnapshot,
+    portfolio_constraints: source.portfolio_constraints || buildPortfolioConstraints(policy, balanceSnapshot),
   };
 }
 
@@ -968,6 +1013,106 @@ function normalizeExposurePosition(position, marketId) {
     pnl: numberOrNull(position.pnl, position.unrealized_pnl, position.profit_loss, null),
     status: position.status || 'active',
   };
+}
+
+function estimatePositionCurrentValue(position) {
+  const explicitValue = numberOrNull(position.current_value, position.market_value, position.value, null);
+  if (explicitValue !== null && explicitValue > 0) {
+    return explicitValue;
+  }
+  const shares = numberOrNull(position.shares, position.quantity, position.position_size, position.size, 0);
+  const currentPrice = numberOrNull(position.current_price, position.mark_price, position.price, null);
+  const avgEntry = numberOrNull(position.avg_entry, position.avg_cost, position.average_price, null);
+  const pnl = numberOrNull(position.pnl, position.unrealized_pnl, 0);
+  const markToMarket = shares > 0 && currentPrice !== null ? shares * currentPrice : null;
+  const costPlusPnl = shares > 0 && avgEntry !== null ? (shares * avgEntry) + pnl : null;
+  const candidates = [markToMarket, costPlusPnl].filter((value) => value !== null && value > 0);
+  return candidates.length > 0 ? Math.max(...candidates) : 0;
+}
+
+function normalizeBriefingPosition(position) {
+  return {
+    market_id: position.market_id || position.id || position.market?.id || '',
+    question: position.question || position.market_question || position.market?.question || '',
+    side: position.side || position.position_side || '',
+    shares: numberOrNull(position.shares, position.quantity, position.position_size, position.size, 0),
+    avg_entry: numberOrNull(position.avg_entry, position.avg_cost, position.average_price, null),
+    current_price: numberOrNull(position.current_price, position.mark_price, position.price, null),
+    pnl: numberOrNull(position.pnl, position.unrealized_pnl, 0),
+    current_value: roundMetric(estimatePositionCurrentValue(position), 4),
+    market_source: position.market_source || position.source || '',
+    resolves_at: position.resolves_at || position.market?.resolves_at || '',
+  };
+}
+
+function extractPositionsFromBriefing(source) {
+  const direct = asArray(source.positions || source.open_positions);
+  if (direct.length > 0) {
+    return direct.map((position) => normalizeBriefingPosition(position));
+  }
+  const simVenue = source.venues?.sim || {};
+  return asArray(simVenue.positions || simVenue.positions_needing_attention)
+    .map((position) => normalizeBriefingPosition(position));
+}
+
+function extractPerformanceFromBriefing(source, simVenue = {}) {
+  return source.performance
+    || source.portfolio_performance
+    || {
+      total_pnl: numberOrNull(simVenue.pnl, null),
+      pnl_percent: numberOrNull(source.performance?.pnl_percent, null),
+      win_rate: numberOrNull(source.performance?.win_rate, null),
+      rank: numberOrNull(source.performance?.rank, null),
+      total_agents: numberOrNull(source.performance?.total_agents, null),
+    };
+}
+
+function buildBalanceSnapshot(source, positions, policy) {
+  const simVenue = source.venues?.sim || {};
+  const balanceCandidates = [
+    { field: 'venues.sim.balance', value: numberOrNull(simVenue.balance, null) },
+    { field: 'portfolio_value', value: numberOrNull(source.portfolio_value, source.balance, null) },
+    { field: 'positions.current_value_sum', value: roundMetric(positions.reduce((sum, position) => sum + numberOrNull(position.current_value, 0), 0), 4) },
+  ];
+  const selected = balanceCandidates.find((candidate) => candidate.value !== null && candidate.value > 0) || { field: '', value: null };
+  const openExposure = roundMetric(
+    positions.reduce((sum, position) => sum + numberOrNull(position.current_value, 0), 0),
+    4
+  );
+  const basis = selected.value;
+  const maxPositionNotional = basis !== null ? roundMetric(basis * policy.maxPositionPctOfBalance, 2) : null;
+  const maxTotalExposureNotional = basis !== null ? roundMetric(basis * policy.maxTotalExposurePctOfBalance, 2) : null;
+  return {
+    balance_basis: basis,
+    balance_basis_field: selected.field,
+    available_balance: basis,
+    current_open_exposure: openExposure,
+    current_open_exposure_pct_of_balance: basis && basis > 0 ? roundMetric(openExposure / basis, 4) : null,
+    max_position_notional: maxPositionNotional,
+    max_total_exposure_notional: maxTotalExposureNotional,
+    remaining_new_exposure_capacity: (
+      maxTotalExposureNotional !== null
+        ? roundMetric(Math.max(0, maxTotalExposureNotional - openExposure), 2)
+        : null
+    ),
+    sizing_basis_reliable: basis !== null && basis > 0,
+  };
+}
+
+function evaluateSizingPolicyGate(balanceSnapshot, proposedSize, policy) {
+  if (!balanceSnapshot?.sizing_basis_reliable) {
+    return { pass: false, reason: 'missing balance basis for sizing policy' };
+  }
+  if (proposedSize > balanceSnapshot.max_position_notional) {
+    return { pass: false, reason: 'proposed size exceeds max_position_pct_of_balance' };
+  }
+  if (balanceSnapshot.current_open_exposure >= balanceSnapshot.max_total_exposure_notional) {
+    return { pass: false, reason: 'current open exposure already exceeds max_total_exposure_pct_of_balance' };
+  }
+  if ((balanceSnapshot.current_open_exposure + proposedSize) > balanceSnapshot.max_total_exposure_notional) {
+    return { pass: false, reason: 'proposed size breaches max_total_exposure_pct_of_balance' };
+  }
+  return { pass: true, reason: '' };
 }
 
 async function applyBriefingFallbackDiscovery(normalized, binding, policy) {
@@ -1415,6 +1560,21 @@ async function main() {
     validateVenue(args.venue);
     validateActiveProfile(args['strategy-profile-id']);
     requireApiKey(binding, 'dry-run');
+    const briefingEndpoint = resolveEndpoint(binding, 'briefing');
+    const sizingBriefingRaw = await requestJson({
+      method: briefingEndpoint.method,
+      url: briefingEndpoint.url,
+      payload: {
+        venue: args.venue,
+        domain: policy.domain,
+        strategy_profile_id: args['strategy-profile-id'],
+        policy_version: args['policy-version'],
+        run_id: args['run-id'] || '',
+      },
+      binding,
+    });
+    const sizingBriefing = normalizeBriefingResponse(sizingBriefingRaw, args, policy);
+    const sizingGate = evaluateSizingPolicyGate(sizingBriefing.balance_snapshot, Number(args.size), policy);
     const endpoint = resolveEndpoint(binding, 'dryRun');
     const payload = {
       venue: args.venue,
@@ -1434,6 +1594,17 @@ async function main() {
       console.error(JSON.stringify(raw, null, 2));
     }
     const normalized = normalizeDryRunResponse(raw, args, policy);
+    normalized.balance_basis = sizingBriefing.balance_snapshot.balance_basis;
+    normalized.balance_basis_field = sizingBriefing.balance_snapshot.balance_basis_field;
+    normalized.current_open_exposure = sizingBriefing.balance_snapshot.current_open_exposure;
+    normalized.max_position_notional = sizingBriefing.balance_snapshot.max_position_notional;
+    normalized.max_total_exposure_notional = sizingBriefing.balance_snapshot.max_total_exposure_notional;
+    normalized.remaining_new_exposure_capacity = sizingBriefing.balance_snapshot.remaining_new_exposure_capacity;
+    normalized.proposed_size = Number(args.size);
+    normalized.policy_pass = normalized.policy_pass && sizingGate.pass;
+    if (!sizingGate.pass) {
+      normalized.policy_fail_reason = normalized.policy_fail_reason || sizingGate.reason;
+    }
     const eventPath = maybeWriteEvent({
       workflowName: args['workflow-name'],
       runId: args['run-id'],

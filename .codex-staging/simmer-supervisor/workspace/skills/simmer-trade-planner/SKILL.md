@@ -64,6 +64,7 @@ Binding rules:
 - never produce averaging-down or rescue logic
 - do not rotate, rank, or randomly choose among profiles
 - enforce the active profile minimum actionable timing window deterministically
+- size proposals from policy, not from fixed constants
 
 OpenClaw skill format does not provide a native external-config loader for this skill type.
 
@@ -122,6 +123,7 @@ Input rules:
 - if `market_context.context_freshness` is stale or thin, return `decision: skip`
 - if the market is inside the active profile minimum actionable timing window, return `decision: skip`
 - treat `opportunity_score: 0` as non-signal; never use it as positive evidence by itself
+- size must be capped by `min(briefing.balance_snapshot.max_position_notional, briefing.balance_snapshot.remaining_new_exposure_capacity)`
 
 ## Output Contract
 
@@ -166,7 +168,8 @@ Use this order:
 2. confirm that briefing does not contain unresolved blocking risk
 3. confirm that market context is fresh enough and not too thin
 4. evaluate whether catalysts and timing support the active profile
-5. size only within the fixed-small envelope
+5. size only within the percent-of-balance policy envelope
+6. if sizing basis is missing or ambiguous, return `decision: skip`
 
 Expected `skip_reason` themes:
 - `risk gate blocked new entries`

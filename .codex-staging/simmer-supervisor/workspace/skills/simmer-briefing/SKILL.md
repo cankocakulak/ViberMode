@@ -139,6 +139,7 @@ open_orders:
 risk_alerts:
 opportunities:
 performance:
+balance_snapshot:
 portfolio_constraints:
 ```
 
@@ -158,11 +159,22 @@ Populate `portfolio_constraints` from the active config binding, at minimum:
 - `domain: crypto_event_markets`
 - `strategy_profile_id: crypto_momentum_v1`
 - `policy_version: v1`
+- `position_sizing_mode: percent_of_balance`
+- `max_position_pct_of_balance: 0.10`
+- `max_total_exposure_pct_of_balance: 0.20`
 - `max_new_trades_per_heartbeat: 1`
 - `max_open_positions: 3`
 - `minimum_confidence: 0.68`
 - `fresh_context_required: true`
 - `allow_averaging_down: false`
+
+When available from the live briefing, also normalize:
+- `balance_snapshot.balance_basis`
+- `balance_snapshot.balance_basis_field`
+- `balance_snapshot.current_open_exposure`
+- `balance_snapshot.max_position_notional`
+- `balance_snapshot.max_total_exposure_notional`
+- `balance_snapshot.remaining_new_exposure_capacity`
 
 ## Tracking Compatibility
 
