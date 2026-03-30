@@ -7,14 +7,21 @@
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./agents/*": "./.agents/*"
+    "./agents/*": "./.agents/*",
+    "./packs/*": "./packs/*",
+    "./adapters/*": "./adapters/*"
   },
   "files": [
     "src",
-    ".agents"
+    ".agents",
+    ".cursor",
+    "initiatives",
+    "packs",
+    "adapters",
+    "scripts"
   ],
   "scripts": {
-    "install:codex": "bash scripts/install-codex-skills.sh",
+    "install:codex": "bash adapters/codex/install/install-skills.sh",
     "validate": "echo 'Agent validation not yet implemented'"
   },
   "keywords": [

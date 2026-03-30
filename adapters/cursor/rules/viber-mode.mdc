@@ -1,0 +1,79 @@
+---
+alwaysApply: true
+---
+# ViberMode Framework
+
+Vendor-agnostic AI agent development framework. Agents are the source of truth.
+
+## Agent Categories
+
+### Product Agents — `viber-mode/packs/vibermode/roles/product/`
+
+Sequential pipeline from idea to implementation. Each agent produces artifacts that feed the next.
+
+- **analyzer** — Discovers project structure, tech stack, patterns, conventions
+- **brainstormer** — Rapid ideation, generates structured creative options
+- **prd** — Produces lean, developer-ready Product Requirements Documents
+- **ux-designer** — UX flows, interaction patterns, visual direction, branding
+- **user-stories** — Generates prioritized user stories with acceptance criteria
+- **task-planner** — Converts user stories into `tasks.json` for the implementation pipeline
+- **implementation-runner** — Implements one task per session from `tasks.json` (repeat until done)
+- **ralph-converter** — Legacy alias for `task-planner`
+- **ralph-runner** — Legacy alias for `implementation-runner`
+
+Output contract: **Analysis → Document → Next Step Handoff → Artifacts**
+
+### Iterate Agents — `viber-mode/packs/vibermode/roles/iterate/`
+
+Standalone tools. Use any agent independently, in any order, anytime.
+
+- **scout** — Quickly reads a module and produces a context summary
+- **planner** — Investigates bugs or plans features. Thinks before acting.
+- **reviewer** — Validates code quality, identifies issues, suggests improvements
+- **ux-tweaker** — UI/UX perspective: design patterns, accessibility, interactions
+
+Output contract: **Plan → Changes → Patch → Tests** (varies per agent)
+
+## Workflow
+
+### Product Pipeline (new features from scratch)
+
+```
+Analyzer → Brainstormer → PRD → UX Designer → User Stories → Task Planner → Implementation Runner ↺
+```
+
+### Iterate (anytime, any order)
+
+```
+Scout     → "What is this code?"
+Planner   → "How should I fix/build this?"
+Reviewer  → "Is this code good?"
+UX Tweaker → "How should this look/feel?"
+```
+
+Use any subset. Skip what you don't need. Iterate agents work standalone.
+
+## Usage
+
+Reference agents by name:
+- "Use the analyzer agent to explore this project"
+- "Use the brainstormer agent to explore ideas for..."
+- "Use the prd agent to write requirements for..."
+- "Use the ux-designer agent to design the flow for..."
+- "Use the user-stories agent to break down..."
+- "Use the task-planner agent to create tasks.json from stories"
+- "Use the implementation-runner agent to implement the next task"
+- "Use the ralph-converter agent to create tasks.json from stories"
+- "Use the ralph-runner agent to implement the next task"
+- "Use the scout agent to understand this module"
+- "Use the planner agent to investigate / plan..."
+- "Use the reviewer agent to review this code"
+- "Use the ux-tweaker agent to improve the UX"
+
+## Guidelines
+
+- Agents are tool-agnostic — no IDE-specific assumptions
+- Follow the output contract for the agent category
+- Keep changes minimal and focused
+- Match existing codebase patterns
+- Product agents produce standalone artifacts in docs/ and leave a next-step handoff with context plus a suggested prompt

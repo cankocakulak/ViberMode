@@ -51,37 +51,33 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 ## Directory Structure
 
 ```
-.agents/                        # Source of truth (tool-agnostic)
-├── roles/                      # Reusable agent roles
-│   ├── product/                # Pipeline roles (idea → implementation)
-│   │   ├── analyzer.md
-│   │   ├── brainstormer.md
-│   │   ├── prd.md
-│   │   ├── ux-designer.md
-│   │   ├── user-stories.md
-│   │   ├── task-planner.md
-│   │   ├── implementation-runner.md
-│   │   ├── ralph-converter.md
-│   │   └── ralph-runner.md
-│   └── iterate/                # Standalone roles (use anytime, any order)
-│       ├── scout.md
-│       ├── planner.md
-│       ├── reviewer.md
-│       └── ux-tweaker.md
-├── product/                    # Legacy compatibility redirects
-├── iterate/                    # Legacy compatibility redirects
-├── skills/                     # Codex Skills (SKILL.md per agent)
-└── workflows/                  # Multi-agent workflow definitions
+packs/                          # Canonical authoring roots
+├── vibermode/
+│   ├── roles/                  # Generic agent role contracts
+│   ├── workflows/              # Generic workflow contracts
+│   └── templates/              # Generic templates
+└── simmer/
+    └── paper-trading/          # Domain pack consumed by simmer-supervisor
 
-.cursor/
-├── commands/                   # Slash commands (/analyzer, /prd, etc.)
-└── rules/
-    └── viber-mode.mdc          # Always-on context (agent index + contracts)
+adapters/                       # Platform-specific projections
+├── codex/
+│   ├── skills/                 # Codex skill wrappers
+│   └── install/                # Codex install/publish scripts
+├── cursor/
+│   ├── commands/               # Cursor slash commands
+│   └── rules/                  # Cursor always-on context
+└── openclaw/                   # OpenClaw projection/publish surface
+
+.agents/                        # Compatibility links to canonical/adapted content
+.cursor/                        # Compatibility links for existing Cursor consumers
+initiatives/                    # Compatibility links for existing Simmer paths
+scripts/                        # Compatibility wrappers for moved scripts
 
 AGENTS.md                       # Agent index for Codex App, Claude Code, etc.
-
 src/                            # Future runtime code
 ```
+
+Canonical content now lives under `packs/`. Platform integrations live under `adapters/`. Legacy `.agents`, `.cursor`, and `initiatives/*` paths are kept as compatibility shims during the transition.
 
 ## Agents
 
@@ -160,7 +156,7 @@ Type `/` in chat to invoke any agent:
 /ux-tweaker      — UI/UX refinements
 ```
 
-Integration files: `.cursor/commands/` (slash commands) + `.cursor/rules/viber-mode.mdc` (always-on context)
+Integration files: `adapters/cursor/commands/` (slash commands) + `adapters/cursor/rules/viber-mode.mdc` (always-on context)
 
 ### Codex App — Skills
 
@@ -169,7 +165,7 @@ Install ViberMode agents as Codex Skills:
 ```bash
 npm run install:codex
 # or directly:
-./scripts/install-codex-skills.sh
+./adapters/codex/install/install-skills.sh
 ```
 
 Then use agents naturally in Codex App:
@@ -202,14 +198,14 @@ Skills are installed to `~/.codex/skills/` and auto-trigger based on intent.
 ### How It Connects
 
 ```
-.agents/roles/iterate/planner.md        ← Source of truth (portable)
+packs/vibermode/roles/iterate/planner.md        ← Source of truth (portable)
          ↕ referenced by
-.cursor/commands/planner.md             ← Cursor: slash command
-.agents/skills/planner/SKILL.md         ← Codex: auto-trigger skill
+adapters/cursor/commands/planner.md             ← Cursor: slash command
+adapters/codex/skills/planner/SKILL.md         ← Codex: auto-trigger skill
 AGENTS.md                               ← Others: agent index
 ```
 
-No duplication. All integrations are thin wrappers pointing to `.agents/`.
+No duplication. All integrations are thin wrappers pointing to `packs/vibermode/`.
 
 ## Using in Your Own Projects
 
@@ -222,10 +218,10 @@ git submodule add <repo-url> viber-mode
 Then copy the Cursor integration files:
 
 ```bash
-cp -r viber-mode/.cursor/ .cursor/
+cp -r viber-mode/adapters/cursor/ .cursor/
 ```
 
-All agents referenced via `viber-mode/.agents/roles/` paths — works out of the box.
+All agents referenced via `viber-mode/packs/vibermode/roles/` paths — works out of the box.
 
 ## Roadmap
 
