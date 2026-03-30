@@ -19,6 +19,7 @@ Live journals, reviews, and run logs should stay in the OpenClaw runtime, not in
 packs/simmer/paper-trading/
   README.md
   architecture.md
+  STRATEGY.md
   config/
     strategy-profiles.yaml
     tracking-schema.yaml
@@ -36,6 +37,7 @@ packs/simmer/paper-trading/
 ## What Lives Here
 
 - human-maintained architecture docs
+- strategy role and current-state context
 - portable OpenClaw-ready contracts
 - versioned strategy-profile definitions
 - attribution/tracking schema
@@ -63,6 +65,7 @@ Those belong in the OpenClaw runtime.
 For this initiative, the source-of-truth files are:
 
 - `packs/simmer/paper-trading/architecture.md`
+- `packs/simmer/paper-trading/STRATEGY.md`
 - `packs/simmer/paper-trading/config/strategy-profiles.yaml`
 - `packs/simmer/paper-trading/config/tracking-schema.yaml`
 - `packs/simmer/paper-trading/contracts/agent.md`
