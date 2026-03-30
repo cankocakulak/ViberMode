@@ -148,11 +148,18 @@ Rules:
   - status: SKIPPED_BY_RISK_BLOCK
 - Shortlist at most {candidate_limit} candidate markets from briefing.opportunities.new_markets.
 - Before shortlisting, drop any market whose `domain_match` is not true for `briefing.portfolio_constraints.domain`.
+- Before shortlisting, drop any market whose `effective_tradable` is not true.
 - Before shortlisting, drop any market whose remaining time is below `briefing.portfolio_constraints.minimum_actionable_minutes_to_resolution`.
+- Before shortlisting, drop any market with any of these blockers:
+  - `external_price_yes_at_or_above_0.99`
+  - `market_closed_or_resolved`
+  - `market_state_overrides_timing`
+  - `market_id_mismatch`
 - For each shortlisted market:
   1. call simmer-market-context
   2. call simmer-trade-planner with market_context + briefing + risk_evaluation
 - `market_id` from briefing shortlist remains the lookup key; if native context lookup 404s, rely on the adapter's fallback synthesis rather than swapping identifier surfaces inside the workflow
+- If a downstream stage returns a different `market_id` than the shortlisted candidate, reject that candidate immediately and do not call dry-run.
 - Keep only proposals strong enough for the active policy envelope.
 - Select exactly one best candidate if any valid proposal remains.
 - If no candidate is strong enough, return:

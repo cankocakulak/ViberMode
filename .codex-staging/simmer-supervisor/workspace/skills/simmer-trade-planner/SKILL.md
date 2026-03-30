@@ -117,8 +117,11 @@ Input rules:
 - if `risk_evaluation.new_entries_allowed` is `false`, return `decision: skip`
 - if `briefing.risk_alerts` still contains unresolved alerts, return `decision: skip`
 - if `market_context.risk_notes` or upstream shortlist marks the candidate as out-of-domain for `crypto_event_markets`, return `decision: skip`
+- if `market_context.market_id` does not exactly match the shortlisted `market_id`, return `decision: skip`
+- if upstream shortlist or `market_context` marks the market as closed, resolved, deterministic, or not effectively tradable, return `decision: skip`
 - if `market_context.context_freshness` is stale or thin, return `decision: skip`
 - if the market is inside the active profile minimum actionable timing window, return `decision: skip`
+- treat `opportunity_score: 0` as non-signal; never use it as positive evidence by itself
 
 ## Output Contract
 
@@ -168,6 +171,8 @@ Use this order:
 Expected `skip_reason` themes:
 - `risk gate blocked new entries`
 - `market outside active domain`
+- `market_id integrity failure`
+- `market not tradable`
 - `context too stale`
 - `timing window too short`
 - `liquidity too thin`

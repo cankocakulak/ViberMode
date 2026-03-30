@@ -114,8 +114,10 @@ Input rules:
 - if `strategy_profile_id` is not `crypto_momentum_v1`, stop and report a contract violation
 - if `domain` does not align with `crypto_event_markets`, mark context as out-of-policy
 - if upstream shortlist marks the market as `domain_match: false`, stop and return out-of-policy rather than attempting context lookup
+- if upstream shortlist marks the market as closed, resolved, deterministic, or not effectively tradable, stop and return a tradability block instead of treating timing alone as sufficient
 - if `current_position` implies averaging down or rescue logic would be required, do not suggest a remedy here; record it only as risk context
 - if remaining time is below the active profile minimum actionable window, mark the context as timing-blocked
+- preserve the exact incoming `market_id`; if live source data returns a different id, mark `market_id_integrity_ok: false` and fail the candidate
 
 ## Output Contract
 
@@ -154,6 +156,7 @@ Field rules:
 - `risk_notes` should highlight context-specific downside or ambiguity
 - `context_freshness` must clearly mark whether context is fresh, thin, or stale
 - if the market is too close to resolution for the active profile, mark `context_freshness` as timing-blocked or equivalent
+- if live state says the market is closed, resolved, or effectively deterministic, mark `context_freshness` as non-tradable even if minutes remain
 - if the adapter had to synthesize fallback context, make that explicit in `risk_notes` or an equivalent metadata field
 
 ## Tracking Compatibility

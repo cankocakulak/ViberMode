@@ -426,31 +426,74 @@ function normalizeTags(value) {
 }
 
 function normalizeOpportunity(market, policy) {
+  const marketId = String(market.market_id || market.id || market.marketId || market.uuid || '').trim();
+  const status = String(market.status || market.market_status || '').trim().toLowerCase();
+  const externalPriceYes = (
+    market.external_price_yes !== undefined && market.external_price_yes !== null
+      ? Number(market.external_price_yes)
+      : null
+  );
   const resolvesAt = market.resolves_at || market.resolve_time || market.end_time || '';
   const minutesToResolution = (
     typeof market.minutes_to_resolution === 'number'
       ? market.minutes_to_resolution
       : minutesUntil(resolvesAt)
   );
-  const domainMatch = marketMatchesDomain(market, policy.domain);
-  const timingActionable = (
-    minutesToResolution === null
-    || minutesToResolution >= policy.minimumActionableMinutesToResolution
+  const closedOrResolved = Boolean(
+    market.closed === true
+    || market.resolved === true
+    || ['closed', 'resolved', 'settled', 'inactive', 'expired', 'finalized'].includes(status)
   );
+  const deterministicOutcome = Boolean(externalPriceYes !== null && externalPriceYes >= 0.99);
+  const domainMatch = marketMatchesDomain(market, policy.domain);
+  const stateActionable = !closedOrResolved && !deterministicOutcome;
+  const timingActionable = (
+    stateActionable
+    && (
+      minutesToResolution === null
+      || minutesToResolution >= policy.minimumActionableMinutesToResolution
+    )
+  );
+  const opportunityScore = Number(market.opportunity_score ?? market.score ?? market.rank ?? 0);
   return {
     ...market,
+    market_id: marketId,
+    market_status: status || 'unknown',
+    external_price_yes: externalPriceYes,
     domain_match: domainMatch,
+    state_actionable: stateActionable,
     timing_actionable: timingActionable,
+    effective_tradable: domainMatch && stateActionable && timingActionable,
     minutes_to_resolution: minutesToResolution,
+    closed_or_resolved: closedOrResolved,
+    deterministic_outcome: deterministicOutcome,
+    opportunity_score: opportunityScore,
+    opportunity_score_informative: opportunityScore > 0,
+    market_id_integrity_ok: market.market_id_integrity_ok !== false,
     opportunity_blockers: [
       ...(domainMatch ? [] : [`domain_mismatch:${policy.domain}`]),
-      ...(timingActionable ? [] : [`timing_window_too_short:${minutesToResolution}m_remaining_below_${policy.minimumActionableMinutesToResolution}m_minimum`]),
+      ...(closedOrResolved ? [`market_closed_or_resolved:${status || 'closed'}`] : []),
+      ...(deterministicOutcome ? [`external_price_yes_at_or_above_0.99:${externalPriceYes}`] : []),
+      ...(
+        stateActionable && !timingActionable
+          ? [`timing_window_too_short:${minutesToResolution}m_remaining_below_${policy.minimumActionableMinutesToResolution}m_minimum`]
+          : []
+      ),
+      ...(
+        !stateActionable
+        && minutesToResolution !== null
+        && minutesToResolution >= policy.minimumActionableMinutesToResolution
+          ? [`market_state_overrides_timing:${minutesToResolution}m_remaining`]
+          : []
+      ),
+      ...(market.market_id_integrity_ok === false ? [`market_id_mismatch:${market.source_market_id || 'unknown'}`] : []),
+      ...(opportunityScore > 0 ? [] : ['opportunity_score_uninformative']),
     ],
   };
 }
 
 function countEligibleOpportunities(markets) {
-  return asArray(markets).filter((market) => market.domain_match && market.timing_actionable).length;
+  return asArray(markets).filter((market) => market.effective_tradable).length;
 }
 
 function extractMarketsArray(raw) {
@@ -528,6 +571,37 @@ async function discoverFallbackOpportunities(binding, policy) {
     candidates: Array.from(seen.values())
       .filter((market) => market.domain_match && market.timing_actionable),
   };
+}
+
+async function enrichOpportunitiesWithLiveState(binding, markets, policy) {
+  const enriched = await Promise.all(asArray(markets).map(async (market) => {
+    if (!market.market_id) {
+      return normalizeOpportunity({
+        ...market,
+        market_id_integrity_ok: false,
+        source_market_id: '',
+      }, policy);
+    }
+    try {
+      const endpoint = resolveEndpointUrl(binding, 'getMarket', { market_id: market.market_id });
+      const raw = await requestJson({ method: endpoint.method, url: endpoint.url, payload: {}, binding });
+      const source = raw.market || raw.data || raw.result || raw;
+      const sourceMarketId = String(source.market_id || source.id || source.marketId || source.uuid || '').trim();
+      return normalizeOpportunity({
+        ...market,
+        ...source,
+        market_id: market.market_id,
+        source_market_id: sourceMarketId || market.market_id,
+        market_id_integrity_ok: !sourceMarketId || sourceMarketId === market.market_id,
+      }, policy);
+    } catch (error) {
+      return normalizeOpportunity({
+        ...market,
+        live_state_error: error.message,
+      }, policy);
+    }
+  }));
+  return enriched;
 }
 
 function maybeWriteEvent({ workflowName, runId, stepName, payload }) {
@@ -690,7 +764,21 @@ function evaluateRiskEnvelope(briefing, policy) {
 
 function buildFallbackContext({ marketId, marketRaw, positionsRaw, tradesRaw, args, policy, nativeContextError }) {
   const market = marketRaw.market || marketRaw;
+  const sourceMarketId = String(market.market_id || market.id || market.marketId || market.uuid || '').trim();
+  const marketIdIntegrityOk = !sourceMarketId || sourceMarketId === marketId;
   const minutesToResolution = minutesUntil(market.resolves_at);
+  const status = String(market.status || market.market_status || '').trim().toLowerCase();
+  const closedOrResolved = Boolean(
+    market.closed === true
+    || market.resolved === true
+    || ['closed', 'resolved', 'settled', 'inactive', 'expired', 'finalized'].includes(status)
+  );
+  const externalPriceYes = (
+    market.external_price_yes !== undefined && market.external_price_yes !== null
+      ? Number(market.external_price_yes)
+      : null
+  );
+  const deterministicOutcome = Boolean(externalPriceYes !== null && externalPriceYes >= 0.99);
   const positions = asArray(positionsRaw.positions);
   const relatedPosition = positions.find((position) => (
     position.market_id === marketId
@@ -739,6 +827,15 @@ function buildFallbackContext({ marketId, marketRaw, positionsRaw, tradesRaw, ar
   if (market.status && market.status !== 'active') {
     riskNotes.push(`market_status:${market.status}`);
   }
+  if (!marketIdIntegrityOk) {
+    riskNotes.push(`market_id_mismatch:requested=${marketId};source=${sourceMarketId}`);
+  }
+  if (closedOrResolved) {
+    riskNotes.push(`market_closed_or_resolved:${status || 'closed'}`);
+  }
+  if (deterministicOutcome) {
+    riskNotes.push(`external_price_yes_at_or_above_0.99:${externalPriceYes}`);
+  }
   if (relatedPosition) {
     riskNotes.push('Existing position history detected for this market.');
   }
@@ -760,6 +857,13 @@ function buildFallbackContext({ marketId, marketRaw, positionsRaw, tradesRaw, ar
   if (nativeContextError?.responseBody?.detail) {
     riskNotes.push(`native_context_error:${nativeContextError.responseBody.detail}`);
   }
+  if (
+    (closedOrResolved || deterministicOutcome)
+    && minutesToResolution !== null
+    && minutesToResolution >= policy.minimumActionableMinutesToResolution
+  ) {
+    riskNotes.push(`market_state_overrides_timing:${minutesToResolution}m_remaining`);
+  }
 
   return {
     market_id: marketId,
@@ -772,12 +876,20 @@ function buildFallbackContext({ marketId, marketRaw, positionsRaw, tradesRaw, ar
     timing_notes: summarizeResolutionTiming(market.resolves_at),
     risk_notes: riskNotes,
     context_freshness: (
-      minutesToResolution !== null
-      && minutesToResolution < policy.minimumActionableMinutesToResolution
-    )
-      ? 'timing_window_too_short'
-      : (nativeContextError ? 'fallback_live_market_snapshot' : 'market_snapshot_live'),
+      !marketIdIntegrityOk
+        ? 'market_id_mismatch'
+        : (closedOrResolved || deterministicOutcome)
+          ? 'market_not_tradable'
+          : (
+            minutesToResolution !== null
+            && minutesToResolution < policy.minimumActionableMinutesToResolution
+          )
+            ? 'timing_window_too_short'
+            : (nativeContextError ? 'fallback_live_market_snapshot' : 'market_snapshot_live')
+    ),
     lookup_mode: 'fallback_market_positions_trades',
+    market_id_integrity_ok: marketIdIntegrityOk,
+    source_market_id: sourceMarketId || marketId,
   };
 }
 
@@ -809,7 +921,12 @@ function normalizeBriefingResponse(raw, args, policy) {
 }
 
 async function applyBriefingFallbackDiscovery(normalized, binding, policy) {
-  const existingMarkets = asArray(normalized.opportunities?.new_markets);
+  const existingMarkets = await enrichOpportunitiesWithLiveState(
+    binding,
+    asArray(normalized.opportunities?.new_markets),
+    policy
+  );
+  normalized.opportunities.new_markets = existingMarkets;
   const existingEligible = countEligibleOpportunities(existingMarkets);
   normalized.opportunities.discovery_metadata = {
     source: 'briefing',
@@ -821,16 +938,17 @@ async function applyBriefingFallbackDiscovery(normalized, binding, policy) {
     return normalized;
   }
   const fallback = await discoverFallbackOpportunities(binding, policy);
+  const fallbackCandidates = await enrichOpportunitiesWithLiveState(binding, fallback.candidates, policy);
   normalized.opportunities.discovery_metadata = {
-    source: fallback.candidates.length > 0 ? 'markets_search_fallback' : 'briefing',
+    source: fallbackCandidates.length > 0 ? 'markets_search_fallback' : 'briefing',
     briefing_candidate_count: existingMarkets.length,
     briefing_eligible_count: existingEligible,
-    fallback_used: fallback.candidates.length > 0,
-    fallback_candidate_count: fallback.candidates.length,
+    fallback_used: fallbackCandidates.length > 0,
+    fallback_candidate_count: fallbackCandidates.length,
     fallback_queries: fallback.queries,
   };
-  if (fallback.candidates.length > 0) {
-    normalized.opportunities.new_markets = fallback.candidates;
+  if (fallbackCandidates.length > 0) {
+    normalized.opportunities.new_markets = fallbackCandidates;
   }
   return normalized;
 }
@@ -1137,7 +1255,7 @@ async function main() {
     });
     if (nativeContextRaw) {
       context.lookup_mode = 'market_snapshot_plus_native_context';
-      if (context.context_freshness !== 'timing_window_too_short') {
+      if (!['timing_window_too_short', 'market_not_tradable', 'market_id_mismatch'].includes(context.context_freshness)) {
         context.context_freshness = 'native_context_live';
       }
       context.catalysts = [
@@ -1150,7 +1268,9 @@ async function main() {
         ...asArray(context.risk_notes),
         ...asArray(nativeContextRaw.risk_notes || nativeContextRaw.risks || nativeContextRaw.watchouts || nativeContextRaw.warnings),
       ];
-      context.context_freshness = nativeContextRaw.context_freshness || nativeContextRaw.freshness || context.context_freshness;
+      if (!['market_not_tradable', 'market_id_mismatch'].includes(context.context_freshness)) {
+        context.context_freshness = nativeContextRaw.context_freshness || nativeContextRaw.freshness || context.context_freshness;
+      }
     } else if (nativeContextError && !isNotFoundError(nativeContextError)) {
       context.risk_notes = [
         ...asArray(context.risk_notes),
