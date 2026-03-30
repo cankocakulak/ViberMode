@@ -8,4 +8,4 @@ This pack owns:
 - generic templates under `templates/`
 
 Platform-specific projections belong under `adapters/`, not here.
-Compatibility links remain available under `.agents/` for existing consumers.
+This pack is the canonical edit surface for generic ViberMode behavior.

@@ -9,13 +9,13 @@ Current structure mixes three concerns:
 3. runtime-instantiated agent workspaces
 
 Evidence:
-- Canonical generic workflow material currently lives under `/Users/mcan/ViberMode/.agents/*`.
-- Domain-specific Simmer material currently lives under `/Users/mcan/ViberMode/packs/simmer/paper-trading/*`.
+- Canonical generic workflow material now lives under `/Users/mcan/ViberMode/packs/vibermode/*`.
+- Domain-specific Simmer material now lives under `/Users/mcan/ViberMode/packs/simmer/paper-trading/*`.
 - OpenClaw runtime agent workspaces consume both:
   - `/Users/mcan/my-openclaw/agents/vibermode-orchestrator/workspace/*`
   - `/Users/mcan/my-openclaw/agents/simmer-supervisor/workspace/*`
 
-The real issue is not that OpenClaw has a fixed layout. The issue is that `ViberMode` groups generic agents under `.agents` while domain/agent packs like Simmer live under `initiatives/`, even though both are consumed by OpenClaw as agent-facing assets. That creates a naming and ownership mismatch.
+The original issue was not that OpenClaw has a fixed layout. The issue was that `ViberMode` grouped generic agents under `.agents` while domain/agent packs like Simmer lived under `initiatives/`, even though both were consumed by OpenClaw as agent-facing assets. The new `packs/` layout resolves that mismatch; the remaining task is to phase out compatibility paths safely.
 
 ## Strategy
 
@@ -119,12 +119,8 @@ Canonical ownership after refactor:
 
 ### 5. Changes Required
 
-- `/Users/mcan/ViberMode/.agents/*`
-  - migrate into `packs/vibermode/` with clearer names
 - `/Users/mcan/ViberMode/packs/simmer/paper-trading/*`
   - migrate into `packs/simmer/paper-trading/`
-- `/Users/mcan/ViberMode/.cursor/*`
-  - move under `adapters/cursor/` or generate from there
 - `/Users/mcan/ViberMode/adapters/codex/install/install-skills.sh`
   - move under `adapters/codex/install/` or rewrite to publish from canonical packs
 - `/Users/mcan/my-openclaw/agents/vibermode-orchestrator/workspace/*`
@@ -141,7 +137,7 @@ Do this in phases:
 3. Add adapter-level README/ownership docs that say what is canonical vs generated.
 4. Update Codex/Cursor/OpenClaw exporters to read from `packs/*`.
 5. Switch `my-openclaw` consumption to adapter outputs.
-6. Remove legacy `.agents` and `initiatives` roots only after parity is verified.
+6. Remove legacy compatibility roots after parity is verified.
 
 ### 7. Implementation Hints
 

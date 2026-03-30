@@ -68,16 +68,13 @@ adapters/                       # Platform-specific projections
 │   └── rules/                  # Cursor always-on context
 └── openclaw/                   # OpenClaw projection/publish surface
 
-.agents/                        # Compatibility links to canonical/adapted content
-.cursor/                        # Compatibility links for existing Cursor consumers
-initiatives/                    # Compatibility links for existing Simmer paths
 scripts/                        # Compatibility wrappers for moved scripts
 
 AGENTS.md                       # Agent index for Codex App, Claude Code, etc.
 src/                            # Future runtime code
 ```
 
-Canonical content now lives under `packs/`. Platform integrations live under `adapters/`. Legacy `.agents`, `.cursor`, and `initiatives/*` paths are kept as compatibility shims during the transition.
+Canonical content now lives under `packs/`. Platform integrations live under `adapters/`.
 
 ## Agents
 
@@ -187,6 +184,15 @@ Then use agents naturally in Codex App:
 
 Skills are installed to `~/.codex/skills/` and auto-trigger based on intent.
 
+### OpenClaw
+
+OpenClaw-specific agent workspaces and runtime behavior are authored in the OpenClaw repo, not projected from ViberMode.
+
+ViberMode's role for OpenClaw is to provide:
+- canonical pack content under `packs/`
+- shared contracts, templates, and reference material
+- lightweight integration guidance under `adapters/openclaw/`
+
 ### Any Other Tool — AGENTS.md
 
 `AGENTS.md` at the repo root tells any AI tool (Claude Code, Amp, etc.) about available agents:
@@ -202,7 +208,7 @@ packs/vibermode/roles/iterate/planner.md        ← Source of truth (portable)
          ↕ referenced by
 adapters/cursor/commands/planner.md             ← Cursor: slash command
 adapters/codex/skills/planner/SKILL.md         ← Codex: auto-trigger skill
-AGENTS.md                               ← Others: agent index
+AGENTS.md                                ← Others: agent index
 ```
 
 No duplication. All integrations are thin wrappers pointing to `packs/vibermode/`.

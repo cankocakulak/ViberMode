@@ -58,4 +58,3 @@ When the user says any of the following, read the agent file and follow it:
 - Product agents produce artifacts in `docs/`
 - Product agents should leave a concise handoff for the next step, including suggested next agent and prompt
 - Iterate agents work standalone — no pipeline required
-- Legacy `.agents/*` paths remain as compatibility links

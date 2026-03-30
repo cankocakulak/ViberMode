@@ -22,20 +22,14 @@
 ## Project Structure
 ### `/Users/mcan/ViberMode`
 ```text
-.agents/
-  roles/
-    product/         - canonical analyzer/brainstormer/prd/task-runner roles
-    iterate/         - planner/scout/reviewer/ux-tweaker roles
-  skills/            - Codex skill wrappers for those roles
-  templates/         - PRD, stories, UX templates
-  workflows/         - high-level workflow docs
-initiatives/
-  simmer-paper-trading/
-    contracts/       - initiative-specific workflow/skill contracts
-    templates/       - initiative templates
-info/                - notes on OpenClaw direction, architecture, purpose
-scripts/
-  install-codex-skills.sh
+packs/
+  vibermode/          - canonical generic roles, workflows, templates
+  simmer/
+    paper-trading/    - canonical Simmer pack
+adapters/
+  codex/              - Codex skill projection
+  cursor/             - Cursor command/rule projection
+  openclaw/           - OpenClaw projection + publish layer
 ```
 
 ### `/Users/mcan/my-openclaw`
@@ -70,7 +64,7 @@ skills/
 - The orchestrator UX direction is coherent: classify request, choose workflow, resolve target repo, delegate specialist steps, keep artifacts in the target repo.
 
 ## Technical Debt & Concerns
-- **Source-of-truth drift risk**: `my-openclaw/agents/vibermode-orchestrator/workspace/skills/*` contains skill copies or specialized variants of ViberMode concepts. Without a sync mechanism, these will drift from `ViberMode/.agents/*`.
+- **Source-of-truth drift risk**: `my-openclaw/agents/vibermode-orchestrator/workspace/skills/*` contains skill copies or specialized variants of ViberMode concepts. Without a sync mechanism, these will drift from `ViberMode/packs/*` and `ViberMode/adapters/openclaw/*`.
 - **Boundary is documented, not enforced**: The intended split exists in docs and memory, but there is no obvious automated export/sync pipeline from `ViberMode` into OpenClaw runtime assets.
 - **Behavior stored in memory files**: Important architectural decisions are present in `my-openclaw/workspace/MEMORY.md`. Useful operationally, but brittle as system design documentation.
 - **Destructive install script**: `ViberMode/adapters/codex/install/install-skills.sh` replaces target skill folders wholesale. Fine for local setup, but not enough for controlled promotion into OpenClaw runtime workspaces.
@@ -79,7 +73,7 @@ skills/
 
 ## Opportunities
 - **This split is directionally correct**: Keeping `ViberMode` as authoring/canonical and `my-openclaw` as runtime/executor is a strong architecture, especially if you want portability across tools.
-- **Add an explicit export boundary**: Define a small “publish to OpenClaw” layer from `ViberMode` to runtime consumables such as skills, templates, and workflow contracts.
+- **Keep the OpenClaw adapter thin**: Prefer authoring OpenClaw-specific workspaces in `my-openclaw`, while `ViberMode` keeps the canonical pack contracts and reference material.
 - **Separate three layers cleanly**:
   - `ViberMode`: canonical roles, templates, workflow contracts
   - `my-openclaw`: runtime policies, agent identities, provider/tool wiring
@@ -102,7 +96,7 @@ reusable_patterns:
   - artifact-first workflow execution
   - target-repo-root artifact resolution
   - runtime agent identity in workspace markdown
-  - initiative-specific contracts under ViberMode/initiatives
+  - initiative-specific contracts under ViberMode/packs/simmer
 known_constraints:
   - runtime repo currently contains copied skill/workflow material
   - sync boundary between canonical and runtime layers is not automated

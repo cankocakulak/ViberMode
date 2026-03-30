@@ -16,33 +16,25 @@ ViberMode is a documentation-first framework whose real product is the set of ag
 | Codex integration | `SKILL.md` wrappers | `adapters/codex/skills/*` forwards intent to canonical role files |
 | Cursor integration | Slash commands + MDC rules | `adapters/cursor/commands/*` and `adapters/cursor/rules/viber-mode.mdc` expose the same roles in Cursor |
 | Workflow definition | Markdown workflow docs | `packs/vibermode/workflows/*.md` defines sequencing and artifact contracts |
-| Packaging | npm metadata | `package.json` exports `.agents/*`, but `src/` is effectively empty |
+| Packaging | npm metadata | `package.json` exports `packs/*` and `adapters/*`; `src/` is still effectively empty |
 | Installation | Shell script | `adapters/codex/install/install-skills.sh` copies skill wrappers into Codex |
 | Validation | Placeholder only | `npm run validate` currently echoes a message and performs no checks |
 
 ## Project Structure
 ```text
-.agents/
-├── roles/
-│   ├── product/        # Sequential product pipeline roles
-│   └── iterate/        # Standalone investigation/review/design roles
-├── skills/             # Codex skill wrappers
-├── templates/          # PRD, UX, and stories templates
-└── workflows/          # product-to-spec, spec-to-code, product-to-code
+packs/
+├── vibermode/
+│   ├── roles/          # Sequential + iterate role contracts
+│   ├── workflows/      # product-to-spec, spec-to-code, product-to-code
+│   └── templates/      # PRD, UX, and stories templates
+└── simmer/
+    └── paper-trading/  # Simmer domain pack
 
-.cursor/
-├── commands/           # Slash-command wrappers for each agent
-└── rules/              # Shared framework context for Cursor
+adapters/
+├── codex/              # Skill wrappers + install helpers
+├── cursor/             # Slash commands + always-on rules
+└── openclaw/           # OpenClaw projections + publish helpers
 
-docs/
-└── viber-mode/
-    └── analysis.md     # This repo-level analysis artifact
-
-scripts/
-└── install-codex-skills.sh
-
-src/
-└── .gitkeep            # No runtime implementation yet
 ```
 
 ## Patterns & Conventions
@@ -88,7 +80,7 @@ key_stacks:
   - cursor-slash-commands
   - shell-install-script
 reusable_patterns:
-  - canonical-role-files-under-.agents/roles
+  - canonical-role-files-under-packs/vibermode/roles
   - docs-folder-artifact-handoffs
   - summary-plus-handoff-contract-per-artifact
   - thin-platform-wrapper-files
@@ -99,9 +91,9 @@ known_constraints:
 relevant_system_areas:
   - packs/vibermode/roles/product
   - packs/vibermode/roles/iterate
-  - .agents/workflows
-  - .agents/skills
-  - .cursor/commands
+  - packs/vibermode/workflows
+  - adapters/codex/skills
+  - adapters/cursor/commands
   - README.md
 ```
 

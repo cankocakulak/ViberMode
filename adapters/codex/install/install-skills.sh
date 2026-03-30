@@ -37,4 +37,3 @@ ls -1 "$SKILLS_SOURCE" | while read -r skill; do
 done
 echo ""
 echo "Skills are now available in Codex App and Codex CLI."
-echo "Compatibility path .agents/skills remains available during the transition."

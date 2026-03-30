@@ -7,15 +7,11 @@
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./agents/*": "./.agents/*",
     "./packs/*": "./packs/*",
     "./adapters/*": "./adapters/*"
   },
   "files": [
     "src",
-    ".agents",
-    ".cursor",
-    "initiatives",
     "packs",
     "adapters",
     "scripts"
