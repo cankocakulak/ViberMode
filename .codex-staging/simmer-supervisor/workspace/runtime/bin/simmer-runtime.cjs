@@ -920,6 +920,56 @@ function normalizeBriefingResponse(raw, args, policy) {
   };
 }
 
+function numberOrNull(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') {
+      continue;
+    }
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+  }
+  return null;
+}
+
+function roundMetric(value, decimals = 4) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Number(value.toFixed(decimals));
+}
+
+function summarizeResponseKeys(source) {
+  return Object.keys(source || {});
+}
+
+function findPositionByMarketId(positionsRaw, marketId) {
+  const source = (positionsRaw && typeof positionsRaw === 'object')
+    ? (positionsRaw.positions || positionsRaw.data || positionsRaw.result || positionsRaw)
+    : [];
+  const positions = asArray(source);
+  return positions.find((position) => (
+    position.market_id === marketId
+    || position.id === marketId
+    || position.market?.id === marketId
+  )) || null;
+}
+
+function normalizeExposurePosition(position, marketId) {
+  if (!position) {
+    return {};
+  }
+  return {
+    market_id: marketId,
+    shares: numberOrNull(position.shares, position.quantity, position.position_size, position.size, 0),
+    avg_cost: numberOrNull(position.avg_cost, position.average_price, position.avgPrice, position.cost_basis, null),
+    current_value: numberOrNull(position.current_value, position.market_value, position.value, null),
+    pnl: numberOrNull(position.pnl, position.unrealized_pnl, position.profit_loss, null),
+    status: position.status || 'active',
+  };
+}
+
 async function applyBriefingFallbackDiscovery(normalized, binding, policy) {
   const existingMarkets = await enrichOpportunitiesWithLiveState(
     binding,
@@ -971,13 +1021,47 @@ function normalizeDryRunResponse(raw, args, policy) {
     firstTrade?.success ??
     true
   );
+  const estimatedCost = numberOrNull(
+    tradeSource.estimated_cost,
+    tradeSource.estimatedCost,
+    tradeSource.cost,
+    source.total_cost,
+    source.estimated_cost,
+    0
+  );
+  const directShares = numberOrNull(
+    tradeSource.estimated_shares,
+    tradeSource.estimatedShares,
+    tradeSource.shares,
+    tradeSource.shares_bought,
+    tradeSource.sharesBought,
+    tradeSource.shares_sold,
+    tradeSource.sharesSold,
+    tradeSource.shares_requested,
+    tradeSource.sharesRequested,
+    null
+  );
+  const referencePrice = numberOrNull(
+    tradeSource.price,
+    tradeSource.reference_price,
+    tradeSource.referencePrice,
+    source.reference_price,
+    source.referencePrice,
+    null
+  );
+  let estimatedShares = directShares;
+  let shareEstimationSource = directShares !== null && directShares > 0 ? 'api' : 'missing';
+  if ((estimatedShares === null || estimatedShares === 0) && estimatedCost > 0 && referencePrice > 0) {
+    estimatedShares = roundMetric(estimatedCost / referencePrice);
+    shareEstimationSource = 'derived_cost_div_price';
+  }
   return {
     market_id: args['market-id'],
     strategy_profile_id: args['strategy-profile-id'] || policy.id,
     policy_version: args['policy-version'] || policy.policyVersion,
     run_id: args['run-id'],
-    estimated_cost: Number(tradeSource.estimated_cost ?? tradeSource.estimatedCost ?? tradeSource.cost ?? 0),
-    estimated_shares: Number(tradeSource.estimated_shares ?? tradeSource.estimatedShares ?? tradeSource.shares ?? 0),
+    estimated_cost: estimatedCost,
+    estimated_shares: roundMetric(estimatedShares ?? 0),
     slippage_notes: tradeSource.slippage_notes ?? tradeSource.slippageNotes ?? asArray(source.warnings).join('; '),
     policy_pass: policyPass,
     policy_fail_reason: policyPass ? '' : (
@@ -988,25 +1072,62 @@ function normalizeDryRunResponse(raw, args, policy) {
       tradeSource.error ??
       'dry-run policy rejection'
     ),
+    reference_price: referencePrice ?? 0,
+    share_estimation_source: shareEstimationSource,
+    raw_response_summary: {
+      response_keys: summarizeResponseKeys(source),
+      trade_keys: summarizeResponseKeys(tradeSource),
+      has_price: referencePrice !== null,
+      has_shares: directShares !== null,
+    },
   };
 }
 
-function normalizeExecutionResponse(raw, args, policy) {
+function normalizeExecutionResponse(raw, args, policy, reconciliation = {}) {
   const source = (raw.execution && typeof raw.execution === 'object')
     ? raw.execution
     : ((raw.data && typeof raw.data === 'object')
       ? raw.data
       : ((raw.result && typeof raw.result === 'object') ? raw.result : raw));
+  const filledSizeRaw = numberOrNull(
+    source.filled_size,
+    source.filledSize,
+    source.shares_filled,
+    source.sharesFilled,
+    source.shares_bought,
+    source.sharesBought,
+    source.shares_sold,
+    source.sharesSold,
+    source.shares_requested,
+    source.sharesRequested,
+    null
+  );
+  const cost = numberOrNull(source.cost, source.total_cost, null);
+  const averagePriceRaw = numberOrNull(source.average_price, source.averagePrice, null);
+  const filledSize = roundMetric(filledSizeRaw ?? 0);
+  const averagePrice = (
+    averagePriceRaw !== null && averagePriceRaw > 0
+      ? averagePriceRaw
+      : ((cost !== null && filledSize > 0) ? roundMetric(cost / filledSize) : 0)
+  );
   return {
     trade_id: source.trade_id || source.tradeId || source.id || '',
     market_id: args['market-id'],
     strategy_profile_id: args['strategy-profile-id'] || policy.id,
     policy_version: args['policy-version'] || policy.policyVersion,
     run_id: args['run-id'],
-    status: source.status || 'submitted',
-    filled_size: Number(source.filled_size ?? source.filledSize ?? args.size ?? 0),
-    average_price: Number(source.average_price ?? source.averagePrice ?? 0),
-    exposure_after_trade: source.exposure_after_trade || source.exposureAfterTrade || {},
+    status: source.status || source.order_status || (source.success === true ? 'confirmed' : 'submitted'),
+    filled_size: filledSize,
+    average_price: averagePrice,
+    exposure_after_trade: reconciliation.exposure_after_trade || source.exposure_after_trade || source.exposureAfterTrade || {},
+    raw_response_summary: {
+      has_trade_id: Boolean(source.trade_id || source.tradeId || source.id),
+      has_status: Boolean(source.status || source.order_status),
+      has_average_price: averagePriceRaw !== null && averagePriceRaw > 0,
+      response_keys: summarizeResponseKeys(source),
+    },
+    reconciliation_source: reconciliation.reconciliation_source || '',
+    reconciliation_timestamp: reconciliation.reconciliation_timestamp || '',
   };
 }
 
@@ -1350,7 +1471,22 @@ async function main() {
     if (args['debug-raw']) {
       console.error(JSON.stringify(raw, null, 2));
     }
-    const normalized = normalizeExecutionResponse(raw, args, policy);
+    let reconciliation = {};
+    try {
+      const positionsEndpoint = resolveEndpoint(binding, 'positions');
+      const positionsRaw = await requestJson({ method: positionsEndpoint.method, url: positionsEndpoint.url, payload: {}, binding });
+      reconciliation = {
+        exposure_after_trade: normalizeExposurePosition(
+          findPositionByMarketId(positionsRaw, args['market-id']),
+          args['market-id']
+        ),
+        reconciliation_source: 'positions_endpoint',
+        reconciliation_timestamp: new Date().toISOString(),
+      };
+    } catch (_error) {
+      reconciliation = {};
+    }
+    const normalized = normalizeExecutionResponse(raw, args, policy, reconciliation);
     const eventPath = maybeWriteEvent({
       workflowName: args['workflow-name'],
       runId: args['run-id'],
