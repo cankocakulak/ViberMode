@@ -145,6 +145,7 @@ function parseStrategyProfile() {
     positionSizingMode: extractQuotedValue(activeBlock, 'position_sizing_mode') || 'percent_of_balance',
     maxPositionPctOfBalance: extractNumberValue(activeBlock, 'max_position_pct_of_balance') || 0.10,
     maxTotalExposurePctOfBalance: extractNumberValue(activeBlock, 'max_total_exposure_pct_of_balance') || 0.20,
+    maxTradeNotionalForSim: extractNumberValue(activeBlock, 'max_trade_notional_for_sim') || 500,
     maxNewTradesPerHeartbeat: extractNumberValue(activeBlock, 'max_new_trades_per_heartbeat') || 1,
     maxOpenPositions: extractNumberValue(activeBlock, 'max_open_positions') || 3,
     minimumConfidence: extractNumberValue(activeBlock, 'minimum_confidence') || 0.68,
@@ -369,6 +370,7 @@ function buildPortfolioConstraints(policy, sizingSnapshot = {}) {
     position_sizing_mode: policy.positionSizingMode,
     max_position_pct_of_balance: policy.maxPositionPctOfBalance,
     max_total_exposure_pct_of_balance: policy.maxTotalExposurePctOfBalance,
+    max_trade_notional_for_sim: policy.maxTradeNotionalForSim,
     max_new_trades_per_heartbeat: policy.maxNewTradesPerHeartbeat,
     max_open_positions: policy.maxOpenPositions,
     minimum_confidence: policy.minimumConfidence,
@@ -381,6 +383,8 @@ function buildPortfolioConstraints(policy, sizingSnapshot = {}) {
     max_total_exposure_notional: sizingSnapshot.max_total_exposure_notional ?? null,
     current_open_exposure: sizingSnapshot.current_open_exposure ?? null,
     remaining_new_exposure_capacity: sizingSnapshot.remaining_new_exposure_capacity ?? null,
+    venue_cap_notional: sizingSnapshot.venue_cap_notional ?? null,
+    final_proposed_size_cap: sizingSnapshot.final_proposed_size_cap ?? null,
   };
 }
 
@@ -1082,6 +1086,15 @@ function buildBalanceSnapshot(source, positions, policy) {
   const basis = selected.value;
   const maxPositionNotional = basis !== null ? roundMetric(basis * policy.maxPositionPctOfBalance, 2) : null;
   const maxTotalExposureNotional = basis !== null ? roundMetric(basis * policy.maxTotalExposurePctOfBalance, 2) : null;
+  const remainingNewExposureCapacity = (
+    maxTotalExposureNotional !== null
+      ? roundMetric(Math.max(0, maxTotalExposureNotional - openExposure), 2)
+      : null
+  );
+  const venueCapNotional = policy.maxTradeNotionalForSim;
+  const finalProposedSizeCap = [maxPositionNotional, venueCapNotional, remainingNewExposureCapacity]
+    .filter((value) => value !== null && value !== undefined && Number.isFinite(value))
+    .reduce((min, value) => Math.min(min, value), Number.POSITIVE_INFINITY);
   return {
     balance_basis: basis,
     balance_basis_field: selected.field,
@@ -1090,11 +1103,9 @@ function buildBalanceSnapshot(source, positions, policy) {
     current_open_exposure_pct_of_balance: basis && basis > 0 ? roundMetric(openExposure / basis, 4) : null,
     max_position_notional: maxPositionNotional,
     max_total_exposure_notional: maxTotalExposureNotional,
-    remaining_new_exposure_capacity: (
-      maxTotalExposureNotional !== null
-        ? roundMetric(Math.max(0, maxTotalExposureNotional - openExposure), 2)
-        : null
-    ),
+    remaining_new_exposure_capacity: remainingNewExposureCapacity,
+    venue_cap_notional: venueCapNotional,
+    final_proposed_size_cap: Number.isFinite(finalProposedSizeCap) ? roundMetric(finalProposedSizeCap, 2) : null,
     sizing_basis_reliable: basis !== null && basis > 0,
   };
 }
@@ -1102,6 +1113,9 @@ function buildBalanceSnapshot(source, positions, policy) {
 function evaluateSizingPolicyGate(balanceSnapshot, proposedSize, policy) {
   if (!balanceSnapshot?.sizing_basis_reliable) {
     return { pass: false, reason: 'missing balance basis for sizing policy' };
+  }
+  if (policy.maxTradeNotionalForSim !== null && proposedSize > policy.maxTradeNotionalForSim) {
+    return { pass: false, reason: 'proposed size exceeds sim venue operational cap' };
   }
   if (proposedSize > balanceSnapshot.max_position_notional) {
     return { pass: false, reason: 'proposed size exceeds max_position_pct_of_balance' };
@@ -1600,6 +1614,8 @@ async function main() {
     normalized.max_position_notional = sizingBriefing.balance_snapshot.max_position_notional;
     normalized.max_total_exposure_notional = sizingBriefing.balance_snapshot.max_total_exposure_notional;
     normalized.remaining_new_exposure_capacity = sizingBriefing.balance_snapshot.remaining_new_exposure_capacity;
+    normalized.venue_cap_notional = sizingBriefing.balance_snapshot.venue_cap_notional;
+    normalized.final_proposed_size_cap = sizingBriefing.balance_snapshot.final_proposed_size_cap;
     normalized.proposed_size = Number(args.size);
     normalized.policy_pass = normalized.policy_pass && sizingGate.pass;
     if (!sizingGate.pass) {

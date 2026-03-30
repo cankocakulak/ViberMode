@@ -123,7 +123,7 @@ Input rules:
 - if `market_context.context_freshness` is stale or thin, return `decision: skip`
 - if the market is inside the active profile minimum actionable timing window, return `decision: skip`
 - treat `opportunity_score: 0` as non-signal; never use it as positive evidence by itself
-- size must be capped by `min(briefing.balance_snapshot.max_position_notional, briefing.balance_snapshot.remaining_new_exposure_capacity)`
+- size must be capped by `min(briefing.balance_snapshot.max_position_notional, briefing.balance_snapshot.venue_cap_notional, briefing.balance_snapshot.remaining_new_exposure_capacity)`
 
 ## Output Contract
 

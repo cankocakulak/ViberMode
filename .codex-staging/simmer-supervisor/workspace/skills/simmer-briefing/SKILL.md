@@ -162,6 +162,7 @@ Populate `portfolio_constraints` from the active config binding, at minimum:
 - `position_sizing_mode: percent_of_balance`
 - `max_position_pct_of_balance: 0.10`
 - `max_total_exposure_pct_of_balance: 0.20`
+- `max_trade_notional_for_sim: 500`
 - `max_new_trades_per_heartbeat: 1`
 - `max_open_positions: 3`
 - `minimum_confidence: 0.68`
@@ -175,6 +176,8 @@ When available from the live briefing, also normalize:
 - `balance_snapshot.max_position_notional`
 - `balance_snapshot.max_total_exposure_notional`
 - `balance_snapshot.remaining_new_exposure_capacity`
+- `balance_snapshot.venue_cap_notional`
+- `balance_snapshot.final_proposed_size_cap`
 
 ## Tracking Compatibility
 

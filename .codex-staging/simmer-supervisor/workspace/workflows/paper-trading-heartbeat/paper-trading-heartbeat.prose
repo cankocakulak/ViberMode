@@ -161,7 +161,7 @@ Rules:
 - `market_id` from briefing shortlist remains the lookup key; if native context lookup 404s, rely on the adapter's fallback synthesis rather than swapping identifier surfaces inside the workflow
 - If a downstream stage returns a different `market_id` than the shortlisted candidate, reject that candidate immediately and do not call dry-run.
 - Keep only proposals strong enough for the active policy envelope.
-- Candidate `size` must come from the active percent-of-balance policy envelope, not a hardcoded constant.
+- Candidate `size` must come from `min(policy_cap, venue_cap, remaining_new_exposure_capacity)`, not a hardcoded constant.
 - Select exactly one best candidate if any valid proposal remains.
 - If no candidate is strong enough, return:
   - status: STOP_NO_TRADE

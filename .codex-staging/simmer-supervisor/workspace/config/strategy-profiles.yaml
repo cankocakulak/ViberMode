@@ -10,6 +10,7 @@ profiles:
       position_sizing_mode: "percent_of_balance"
       max_position_pct_of_balance: 0.10
       max_total_exposure_pct_of_balance: 0.20
+      max_trade_notional_for_sim: 500
     thresholds:
       minimum_confidence: 0.68
       fresh_context_required: true

@@ -116,6 +116,7 @@ Input rules:
 - if `strategy_profile_id` is not `crypto_momentum_v1`, stop and report a contract violation
 - if the proposal implies averaging down or rescue logic, mark `policy_pass: false`
 - enforce `max_position_pct_of_balance` and `max_total_exposure_pct_of_balance` using the current live balance basis
+- enforce `max_trade_notional_for_sim` as an operational venue cap
 
 ## Output Contract
 
