@@ -10,7 +10,7 @@
   "apiKeyKeychainAccount": "SIMMER_API_KEY",
   "authHeader": "Authorization",
   "authScheme": "Bearer",
-  "timeoutMs": 15000,
+  "timeoutMs": 60000,
   "endpoints": {
     "health": {
       "method": "GET",
@@ -56,8 +56,12 @@
     }
   },
   "binaryMarketExecution": {
-    "supportsExplicitClose": false,
-    "reduceExitMode": "fail_closed_without_close_support",
+    "supportsExplicitClose": true,
+    "closeEndpoint": "execute",
+    "closeAction": "sell",
+    "closeSizingField": "shares",
+    "supportsDryRunClose": true,
+    "reduceExitMode": "explicit_sell_shares",
     "grossExposureGuard": true
   },
   "storage": {

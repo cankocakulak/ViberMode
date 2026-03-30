@@ -110,6 +110,7 @@ Runtime behavior:
 | `policy_version` | string | yes | Active policy version from caller context |
 | `run_id` | string | yes | Workflow run identifier from caller context |
 | `workflow_name` | string | no | Optional workflow attribution for runtime event storage |
+| `execution_intent` | string | no | For risk sweep, `reduce` or `exit` so runtime can execute the approved close legs |
 
 Input rules:
 - if `venue` is not `sim`, stop and report a contract violation
@@ -117,7 +118,7 @@ Input rules:
 - if `dry_run_reference.policy_pass` is not `true`, do not execute
 - if the proposed trade would amount to averaging down or rescue logic, do not execute
 - for `paper-risk-sweep`, never convert `reduce` or `exit` into an opposite-side notional buy
-- only execute binary reduction if the dry-run reference proves an explicit close-only path and `gross_exposure_guard_pass: true`
+- only execute binary reduction if the dry-run reference proves an explicit `action: sell` close path with `shares` and `gross_exposure_guard_pass: true`
 
 ## Output Contract
 

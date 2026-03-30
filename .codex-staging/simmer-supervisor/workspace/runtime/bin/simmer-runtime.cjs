@@ -96,6 +96,13 @@ function envValueWithSource(key, fallback = '') {
   return { value: fallback, source: fallback === '' ? '' : 'binding-config-default' };
 }
 
+function processEnvOnlyValue(key, fallback = '') {
+  if (Object.prototype.hasOwnProperty.call(process.env, key) && process.env[key] !== '') {
+    return process.env[key];
+  }
+  return fallback;
+}
+
 function readMacKeychainSecret(service, account) {
   if (!service || !account) {
     return '';
@@ -191,7 +198,7 @@ function resolveBinding() {
     apiKeySource: apiKeyEnv.value ? apiKeyEnv.source : (keychainApiKey ? 'macos-keychain' : ''),
     authHeader: envValue('SIMMER_AUTH_HEADER', binding.authHeader || 'Authorization'),
     authScheme: envValue('SIMMER_AUTH_SCHEME', binding.authScheme || 'Bearer'),
-    timeoutMs: Number(envValue('SIMMER_TIMEOUT_MS', String(binding.timeoutMs || 15000))),
+    timeoutMs: Number(processEnvOnlyValue('SIMMER_TIMEOUT_MS', String(binding.timeoutMs || 15000))),
     venue: binding.venue || 'sim',
     domain: binding.domain || 'crypto_event_markets',
     envSources: fileEnv.found,
@@ -834,11 +841,82 @@ function findBriefingPositionByMarketId(briefing, marketId) {
   )) || null;
 }
 
-function buildRiskReductionGuard({ briefing, args, binding }) {
-  const position = findBriefingPositionByMarketId(briefing, args['market-id']);
-  const positionSide = normalizePositionSide(position?.side);
+function deriveBinarySidePrices(position) {
+  const yesPriceExplicit = numberOrNull(
+    position.yes_price,
+    position.current_price_yes,
+    position.current_probability_yes,
+    position.current_price,
+    position.current_probability,
+    null
+  );
+  const noPriceExplicit = numberOrNull(
+    position.no_price,
+    position.current_price_no,
+    position.current_probability_no,
+    null
+  );
+  const yesPrice = yesPriceExplicit !== null
+    ? yesPriceExplicit
+    : (noPriceExplicit !== null ? Math.max(0, 1 - noPriceExplicit) : null);
+  const noPrice = noPriceExplicit !== null
+    ? noPriceExplicit
+    : (yesPrice !== null ? Math.max(0, 1 - yesPrice) : null);
+  return { yesPrice, noPrice };
+}
+
+function extractPositionInventory(position) {
+  let side = normalizePositionSide(position?.side || position?.position_side);
+  let sharesYes = numberOrNull(position?.shares_yes, position?.yes_shares, position?.yesShares, null);
+  let sharesNo = numberOrNull(position?.shares_no, position?.no_shares, position?.noShares, null);
+  const aggregateShares = numberOrNull(position?.shares, position?.quantity, position?.position_size, position?.size, 0);
+  if (sharesYes === null && sharesNo === null) {
+    if (side === 'yes') {
+      sharesYes = aggregateShares;
+      sharesNo = 0;
+    } else if (side === 'no') {
+      sharesNo = aggregateShares;
+      sharesYes = 0;
+    } else if (side === 'both') {
+      sharesYes = 0;
+      sharesNo = aggregateShares;
+    } else {
+      sharesYes = 0;
+      sharesNo = 0;
+    }
+  }
+  if (!side) {
+    if ((sharesYes || 0) > 0 && (sharesNo || 0) > 0) {
+      side = 'both';
+    } else if ((sharesYes || 0) > 0) {
+      side = 'yes';
+    } else if ((sharesNo || 0) > 0) {
+      side = 'no';
+    }
+  }
+  const { yesPrice, noPrice } = deriveBinarySidePrices(position || {});
+  const exposureYes = yesPrice !== null ? roundMetric((sharesYes || 0) * yesPrice, 4) : null;
+  const exposureNo = noPrice !== null ? roundMetric((sharesNo || 0) * noPrice, 4) : null;
+  return {
+    side,
+    shares_yes: roundMetric(sharesYes || 0, 6),
+    shares_no: roundMetric(sharesNo || 0, 6),
+    yes_price: yesPrice,
+    no_price: noPrice,
+    exposure_yes: exposureYes,
+    exposure_no: exposureNo,
+    gross_exposure: roundMetric((exposureYes || 0) + (exposureNo || 0), 4),
+  };
+}
+
+function findPositionByMarketIdFromRaw(positionsRaw, marketId) {
+  return findPositionByMarketId(positionsRaw, marketId);
+}
+
+function buildRiskReductionPlan({ positionsRaw, args, binding }) {
+  const position = findPositionByMarketIdFromRaw(positionsRaw, args['market-id']);
   const requestedSide = normalizePositionSide(args.side);
-  const currentGrossExposure = position ? positionExposureValue(position) : 0;
+  const executionIntent = String(args['execution-intent'] || 'reduce').trim().toLowerCase();
 
   if (!position) {
     return {
@@ -849,28 +927,7 @@ function buildRiskReductionGuard({ briefing, args, binding }) {
       current_gross_exposure: 0,
       post_trade_gross_exposure_estimate: null,
       gross_exposure_guard_pass: false,
-    };
-  }
-  if (positionSide === 'both') {
-    return {
-      pass: false,
-      reason: 'both-sided position requires explicit close reconciliation; automatic hedge reduction is blocked',
-      execution_mode: 'blocked_both_position',
-      current_position_side: positionSide,
-      current_gross_exposure: currentGrossExposure,
-      post_trade_gross_exposure_estimate: null,
-      gross_exposure_guard_pass: false,
-    };
-  }
-  if (requestedSide && requestedSide !== positionSide) {
-    return {
-      pass: false,
-      reason: 'opposite-side hedge is forbidden for reduce/exit because it can increase gross exposure',
-      execution_mode: 'blocked_opposite_side_hedge',
-      current_position_side: positionSide,
-      current_gross_exposure: currentGrossExposure,
-      post_trade_gross_exposure_estimate: null,
-      gross_exposure_guard_pass: false,
+      trade_legs: [],
     };
   }
   if (!supportsExplicitClose(binding)) {
@@ -878,20 +935,117 @@ function buildRiskReductionGuard({ briefing, args, binding }) {
       pass: false,
       reason: 'sim binding does not expose explicit sell/close semantics; reduce/exit is fail-closed to prevent gross exposure growth',
       execution_mode: 'blocked_no_close_support',
-      current_position_side: positionSide,
-      current_gross_exposure: currentGrossExposure,
+      current_position_side: normalizePositionSide(position.side || position.position_side),
+      current_gross_exposure: positionExposureValue(normalizeExposurePosition(position, args['market-id'])),
       post_trade_gross_exposure_estimate: null,
       gross_exposure_guard_pass: false,
+      trade_legs: [],
     };
   }
+
+  const inventory = extractPositionInventory(position);
+  const availableLegs = [
+    {
+      side: 'yes',
+      shares: inventory.shares_yes,
+      price: inventory.yes_price,
+      exposure: inventory.exposure_yes || 0,
+    },
+    {
+      side: 'no',
+      shares: inventory.shares_no,
+      price: inventory.no_price,
+      exposure: inventory.exposure_no || 0,
+    },
+  ].filter((leg) => leg.shares > 0);
+
+  if (availableLegs.length === 0) {
+    return {
+      pass: false,
+      reason: 'no open side-specific shares found for requested reduce/exit market',
+      execution_mode: 'blocked_no_position_inventory',
+      current_position_side: inventory.side,
+      current_gross_exposure: inventory.gross_exposure,
+      post_trade_gross_exposure_estimate: null,
+      gross_exposure_guard_pass: false,
+      trade_legs: [],
+    };
+  }
+
+  let plannedLegs = [];
+  if (executionIntent === 'exit') {
+    plannedLegs = availableLegs.map((leg) => ({
+      market_id: args['market-id'],
+      side: leg.side,
+      action: binding.raw?.binaryMarketExecution?.closeAction || 'sell',
+      shares: leg.shares,
+      reference_price: leg.price,
+      pre_trade_side_exposure: leg.exposure,
+    }));
+  } else {
+    let targetLeg = availableLegs
+      .sort((a, b) => b.exposure - a.exposure || b.shares - a.shares)[0];
+    if (requestedSide) {
+      targetLeg = availableLegs.find((leg) => leg.side === requestedSide) || targetLeg;
+    }
+    if (!targetLeg || !targetLeg.price || targetLeg.price <= 0) {
+      return {
+        pass: false,
+        reason: 'cannot derive side-specific price for explicit close planning',
+        execution_mode: 'blocked_missing_close_price',
+        current_position_side: inventory.side,
+        current_gross_exposure: inventory.gross_exposure,
+        post_trade_gross_exposure_estimate: null,
+        gross_exposure_guard_pass: false,
+        trade_legs: [],
+      };
+    }
+    const requestedNotional = Math.max(0, Number(args.size) || 0);
+    const sharesToSell = requestedNotional > 0
+      ? Math.min(targetLeg.shares, requestedNotional / targetLeg.price)
+      : targetLeg.shares;
+    if (!(sharesToSell > 0)) {
+      return {
+        pass: false,
+        reason: 'requested reduce size did not map to a positive share close amount',
+        execution_mode: 'blocked_non_positive_close_size',
+        current_position_side: inventory.side,
+        current_gross_exposure: inventory.gross_exposure,
+        post_trade_gross_exposure_estimate: null,
+        gross_exposure_guard_pass: false,
+        trade_legs: [],
+      };
+    }
+    plannedLegs = [{
+      market_id: args['market-id'],
+      side: targetLeg.side,
+      action: binding.raw?.binaryMarketExecution?.closeAction || 'sell',
+      shares: roundMetric(sharesToSell, 6),
+      reference_price: targetLeg.price,
+      pre_trade_side_exposure: targetLeg.exposure,
+    }];
+  }
+
+  const exposureReduction = roundMetric(
+    plannedLegs.reduce((sum, leg) => sum + ((leg.reference_price || 0) * (leg.shares || 0)), 0),
+    4
+  );
+  const postTradeGrossExposureEstimate = roundMetric(
+    Math.max(0, inventory.gross_exposure - exposureReduction),
+    4
+  );
+  const guardPass = postTradeGrossExposureEstimate <= inventory.gross_exposure;
+
   return {
-    pass: true,
-    reason: '',
+    pass: guardPass,
+    reason: guardPass ? '' : 'planned close would increase gross exposure',
     execution_mode: 'explicit_close',
-    current_position_side: positionSide,
-    current_gross_exposure: currentGrossExposure,
-    post_trade_gross_exposure_estimate: null,
-    gross_exposure_guard_pass: true,
+    current_position_side: inventory.side,
+    current_gross_exposure: inventory.gross_exposure,
+    post_trade_gross_exposure_estimate: postTradeGrossExposureEstimate,
+    gross_exposure_guard_pass: guardPass,
+    trade_legs: plannedLegs,
+    position_inventory: inventory,
   };
 }
 
@@ -928,6 +1082,7 @@ function buildRiskReductionFailureDryRun(args, policy, balanceSnapshot, guard) {
     post_trade_gross_exposure_estimate: guard.post_trade_gross_exposure_estimate,
     gross_exposure_guard_pass: guard.gross_exposure_guard_pass,
     execution_mode: guard.execution_mode,
+    trade_legs: guard.trade_legs || [],
   };
 }
 
@@ -1117,6 +1272,23 @@ function summarizeResponseKeys(source) {
   return Object.keys(source || {});
 }
 
+function firstMeaningfulNumber(...values) {
+  let fallback = null;
+  for (const value of values) {
+    const parsed = value === null || value === undefined || value === '' ? null : Number(value);
+    if (parsed === null || Number.isNaN(parsed)) {
+      continue;
+    }
+    if (fallback === null) {
+      fallback = parsed;
+    }
+    if (parsed !== 0) {
+      return parsed;
+    }
+  }
+  return fallback;
+}
+
 function normalizePositionSide(value) {
   const side = String(value || '').trim().toLowerCase();
   if (['yes', 'long', 'up'].includes(side)) {
@@ -1162,6 +1334,8 @@ function normalizeExposurePosition(position, marketId) {
     market_id: marketId,
     side,
     shares: numberOrNull(position.shares, position.quantity, position.position_size, position.size, 0),
+    shares_yes: numberOrNull(position.shares_yes, position.yes_shares, position.yesShares, 0),
+    shares_no: numberOrNull(position.shares_no, position.no_shares, position.noShares, 0),
     avg_cost: numberOrNull(position.avg_cost, position.average_price, position.avgPrice, position.cost_basis, null),
     current_value: roundMetric(estimatePositionCurrentValue(position), 4),
     gross_exposure: roundMetric(estimateGrossExposure(position), 4),
@@ -1301,6 +1475,36 @@ function buildBalanceSnapshot(source, positions, policy) {
   };
 }
 
+function buildBalanceSnapshotFromPositionsRaw(positionsRaw, policy) {
+  const rawPositions = asArray(positionsRaw.positions || positionsRaw.data || positionsRaw.result || positionsRaw);
+  const normalizedPositions = rawPositions.map((position) => normalizeBriefingPosition({
+    market_id: position.market_id,
+    question: position.question,
+    side: (
+      position.shares_yes > 0 && position.shares_no > 0
+        ? 'both'
+        : (position.shares_yes > 0 ? 'yes' : (position.shares_no > 0 ? 'no' : position.side))
+    ),
+    shares: numberOrNull(position.shares, position.quantity, position.position_size, position.size, 0),
+    shares_yes: numberOrNull(position.shares_yes, position.yes_shares, position.yesShares, 0),
+    shares_no: numberOrNull(position.shares_no, position.no_shares, position.noShares, 0),
+    avg_entry: numberOrNull(position.avg_entry, position.avg_cost, position.average_price, position.cost_basis, null),
+    avg_cost: numberOrNull(position.avg_cost, position.average_price, position.cost_basis, null),
+    current_price: numberOrNull(position.current_price, position.current_probability, null),
+    current_probability: numberOrNull(position.current_probability, position.current_price, null),
+    current_value: numberOrNull(position.current_value, position.market_value, position.value, null),
+    pnl: numberOrNull(position.pnl, position.unrealized_pnl, 0),
+    resolves_at: position.resolves_at,
+  }));
+  return buildBalanceSnapshot({
+    venues: {
+      sim: {
+        balance: numberOrNull(positionsRaw.sim_balance, rawPositions[0]?.sim_balance, null),
+      },
+    },
+  }, normalizedPositions, policy);
+}
+
 function evaluateSizingPolicyGate(balanceSnapshot, proposedSize, policy) {
   if (!balanceSnapshot?.sizing_basis_reliable) {
     return { pass: false, reason: 'missing balance basis for sizing policy' };
@@ -1379,7 +1583,7 @@ function normalizeDryRunResponse(raw, args, policy) {
     source.estimated_cost,
     0
   );
-  const directShares = numberOrNull(
+  const directShares = firstMeaningfulNumber(
     tradeSource.estimated_shares,
     tradeSource.estimatedShares,
     tradeSource.shares,
@@ -1439,7 +1643,7 @@ function normalizeExecutionResponse(raw, args, policy, reconciliation = {}) {
     : ((raw.data && typeof raw.data === 'object')
       ? raw.data
       : ((raw.result && typeof raw.result === 'object') ? raw.result : raw));
-  const filledSizeRaw = numberOrNull(
+  const filledSizeRaw = firstMeaningfulNumber(
     source.filled_size,
     source.filledSize,
     source.shares_filled,
@@ -1478,6 +1682,116 @@ function normalizeExecutionResponse(raw, args, policy, reconciliation = {}) {
     },
     reconciliation_source: reconciliation.reconciliation_source || '',
     reconciliation_timestamp: reconciliation.reconciliation_timestamp || '',
+  };
+}
+
+function aggregateCloseDryRunResponses(rawResponses, tradeLegs, args, policy, balanceSnapshot, plan) {
+  const normalizedLegs = rawResponses.map((raw, index) => {
+    const leg = tradeLegs[index];
+    const normalized = normalizeDryRunResponse(raw, { ...args, side: leg.side }, policy);
+    return {
+      side: leg.side,
+      action: leg.action,
+      requested_shares: leg.shares,
+      estimated_cost: normalized.estimated_cost,
+      estimated_shares: normalized.estimated_shares,
+      reference_price: normalized.reference_price,
+      policy_pass: normalized.policy_pass,
+      policy_fail_reason: normalized.policy_fail_reason,
+      raw_response_summary: normalized.raw_response_summary,
+    };
+  });
+  const totalEstimatedCost = roundMetric(normalizedLegs.reduce((sum, leg) => sum + numberOrNull(leg.estimated_cost, 0), 0), 8);
+  const totalEstimatedShares = roundMetric(normalizedLegs.reduce((sum, leg) => sum + numberOrNull(leg.estimated_shares, 0), 0), 6);
+  const policyPass = plan.gross_exposure_guard_pass && normalizedLegs.every((leg) => leg.policy_pass === true);
+  const policyFailReason = policyPass
+    ? ''
+    : (normalizedLegs.find((leg) => leg.policy_pass !== true)?.policy_fail_reason || 'explicit close dry-run failed');
+  return {
+    market_id: args['market-id'],
+    strategy_profile_id: args['strategy-profile-id'] || policy.id,
+    policy_version: args['policy-version'] || policy.policyVersion,
+    run_id: args['run-id'],
+    estimated_cost: totalEstimatedCost,
+    estimated_shares: totalEstimatedShares,
+    slippage_notes: normalizedLegs
+      .map((leg) => leg.policy_fail_reason)
+      .filter(Boolean)
+      .join('; '),
+    policy_pass: policyPass,
+    policy_fail_reason: policyFailReason,
+    reference_price: normalizedLegs[0]?.reference_price || 0,
+    share_estimation_source: 'api_sell_shares',
+    raw_response_summary: {
+      leg_count: normalizedLegs.length,
+      response_keys: normalizedLegs.map((leg) => leg.raw_response_summary.response_keys),
+      trade_keys: normalizedLegs.map((leg) => leg.raw_response_summary.trade_keys),
+      has_price: normalizedLegs.every((leg) => leg.reference_price > 0),
+      has_shares: true,
+    },
+    balance_basis: balanceSnapshot.balance_basis,
+    balance_basis_field: balanceSnapshot.balance_basis_field,
+    current_open_exposure: balanceSnapshot.current_open_exposure,
+    max_position_notional: balanceSnapshot.max_position_notional,
+    max_total_exposure_notional: balanceSnapshot.max_total_exposure_notional,
+    remaining_new_exposure_capacity: balanceSnapshot.remaining_new_exposure_capacity,
+    venue_cap_notional: balanceSnapshot.venue_cap_notional,
+    final_proposed_size_cap: balanceSnapshot.final_proposed_size_cap,
+    proposed_size: Number(args.size),
+    current_position_side: plan.current_position_side,
+    current_gross_exposure: plan.current_gross_exposure,
+    post_trade_gross_exposure_estimate: plan.post_trade_gross_exposure_estimate,
+    gross_exposure_guard_pass: plan.gross_exposure_guard_pass,
+    execution_mode: plan.execution_mode,
+    trade_legs: normalizedLegs,
+    execution_intent: String(args['execution-intent'] || 'reduce').trim().toLowerCase(),
+  };
+}
+
+function aggregateCloseExecutionResponses(rawResponses, tradeLegs, args, policy, reconciliation = {}) {
+  const normalizedLegs = rawResponses.map((raw, index) => {
+    const leg = tradeLegs[index];
+    const normalized = normalizeExecutionResponse(raw, { ...args, side: leg.side }, policy, {});
+    return {
+      side: leg.side,
+      action: leg.action,
+      requested_shares: leg.shares,
+      trade_id: normalized.trade_id,
+      status: normalized.status,
+      filled_size: normalized.filled_size,
+      average_price: normalized.average_price,
+      raw_response_summary: normalized.raw_response_summary,
+    };
+  });
+  const totalFilled = roundMetric(normalizedLegs.reduce((sum, leg) => sum + numberOrNull(leg.filled_size, 0), 0), 6);
+  const weightedAveragePrice = totalFilled > 0
+    ? roundMetric(
+        normalizedLegs.reduce((sum, leg) => sum + (numberOrNull(leg.filled_size, 0) * numberOrNull(leg.average_price, 0)), 0) / totalFilled,
+        6
+      )
+    : 0;
+  return {
+    trade_id: normalizedLegs.length === 1 ? (normalizedLegs[0].trade_id || '') : 'multi-leg-close',
+    trade_ids: normalizedLegs.map((leg) => leg.trade_id).filter(Boolean),
+    market_id: args['market-id'],
+    strategy_profile_id: args['strategy-profile-id'] || policy.id,
+    policy_version: args['policy-version'] || policy.policyVersion,
+    run_id: args['run-id'],
+    status: normalizedLegs.every((leg) => leg.status === 'confirmed') ? 'confirmed' : 'submitted',
+    filled_size: totalFilled,
+    average_price: weightedAveragePrice,
+    exposure_after_trade: reconciliation.exposure_after_trade || {},
+    raw_response_summary: {
+      leg_count: normalizedLegs.length,
+      response_keys: normalizedLegs.map((leg) => leg.raw_response_summary.response_keys),
+      has_status: normalizedLegs.every((leg) => Boolean(leg.status)),
+      has_average_price: normalizedLegs.every((leg) => numberOrNull(leg.average_price, 0) > 0),
+    },
+    reconciliation_source: reconciliation.reconciliation_source || '',
+    reconciliation_timestamp: reconciliation.reconciliation_timestamp || '',
+    execution_mode: 'explicit_close',
+    trade_legs: normalizedLegs,
+    execution_intent: String(args['execution-intent'] || 'reduce').trim().toLowerCase(),
   };
 }
 
@@ -1575,8 +1889,8 @@ Usage:
   node simmer-runtime.js briefing --venue sim [--domain DOMAIN] [--run-id RUN_ID] [--workflow-name WORKFLOW] [--step-name STEP]
   node simmer-runtime.js risk-review --payload-file FILE | --briefing-file FILE
   node simmer-runtime.js context --market-id ID --venue sim --domain DOMAIN --run-id RUN_ID --strategy-profile-id crypto_momentum_v1 --policy-version VERSION [--workflow-name WORKFLOW] [--step-name STEP]
-  node simmer-runtime.js dry-run --market-id ID --side SIDE --size SIZE --venue sim --reasoning TEXT --source TEXT --strategy-profile-id crypto_momentum_v1 --policy-version VERSION --run-id RUN_ID [--workflow-name WORKFLOW] [--step-name STEP]
-  node simmer-runtime.js execute --market-id ID --side SIDE --size SIZE --venue sim --reasoning TEXT --source TEXT --dry-run-ref-file FILE --strategy-profile-id crypto_momentum_v1 --policy-version VERSION --run-id RUN_ID [--workflow-name WORKFLOW] [--step-name STEP]
+  node simmer-runtime.js dry-run --market-id ID --side SIDE --size SIZE --venue sim --reasoning TEXT --source TEXT --strategy-profile-id crypto_momentum_v1 --policy-version VERSION --run-id RUN_ID [--execution-intent reduce|exit] [--workflow-name WORKFLOW] [--step-name STEP]
+  node simmer-runtime.js execute --market-id ID --side SIDE --size SIZE --venue sim --reasoning TEXT --source TEXT --dry-run-ref-file FILE --strategy-profile-id crypto_momentum_v1 --policy-version VERSION --run-id RUN_ID [--execution-intent reduce|exit] [--workflow-name WORKFLOW] [--step-name STEP]
   node simmer-runtime.js write-journal --payload-file FILE
   node simmer-runtime.js write-review --payload-file FILE --run-id RUN_ID [--report-path FILE]
   node simmer-runtime.js write-event --workflow-name WORKFLOW --run-id RUN_ID --step-name STEP --payload-file FILE`);
@@ -1765,6 +2079,64 @@ async function main() {
     validateVenue(args.venue);
     validateActiveProfile(args['strategy-profile-id']);
     requireApiKey(binding, 'dry-run');
+    if (isRiskSweepSource(args)) {
+      const positionsEndpoint = resolveEndpoint(binding, 'positions');
+      const positionsRaw = await requestJson({ method: positionsEndpoint.method, url: positionsEndpoint.url, payload: { venue: 'sim' }, binding });
+      const balanceSnapshot = buildBalanceSnapshotFromPositionsRaw(positionsRaw, policy);
+      const closePlan = buildRiskReductionPlan({ positionsRaw, args, binding });
+      if (!closePlan.pass) {
+        const blocked = buildRiskReductionFailureDryRun(args, policy, balanceSnapshot, closePlan);
+        const eventPath = maybeWriteEvent({
+          workflowName: args['workflow-name'],
+          runId: args['run-id'],
+          stepName: args['step-name'] || 'dry_run_result',
+          payload: blocked,
+        });
+        if (eventPath) {
+          blocked.event_path = eventPath;
+        }
+        console.log(JSON.stringify(blocked, null, 2));
+        return;
+      }
+      const endpoint = resolveEndpoint(binding, binding.raw?.binaryMarketExecution?.closeEndpoint || 'execute');
+      const rawResponses = [];
+      for (const leg of closePlan.trade_legs) {
+        rawResponses.push(await requestJson({
+          method: endpoint.method,
+          url: endpoint.url,
+          payload: {
+            market_id: args['market-id'],
+            side: leg.side,
+            action: leg.action,
+            shares: leg.shares,
+            venue: args.venue,
+            dry_run: true,
+            reasoning: args.reasoning,
+            source: args.source,
+          },
+          binding,
+        }));
+      }
+      const normalized = aggregateCloseDryRunResponses(
+        rawResponses,
+        closePlan.trade_legs,
+        args,
+        policy,
+        balanceSnapshot,
+        closePlan
+      );
+      const eventPath = maybeWriteEvent({
+        workflowName: args['workflow-name'],
+        runId: args['run-id'],
+        stepName: args['step-name'] || 'dry_run_result',
+        payload: normalized,
+      });
+      if (eventPath) {
+        normalized.event_path = eventPath;
+      }
+      console.log(JSON.stringify(normalized, null, 2));
+      return;
+    }
     const briefingEndpoint = resolveEndpoint(binding, 'briefing');
     const sizingBriefingRaw = await requestJson({
       method: briefingEndpoint.method,
@@ -1780,23 +2152,6 @@ async function main() {
     });
     const sizingBriefing = normalizeBriefingResponse(sizingBriefingRaw, args, policy);
     const sizingGate = evaluateSizingPolicyGate(sizingBriefing.balance_snapshot, Number(args.size), policy);
-    if (isRiskSweepSource(args)) {
-      const reductionGuard = buildRiskReductionGuard({ briefing: sizingBriefing, args, binding });
-      if (!reductionGuard.pass) {
-        const blocked = buildRiskReductionFailureDryRun(args, policy, sizingBriefing.balance_snapshot, reductionGuard);
-        const eventPath = maybeWriteEvent({
-          workflowName: args['workflow-name'],
-          runId: args['run-id'],
-          stepName: args['step-name'] || 'dry_run_result',
-          payload: blocked,
-        });
-        if (eventPath) {
-          blocked.event_path = eventPath;
-        }
-        console.log(JSON.stringify(blocked, null, 2));
-        return;
-      }
-    }
     const endpoint = resolveEndpoint(binding, 'dryRun');
     const payload = {
       venue: args.venue,
@@ -1865,6 +2220,55 @@ async function main() {
       if (dryRunReference.execution_mode !== 'explicit_close') {
         throw new Error('execute blocked: sim binding does not currently expose explicit close-only semantics for risk reduction');
       }
+      const endpoint = resolveEndpoint(binding, binding.raw?.binaryMarketExecution?.closeEndpoint || 'execute');
+      const tradeLegs = asArray(dryRunReference.trade_legs);
+      if (tradeLegs.length === 0) {
+        throw new Error('execute blocked: explicit close requires trade_legs from dry-run');
+      }
+      const rawResponses = [];
+      for (const leg of tradeLegs) {
+        rawResponses.push(await requestJson({
+          method: endpoint.method,
+          url: endpoint.url,
+          payload: {
+            market_id: args['market-id'],
+            side: leg.side,
+            action: leg.action || binding.raw?.binaryMarketExecution?.closeAction || 'sell',
+            shares: leg.requested_shares || leg.shares,
+            venue: args.venue,
+            reasoning: args.reasoning,
+            source: args.source,
+          },
+          binding,
+        }));
+      }
+      let reconciliation = {};
+      try {
+        const positionsEndpoint = resolveEndpoint(binding, 'positions');
+        const positionsRaw = await requestJson({ method: positionsEndpoint.method, url: positionsEndpoint.url, payload: { venue: 'sim' }, binding });
+        reconciliation = {
+          exposure_after_trade: normalizeExposurePosition(
+            findPositionByMarketId(positionsRaw, args['market-id']),
+            args['market-id']
+          ),
+          reconciliation_source: 'positions_endpoint',
+          reconciliation_timestamp: new Date().toISOString(),
+        };
+      } catch (_error) {
+        reconciliation = {};
+      }
+      const normalized = aggregateCloseExecutionResponses(rawResponses, tradeLegs, args, policy, reconciliation);
+      const eventPath = maybeWriteEvent({
+        workflowName: args['workflow-name'],
+        runId: args['run-id'],
+        stepName: args['step-name'] || 'execution_result',
+        payload: normalized,
+      });
+      if (eventPath) {
+        normalized.event_path = eventPath;
+      }
+      console.log(JSON.stringify(normalized, null, 2));
+      return;
     }
     const endpoint = resolveEndpoint(binding, 'execute');
     const payload = {

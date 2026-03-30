@@ -110,6 +110,7 @@ Runtime behavior:
 | `policy_version` | string | yes | Active policy version from caller context |
 | `run_id` | string | yes | Workflow run identifier from caller context |
 | `workflow_name` | string | no | Optional workflow attribution for runtime event storage |
+| `execution_intent` | string | no | For risk sweep, `reduce` or `exit` so runtime can choose the correct close plan |
 
 Input rules:
 - if `venue` is not `sim`, stop and report a contract violation
@@ -118,7 +119,7 @@ Input rules:
 - enforce `max_position_pct_of_balance` and `max_total_exposure_pct_of_balance` using the current live balance basis
 - enforce `max_trade_notional_for_sim` as an operational venue cap
 - for `paper-risk-sweep` reduce or exit actions, never simulate a generic opposite-side notional buy as a reduction
-- if the runtime binding does not expose explicit binary close/sell semantics, fail closed instead of hedging
+- for `paper-risk-sweep`, use explicit `action: sell` plus `shares` on the currently held side
 - a reduce or exit action must never pass if it would increase pre-trade gross exposure
 
 ## Output Contract
