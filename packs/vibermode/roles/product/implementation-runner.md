@@ -32,6 +32,7 @@ Each session is a **fresh context**. Your memory comes from git history, `run-st
 | `tasks.json` | file | yes | Task list with lineage, dependencies, and status |
 | `run-state.json` | file | no | Structured state and run history from previous implementation runs |
 | `docsPath` | folder | no | Rich context from product artifacts |
+| `bootstrap.md` | file | no | Bootstrap artifact carrying repo root, branch, setup, and runnable baseline context |
 
 `prd.json` and `progress.txt` are legacy compatibility inputs. Prefer `tasks.json` and `run-state.json`.
 
@@ -44,7 +45,8 @@ Follow these steps exactly, in order.
 1. Read `tasks.json`
 2. Read `run-state.json` if it exists
 3. Read the docs folder from `tasks.json` field `docsPath`
-4. Read each artifact's `## Summary (for downstream agents)` section first, then the full document where needed
+4. Read `bootstrap.md` if it exists or if `tasks.json` includes `bootstrapContext`
+5. Read each artifact's `## Summary (for downstream agents)` section first, then the full document where needed
 
 ### Step 2: Pick Task
 
@@ -52,23 +54,31 @@ Find the highest-priority task whose `status` is `pending` and whose dependencie
 
 ### Step 3: Branch
 
-Check you are on the correct branch from `tasks.json` field `branchName`. If not, create or switch to it.
+Check you are on the correct branch from `tasks.json` field `branchName`.
+
+If `tasks.json.bootstrapContext.workingBranch` exists, treat it as the preferred execution branch unless the task explicitly says otherwise.
+
+If not on the correct branch, create or switch to it while preserving the bootstrap artifact's repo and branch assumptions.
 
 ### Step 4: Implement
 
 Implement the task. Follow these rules:
 - Read the acceptance criteria carefully
 - Read the task `notes` carefully for implementation boundary, lineage, PRD refs, and UX refs
+- Read the task `validation` object before coding so the required check level is clear
+- Respect bootstrap context such as stable repo root, last known runnable command, and setup blockers
 - Respect `parentStoryId` and `lineage`
 - Match existing codebase patterns
 - Keep changes minimal and focused
 
 ### Step 5: Quality Check
 
-Run the project's quality checks that actually exist:
-- typecheck
-- lint
-- tests
+Run the task's declared validation plan. Prefer the lightest check that satisfies `tasks.json.tasks[*].validation.level`:
+- `quick` — targeted checks such as typecheck, lint, or relevant tests
+- `build` — compile/build validation, typically using bootstrap's `validationBaseline.buildCommand`
+- `runtime` — build or launch plus the task's declared smoke scenario(s)
+
+If bootstrap recorded a validation baseline, reuse its commands unless the task declares a narrower command.
 
 Fix failures before continuing.
 
@@ -97,6 +107,16 @@ Create or update `run-state.json` with this shape:
       "parentStoryId": "FEATURE-001",
       "summary": "What was implemented",
       "filesChanged": ["path/to/file.ext"],
+      "validation": {
+        "level": "build",
+        "commands": ["npm run build"],
+        "passed": true,
+        "usedBootstrapCommand": "npm run build",
+        "scenariosVerified": ["Home screen loads without crash"],
+        "evidence": [
+          "Build succeeded with exit code 0"
+        ]
+      },
       "notes": [
         "Pattern or gotcha for future runs"
       ]
@@ -111,6 +131,8 @@ Rules:
 - `storyExecutionState` tracks per-story progress across split tasks
 - `runHistory` records one object per implementation run
 - `run-state.json` references tasks by `taskId` and `parentStoryId`; it should not duplicate full task definitions from `tasks.json`
+- when bootstrap context exists, record whether bootstrap-provided commands or assumptions were reused during validation
+- always record the executed validation level, commands, pass/fail outcome, and any verified runtime scenarios
 
 ### Step 8: Report Status
 
@@ -134,6 +156,7 @@ Always include:
 Before reporting completion, ensure one of these is true:
 - relevant automated tests or validation checks were run and passed
 - no relevant automated checks exist, and the manual validation approach is recorded in `run-state.json`
+- the recorded validation evidence satisfies the task's declared `validation.level`
 
 ## Behavior Guidelines
 

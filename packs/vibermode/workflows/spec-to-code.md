@@ -5,7 +5,7 @@
 ## Pipeline
 
 ```text
-stories → task planning → task execution loop → review
+stories + bootstrap → task planning → task execution loop → review
 ```
 
 Implementation boundary:
@@ -24,6 +24,7 @@ Convert stories into machine-readable implementation tasks.
 Inputs:
 - `docs/[project-name]/stories.md`
 - `docs/[project-name]/prd.md`
+- optional: `docs/[project-name]/bootstrap.md`
 - optional: `docs/[project-name]/ux.md`
 - optional: `docs/[project-name]/analysis.md`
 
@@ -34,6 +35,7 @@ Success Criteria:
 - story IDs and dependencies are preserved
 - task splits preserve lineage to parent stories
 - task ordering respects dependency chain
+- bootstrap handoff is reflected in branch or runtime execution context when available
 - `run-state.json` must reference tasks by `taskId` rather than duplicating task definitions
 - first implementation target is obvious
 - handoff clearly identifies the first implementation task and the stable artifacts required for execution
@@ -69,6 +71,7 @@ Inputs:
 - `docs/[project-name]/prd.md`
 - `docs/[project-name]/ux.md`
 - `docs/[project-name]/stories.md`
+- optional: `docs/[project-name]/bootstrap.md`
 - optional: `docs/[project-name]/analysis.md`
 
 Outputs:
@@ -82,6 +85,7 @@ Success Criteria:
 - task status is updated to `done`
 - run history is appended structurally
 - lineage and dependencies remain intact
+- bootstrap branch/setup context is respected when the artifact exists
 - available tests or validation checks are run and pass before the task is considered complete
 - if no automated tests exist for the affected area, the run must record the validation approach used
 - `run-state.json` remains execution state only and does not duplicate task definitions from `tasks.json`
@@ -110,6 +114,7 @@ Inputs:
 - `docs/[project-name]/ux.md`
 - `docs/[project-name]/stories.md`
 - `docs/[project-name]/tasks.json`
+- optional: `docs/[project-name]/bootstrap.md`
 - optional: `docs/[project-name]/run-state.json`
 - implementation artifact or code diff
 
@@ -120,25 +125,46 @@ Success Criteria:
 - verdict is explicit
 - issues cite files and lines
 - validation checks product and implementation contracts
+- every failing issue is routed as `reopen-task` or `create-followup-task`
 - review outcome is clear enough to either approve the slice or send it back into implementation
 
 Next Step:
 - done if approved
-- back to implementation if changes are required
+- sync task state if changes are required, then return to implementation
 
 ## Artifacts
 
 ```text
 docs/[project-name]/
+├── bootstrap.md
 ├── tasks.json
 ├── run-state.json
 └── review.md
 ```
 
 Relationship note:
+- `bootstrap.md` records repo root, branch state, scaffold/setup commands, and runnable baseline evidence
 - `tasks.json` is the source of truth for task definitions, dependencies, and lineage
 - `run-state.json` tracks execution state and run history, and should reference tasks by `taskId` instead of copying full task definitions
 - `review.md` validates an implementation slice after execution work has accumulated; it does not replace per-task execution state in `run-state.json`
+
+## Review Remediation Routing
+
+When review returns `CHANGES_REQUESTED` or `BLOCKED`, do not jump straight back into coding without updating task state.
+
+Routing rules:
+
+- `reopen-task`
+  - use when the issue is inside the original completed task boundary
+  - update the target task status back to `pending`
+  - record the review reference or reason in task notes or run-state metadata
+
+- `create-followup-task`
+  - use when the issue is a new separable slice, side effect, or post-review remediation item
+  - append a new pending task to `tasks.json`
+  - preserve story lineage and add dependencies on the originating task where appropriate
+
+The reviewer defines the routing decision. The orchestration layer or workflow runner applies it to `tasks.json` before the next `implementation-runner` iteration begins.
 
 ## Execution Model
 
@@ -147,7 +173,7 @@ This workflow is designed to support repeated execution over the same artifact s
 Minimum execution sequence:
 
 ```text
-stories.md
+stories.md + bootstrap.md
   ↓
 task-planner
   ↓
@@ -160,9 +186,14 @@ run-state.json updated
 implementation-runner again if tasks remain
   ↓
 reviewer when the slice is ready
+  ↓
+task state sync if review fails
+  ↓
+implementation-runner again
 ```
 
 Design intent:
 - keep specification artifacts stable once execution begins
+- allow repo/runtime setup context to feed execution without duplicating repo state into every task by default
 - keep execution state separate from task definitions
 - make repeated runs deterministic and resumable

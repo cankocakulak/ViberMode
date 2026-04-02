@@ -1,19 +1,19 @@
 # Workflow: Product to Code
 
-> Canonical composed workflow: `product-to-spec` followed by `spec-to-code`.
+> Canonical composed workflow: `product-to-spec` followed by `bootstrap` followed by `spec-to-code`.
 
 ## Pipeline Overview
 
 This workflow is the default path for a new product idea:
 
 ```text
-idea → product-to-spec → spec-to-code
+idea → product-to-spec → bootstrap → spec-to-code
 ```
 
 Canonical role order:
 
 ```text
-Brainstormer → PRD → UX Designer → User Stories → Task Planner → Implementation Runner ↺ → Reviewer
+Brainstormer → PRD → UX Designer → User Stories → Bootstrap → Task Planner → Implementation Runner ↺ → Reviewer
 ```
 
 This workflow is deterministic:
@@ -28,6 +28,9 @@ Stage 1:
 - `packs/vibermode/workflows/product-to-spec.md`
 
 Stage 2:
+- `packs/vibermode/workflows/bootstrap.md`
+
+Stage 3:
 - `packs/vibermode/workflows/spec-to-code.md`
 
 Use `product-to-code` when you want the full path from idea to reviewed implementation.
@@ -63,6 +66,7 @@ docs/[project-name]/
 ├── prd.md
 ├── ux.md
 ├── stories.md
+├── bootstrap.md
 ├── tasks.json
 ├── run-state.json
 └── review.md
@@ -199,9 +203,36 @@ Success Criteria:
 - artifact includes `## Handoff Contract`
 
 Next Step:
+`bootstrap`
+
+## Step 5 — Bootstrap
+
+Role:
+`packs/vibermode/roles/product/bootstrap.md`
+
+Purpose:
+Resolve the working repo root, branch state, stack scaffold, and first runnable baseline before feature implementation begins.
+
+Inputs:
+- `workspace_path` or the already-resolved target project root
+- optional: `repo_mode`, `repo_url`, `base_branch`, `working_branch`
+- optional: `docs/[project-name]/analysis.md`
+- optional constraints relevant to stack setup
+
+Outputs:
+- `docs/[project-name]/bootstrap.md`
+
+Success Criteria:
+- one canonical project root is established for downstream execution
+- repo and branch state are explicit
+- stack scaffold or setup path is recorded
+- at least one runnable validation command is attempted and recorded
+- handoff identifies the repo root and branch downstream work must use
+
+Next Step:
 `task-planner`
 
-## Step 5 — Task Conversion
+## Step 6 — Task Conversion
 
 Role:
 `packs/vibermode/roles/product/task-planner.md`
@@ -212,6 +243,7 @@ Convert the story artifact into a machine-readable task list for deterministic i
 Inputs:
 - `docs/[project-name]/stories.md`
 - `docs/[project-name]/prd.md`
+- optional: `docs/[project-name]/bootstrap.md`
 - optional: `docs/[project-name]/ux.md`
 - optional: `docs/[project-name]/analysis.md`
 
@@ -230,7 +262,7 @@ Success Criteria:
 Next Step:
 `implementation-runner`
 
-## Step 6 — Implementation Loop
+## Step 7 — Implementation Loop
 
 Role:
 `packs/vibermode/roles/product/implementation-runner.md`
@@ -265,7 +297,7 @@ Next Step:
 - `implementation-runner` again if incomplete tasks remain
 - `reviewer` when the target implementation slice is complete or ready for validation
 
-## Step 7 — Review
+## Step 8 — Review
 
 Role:
 `packs/vibermode/roles/iterate/reviewer.md`
@@ -308,6 +340,8 @@ ux.md
   ↓
 stories.md
   ↓
+bootstrap.md
+  ↓
 tasks.json
   ↓
 implementation + run-state.json
@@ -329,6 +363,9 @@ ux.md
 
 stories.md
   carries story IDs, requirement/flow coverage, dependencies, and implementation boundaries
+
+bootstrap.md
+  carries repo root, branch state, setup commands, and runnable baseline evidence
 
 tasks.json
   carries implementation ordering, dependencies, and task lineage
@@ -357,7 +394,7 @@ Allowed skips:
 
 - Skip Step 1 only if a valid `brainstorm.md` already exists.
 - Skip Step 3 only if the feature is explicitly backend-only and the PRD handoff allows going straight to stories.
-- Skip directly to Step 7 only for re-review of already implemented work.
+- Skip directly to Step 8 only for re-review of already implemented work.
 
 Not allowed:
 
@@ -371,7 +408,7 @@ Not allowed:
 Likely next workflows:
 
 - `existing-codebase-feature`
-  - `analyzer → product-to-spec → spec-to-code`
+  - `analyzer → product-to-spec → bootstrap → spec-to-code`
 - `product-spec-only`
   - `product-to-spec`
 - `spec-to-code-only`
@@ -381,4 +418,4 @@ Likely next workflows:
 - `architecture-augmented-product-to-code`
   - same workflow plus a future architect role between stories and conversion
 
-The current `product-to-code` workflow remains the canonical default, but it now composes `product-to-spec` and `spec-to-code` so product specification and implementation can evolve separately.
+The current `product-to-code` workflow remains the canonical default, but it now composes `product-to-spec`, `bootstrap`, and `spec-to-code` so specification, repo/runtime setup, and implementation can evolve separately.

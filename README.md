@@ -87,7 +87,8 @@ Canonical content now lives under `packs/`. Platform integrations live under `ad
 | `prd` | Lean product requirements + tech stack | Brainstormer | PRD document |
 | `ux-designer` | Flows, visual direction, branding, references | PRD | UX specification |
 | `user-stories` | Sprint-ready, UX-aware stories | PRD + UX | Story backlog |
-| `task-planner` | Convert stories into an implementation task list | User Stories | `tasks.json` |
+| `bootstrap` | Prepare repo, branch, scaffold, and runnable baseline | User Stories / Analyzer | `bootstrap.md` |
+| `task-planner` | Convert stories into an implementation task list | User Stories + Bootstrap | `tasks.json` |
 | `implementation-runner` | Implement one task per session from `tasks.json` | Task Planner | Code changes + `run-state.json` |
 
 Legacy aliases:
@@ -112,18 +113,20 @@ Four perspectives, use any independently.
 Canonical composed pipeline:
 
 ```
-product-to-spec → spec-to-code
+product-to-spec → bootstrap → spec-to-code
 ```
 
 Canonical workflow docs:
 - `product-to-spec` — idea to completed specification artifacts
+- `bootstrap` — repo/runtime preparation before implementation
 - `spec-to-code` — completed specs to tasks, implementation loop, and review
-- `product-to-code` — composed workflow that runs both stages
+- `product-to-code` — composed workflow that runs all three stages
 
 **Common shortcuts:**
-- New project: `Brainstormer → PRD → UX → Stories`
-- Existing codebase feature: `Analyzer → product-to-spec → spec-to-code`
+- New project: `product-to-spec → bootstrap → spec-to-code`
+- Existing codebase feature: `Analyzer → product-to-spec → bootstrap → spec-to-code`
 - Spec-only work: `product-to-spec`
+- Repo/runtime prep only: `bootstrap`
 - Implementation-only work: `spec-to-code`
 - Bug fix: `Planner → implement`
 - UX improvement: `UX Tweaker → implement`
@@ -192,6 +195,9 @@ ViberMode's role for OpenClaw is to provide:
 - canonical pack content under `packs/`
 - shared contracts, templates, and reference material
 - lightweight integration guidance under `adapters/openclaw/`
+
+OpenClaw workflow planning notes:
+- `docs/openclaw-workflows/workflow-map.md`
 
 ### Any Other Tool — AGENTS.md
 
