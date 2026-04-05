@@ -104,12 +104,17 @@ product-to-code
 
 This keeps the user-facing experience to one top-level workflow while preserving internal stage boundaries.
 
-## Follow-Up Work
+## Supervisor Policy
 
-To make this production-ready inside OpenClaw, the next changes should be:
+OpenClaw should treat workflow orchestration as a supervised system, not just a sequence of child runs.
 
-1. project `bootstrap` into the OpenClaw runtime workspace
-2. add a composed `product-to-code.prose`
-3. strengthen `task-planner` so tasks carry test and runtime validation instructions
-4. strengthen `implementation-runner` so it records launch/build/smoke evidence in `run-state.json`
-5. strengthen review so runtime evidence is part of sign-off
+Operational rules:
+- every delegated step has a minimum wait window, a hard timeout, and at most one automatic retry
+- before killing a child run, verify whether the expected artifact already exists
+- if a child times out without artifact output, cancel it and retry the same step once with the same artifact context
+- if the retry also times out, surface an explicit blocked status instead of hanging the workflow
+- if a child asks for clarification and no new user input is available, retry once with a best-effort artifact-first instruction before declaring the workflow blocked
+
+Practical implication:
+- `product-to-spec`, `bootstrap`, `spec-to-code`, and `remediation-routing` should all inherit the same watchdog model
+- timeout handling belongs to the orchestrator/supervisor layer, not to the specialist skills themselves
