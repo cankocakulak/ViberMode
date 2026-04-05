@@ -118,3 +118,13 @@ Operational rules:
 Practical implication:
 - `product-to-spec`, `bootstrap`, `spec-to-code`, and `remediation-routing` should all inherit the same watchdog model
 - timeout handling belongs to the orchestrator/supervisor layer, not to the specialist skills themselves
+
+Current limitation:
+- the timeout table is currently policy, not fully enforced runtime behavior
+- without a real watchdog loop, a delegated child may still hang until manually cancelled
+
+Implementation target:
+- use one shared watchdog wrapper around delegated `stage-runner` child executions
+- track `started_at`, `expected_artifacts`, `hard_timeout`, and `retry_count`
+- cancel and retry exactly once when the hard timeout is exceeded without output
+- surface `BLOCKED_TIMEOUT` or `BLOCKED_RETRY_EXHAUSTED` instead of waiting indefinitely
