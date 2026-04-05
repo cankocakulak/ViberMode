@@ -5,7 +5,7 @@
 ## Pipeline
 
 ```text
-stories + bootstrap → task planning → task execution loop → review
+stories + bootstrap → task planning → task execution loop → runtime validation → review
 ```
 
 Implementation boundary:
@@ -99,7 +99,38 @@ Loop stop conditions:
 - a hard blocker prevents safe continuation
 - validation fails and cannot be resolved within the current task run
 
-## Step 3 — Review
+## Step 3 — Runtime Validation
+
+Role:
+`packs/vibermode/roles/iterate/runtime-validator.md`
+
+Purpose:
+Execute real post-implementation build, launch, and smoke validation before review decides whether the slice is production-ready.
+
+This step exists because implementation-task checks are not enough to prove the full slice actually runs.
+
+Inputs:
+- `docs/[project-name]/tasks.json`
+- optional: `docs/[project-name]/run-state.json`
+- optional: `docs/[project-name]/bootstrap.md`
+- `docs/[project-name]/prd.md`
+- `docs/[project-name]/ux.md`
+- `docs/[project-name]/stories.md`
+- target repo root
+
+Outputs:
+- `docs/[project-name]/validation-report.md`
+
+Success Criteria:
+- real validation commands are executed and recorded
+- stack-appropriate runnable evidence exists for the slice under review
+- failures and blockers are explicit rather than hidden inside implementation notes
+- mobile app validation does not treat package-only compile checks as sufficient
+
+Next Step:
+- `reviewer`
+
+## Step 4 — Review
 
 Role:
 `packs/vibermode/roles/iterate/reviewer.md`
@@ -116,6 +147,7 @@ Inputs:
 - `docs/[project-name]/tasks.json`
 - optional: `docs/[project-name]/bootstrap.md`
 - optional: `docs/[project-name]/run-state.json`
+- `docs/[project-name]/validation-report.md`
 - implementation artifact or code diff
 
 Outputs:
@@ -125,12 +157,13 @@ Success Criteria:
 - verdict is explicit
 - issues cite files and lines
 - validation checks product and implementation contracts
+- review consumes runtime validator evidence instead of trusting prose claims
 - every failing issue is routed as `reopen-task` or `create-followup-task`
 - review outcome is clear enough to either approve the slice or send it back into implementation
 
 Next Step:
 - done if approved
-- sync task state if changes are required, then return to implementation
+- `remediation-routing` if changes are required, then return to implementation
 
 ## Artifacts
 
@@ -139,6 +172,7 @@ docs/[project-name]/
 ├── bootstrap.md
 ├── tasks.json
 ├── run-state.json
+├── validation-report.md
 └── review.md
 ```
 
@@ -146,25 +180,16 @@ Relationship note:
 - `bootstrap.md` records repo root, branch state, scaffold/setup commands, and runnable baseline evidence
 - `tasks.json` is the source of truth for task definitions, dependencies, and lineage
 - `run-state.json` tracks execution state and run history, and should reference tasks by `taskId` instead of copying full task definitions
+- `validation-report.md` records executed build/launch/smoke evidence for the current slice
 - `review.md` validates an implementation slice after execution work has accumulated; it does not replace per-task execution state in `run-state.json`
 
-## Review Remediation Routing
+## Failure Routing
 
-When review returns `CHANGES_REQUESTED` or `BLOCKED`, do not jump straight back into coding without updating task state.
+When runtime validation or review fails, do not jump straight back into coding inside this workflow.
 
-Routing rules:
-
-- `reopen-task`
-  - use when the issue is inside the original completed task boundary
-  - update the target task status back to `pending`
-  - record the review reference or reason in task notes or run-state metadata
-
-- `create-followup-task`
-  - use when the issue is a new separable slice, side effect, or post-review remediation item
-  - append a new pending task to `tasks.json`
-  - preserve story lineage and add dependencies on the originating task where appropriate
-
-The reviewer defines the routing decision. The orchestration layer or workflow runner applies it to `tasks.json` before the next `implementation-runner` iteration begins.
+- `runtime-validator` and `reviewer` produce findings and routing guidance
+- `remediation-routing` applies those decisions to `tasks.json` and `run-state.json`
+- only after that should `implementation-runner` resume
 
 ## Execution Model
 
@@ -185,9 +210,11 @@ run-state.json updated
   ↓
 implementation-runner again if tasks remain
   ↓
+runtime-validator when the slice is ready
+  ↓
 reviewer when the slice is ready
   ↓
-task state sync if review fails
+remediation-routing if validation/review fails
   ↓
 implementation-runner again
 ```

@@ -13,7 +13,7 @@ idea → product-to-spec → bootstrap → spec-to-code
 Canonical role order:
 
 ```text
-Brainstormer → PRD → UX Designer → User Stories → Bootstrap → Task Planner → Implementation Runner ↺ → Reviewer
+Brainstormer → PRD → UX Designer → User Stories → Bootstrap → Task Planner → Implementation Runner ↺ → Runtime Validator → Reviewer → Remediation Router (when needed)
 ```
 
 This workflow is deterministic:
@@ -69,6 +69,8 @@ docs/[project-name]/
 ├── bootstrap.md
 ├── tasks.json
 ├── run-state.json
+├── validation-report.md
+├── remediation.md
 └── review.md
 ```
 

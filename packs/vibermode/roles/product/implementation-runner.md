@@ -80,6 +80,11 @@ Run the task's declared validation plan. Prefer the lightest check that satisfie
 
 If bootstrap recorded a validation baseline, reuse its commands unless the task declares a narrower command.
 
+If `task.validation.runtimeCritical` is `true`, run one immediate mini smoke check before marking the task done:
+- use the smallest task-specific command path that can exercise `task.validation.miniScenarios`
+- prefer a narrow launch/check over the full slice validator
+- if the mini smoke check fails, stop and report the failure instead of marking the task done
+
 Fix failures before continuing.
 
 ### Step 6: Update tasks.json
@@ -109,9 +114,11 @@ Create or update `run-state.json` with this shape:
       "filesChanged": ["path/to/file.ext"],
       "validation": {
         "level": "build",
+        "runtimeCritical": true,
         "commands": ["npm run build"],
         "passed": true,
         "usedBootstrapCommand": "npm run build",
+        "miniScenariosVerified": ["New screen opens without crash"],
         "scenariosVerified": ["Home screen loads without crash"],
         "evidence": [
           "Build succeeded with exit code 0"
@@ -133,6 +140,7 @@ Rules:
 - `run-state.json` references tasks by `taskId` and `parentStoryId`; it should not duplicate full task definitions from `tasks.json`
 - when bootstrap context exists, record whether bootstrap-provided commands or assumptions were reused during validation
 - always record the executed validation level, commands, pass/fail outcome, and any verified runtime scenarios
+- when `runtimeCritical=true`, record whether the mini smoke check ran and which `miniScenarios` were verified
 
 ### Step 8: Report Status
 
@@ -157,6 +165,7 @@ Before reporting completion, ensure one of these is true:
 - relevant automated tests or validation checks were run and passed
 - no relevant automated checks exist, and the manual validation approach is recorded in `run-state.json`
 - the recorded validation evidence satisfies the task's declared `validation.level`
+- if `runtimeCritical=true`, the recorded evidence must include the immediate mini smoke result
 
 ## Behavior Guidelines
 

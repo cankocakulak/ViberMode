@@ -79,9 +79,11 @@ The complete `tasks.json` content:
       "dependencies": [],
       "validation": {
         "level": "quick",
+        "runtimeCritical": false,
         "commands": ["npm test -- --runInBand relevant-test"],
+        "miniScenarios": [],
         "scenarios": ["New logic behaves as specified"],
-        "notes": "Escalate to build or runtime when the task changes app wiring, navigation, or native code."
+        "notes": "Set runtimeCritical=true only when the task changes navigation, app wiring, audio/session behavior, persistence handoff, or other integration-heavy flows. Use miniScenarios for the smallest immediate smoke check."
       },
       "priority": 1,
       "status": "pending",
@@ -102,7 +104,9 @@ Rules:
 - If a story is too large, split it without losing lineage to the parent story
 - Every task must declare a `validation` object with:
   - `level`: `quick`, `build`, or `runtime`
+  - `runtimeCritical`: `true` when the task should trigger an immediate mini smoke check before the slice is complete
   - `commands`: explicit commands or a clear instruction to reuse bootstrap baseline commands
+  - `miniScenarios`: smallest immediate smoke checks to run right after the task when `runtimeCritical` is true
   - `scenarios`: concrete runtime or behavior checks when relevant
 - Use `quick` for localized logic or copy changes, `build` for structural/UI wiring or dependency changes, and `runtime` for tasks that affect navigation, app launch paths, or critical user flows
 
@@ -155,7 +159,9 @@ Each task must complete in ONE AI iteration. Split if:
 ### Validation Rules
 
 - The task's `validation.level` should be the lightest check that still catches the most likely breakage
+- Set `runtimeCritical=true` only for tasks whose breakage is likely to surface immediately in a narrow smoke check
 - Reuse bootstrap baseline commands unless the task needs a more targeted command
+- When `runtimeCritical=true`, include at least one `miniScenarios` entry for the smallest meaningful immediate validation
 - If a task introduces a new runtime surface, include at least one `scenarios` entry that the runner can verify
 - Do not leave validation implied inside prose-only notes; it must be machine-readable in the task object
 

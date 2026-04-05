@@ -5,7 +5,7 @@
 ## Pipeline
 
 ```text
-workspace resolution → repo preflight → stack scaffold/setup → runnable validation
+workspace resolution → repo preflight → identity/setup alignment → script-first runnable validation
 ```
 
 This workflow sits between specification work and implementation work when the target project root is not yet trusted as runnable.
@@ -53,17 +53,19 @@ Success Criteria:
 - base branch is resolved or the absence of git is recorded
 - working branch is resolved, created, or intentionally deferred
 
-## Step 3 — Stack Scaffold / Setup
+## Step 3 — Identity Setup / Stack Setup
 
 Role:
 `packs/vibermode/roles/product/bootstrap.md`
 
 Purpose:
-Prepare the declared stack so implementation can begin from a stable baseline.
+Prepare the declared repo so implementation can begin from a stable baseline. Prefer identity alignment and existing repo setup over generating fresh scaffolding.
 
 Inputs:
 - `stack`
 - `platform`
+- optional: `bootstrap_mode`
+- optional: `identity_overrides`
 - optional: `constraints`
 
 Outputs:
@@ -71,8 +73,10 @@ Outputs:
 
 Success Criteria:
 - setup path is explicit
+- identity updates are explicit or intentionally deferred
 - the commands needed to reproduce setup are recorded
-- scaffold or dependency setup is complete enough for validation
+- repo-provided scripts are detected when they exist
+- setup is complete enough for validation
 
 ## Step 4 — Runnable Validation
 
@@ -80,7 +84,7 @@ Role:
 `packs/vibermode/roles/product/bootstrap.md`
 
 Purpose:
-Verify the baseline actually builds, starts, or launches.
+Verify the baseline actually builds, starts, launches, or passes repo-native test/smoke commands.
 
 Inputs:
 - the prepared workspace from Steps 1-3
@@ -90,8 +94,10 @@ Outputs:
 
 Success Criteria:
 - at least one stack-appropriate runnable validation command is executed
+- repo-native scripts are preferred when they exist
 - success or failure is recorded explicitly
 - blockers are clear enough for downstream work to stop safely if needed
+- mobile app bootstrap does not confuse a library/package compile with a runnable app baseline
 
 ## Artifacts
 
@@ -100,11 +106,11 @@ docs/[project-name]/
 └── bootstrap.md
 ```
 
-`bootstrap.md` is the canonical handoff artifact for repo state, scaffold decisions, and runnable baseline evidence.
+`bootstrap.md` is the canonical handoff artifact for repo state, identity/setup decisions, and runnable baseline evidence.
 
 ## Execution Notes
 
-- Use this workflow for greenfield app creation and for existing repos that need preflight validation before implementation.
+- Use this workflow for ready repos, template-derived repos, and greenfield app creation when preflight validation is still needed.
 - Skip this workflow only when the repo root, branch, and runnable baseline are already known and recorded.
 - `workspace_path` is the canonical root. Do not resolve workflow artifacts against the orchestrator workspace.
 

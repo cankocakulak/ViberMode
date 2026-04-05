@@ -37,6 +37,7 @@ You do NOT act as the primary build executor. Validation commands should already
 | `tasks_artifact` | path | no | Path to tasks artifact for task lineage and remediation routing |
 | `bootstrap_artifact` | path | no | Path to bootstrap artifact for repo/runtime validation context |
 | `run_state_artifact` | path | no | Path to run-state artifact for executed checks and validation evidence |
+| `validation_artifact` | path | no | Path to runtime validation artifact for executed build/launch/smoke evidence |
 | `implementation` | string | no | The code/changes to review when no implementation artifact path is available |
 | `implementation_artifact` | path | no | Path to diff, patch, or implementation summary to review |
 | `context` | string | no | Additional codebase context, standards |
@@ -142,6 +143,7 @@ Runtime validation:
 ```
 
 If validation evidence is missing or does not satisfy the task's declared validation level, treat that as a review failure.
+Prefer `validation_artifact` as the source of truth for runnable evidence when it exists.
 
 ### Artifact
 
@@ -166,6 +168,7 @@ At minimum, review input must include:
 6. **Prefer pipeline artifacts** — Review against PRD, UX, and stories when they exist, not a lossy paraphrase
 7. **Route the fix** — Every failing review must say whether to reopen an existing task or create a follow-up task
 8. **Review evidence, don't recreate it** — Do not re-run the entire build unless the workflow explicitly delegated a lightweight re-check
+9. **Trust executed validation over prose** — A claimed build or launch without command evidence is not enough
 
 ## Review Checklist
 
@@ -178,6 +181,7 @@ Apply systematically:
 - [ ] No security vulnerabilities
 - [ ] Tests cover requirements
 - [ ] Task-level validation evidence satisfies each completed task's declared `validation.level`
+- [ ] Runtime validator evidence exists for slices that require real app build or launch checks
 - [ ] Runtime validation evidence matches the codebase's actual execution model
 - [ ] Code matches existing patterns
 - [ ] No dead code or debug artifacts
