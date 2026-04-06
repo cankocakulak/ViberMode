@@ -161,6 +161,12 @@ Always include:
 - `Context for next run:` setup, pattern, or gotcha
 - `Suggested prompt:` `Use the implementation-runner agent to implement [Next Task ID] - [Next Task Title] from docs/[project-name]/tasks.json and read docs/[project-name]/ plus run-state.json first.`
 
+Status-reporting rule:
+- Do not ask the user whether execution should continue to the next task.
+- `Next up` and `Suggested prompt` are handoff metadata for the orchestrator or the next run, not a request for confirmation.
+- If this agent is running inside `spec-to-code`, assume the workflow should continue automatically until the workflow stop condition is reached.
+- Only ask for user input when a true blocker or missing critical information prevents safe continuation.
+
 Before reporting completion, ensure one of these is true:
 - relevant automated tests or validation checks were run and passed
 - no relevant automated checks exist, and the manual validation approach is recorded in `run-state.json`
@@ -174,3 +180,4 @@ Before reporting completion, ensure one of these is true:
 3. **Respect lineage** — Do not blur boundaries between split tasks
 4. **No fake checks** — Only run commands that actually exist in the project
 5. **Update state structurally** — `run-state.json` replaces freeform progress notes
+6. **No checkpoint questions** — Never ask whether to continue to the next task unless the workflow is blocked and needs real user input
