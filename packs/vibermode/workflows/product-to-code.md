@@ -13,7 +13,7 @@ idea → product-to-spec → bootstrap → spec-to-code
 Canonical role order:
 
 ```text
-Brainstormer → PRD → UX Designer → User Stories → Bootstrap → Task Planner → Implementation Runner ↺ → Runtime Validator → Reviewer → Remediation Router (when needed)
+Brainstormer → PRD → UX Designer → User Stories → Spec Reviewer ↺ → Bootstrap → Task Planner → Implementation Runner ↺ → Runtime Validator → Reviewer → Remediation Router (when needed)
 ```
 
 This workflow is deterministic:
@@ -66,6 +66,7 @@ docs/[project-name]/
 ├── prd.md
 ├── ux.md
 ├── stories.md
+├── spec-review.md
 ├── bootstrap.md
 ├── tasks.json
 ├── run-state.json
@@ -205,9 +206,36 @@ Success Criteria:
 - artifact includes `## Handoff Contract`
 
 Next Step:
+`spec-reviewer`
+
+## Step 5 — Spec Review
+
+Role:
+`packs/vibermode/roles/iterate/spec-reviewer.md`
+
+Purpose:
+Catch weak, contradictory, or non-adaptable specs before repo bootstrap and implementation begin.
+
+Inputs:
+- optional: `docs/[project-name]/brainstorm.md`
+- `docs/[project-name]/prd.md`
+- `docs/[project-name]/ux.md`
+- `docs/[project-name]/stories.md`
+- optional: `docs/[project-name]/analysis.md`
+
+Outputs:
+- `docs/[project-name]/spec-review.md`
+
+Success Criteria:
+- verdict is explicit
+- spec is judged implementation-ready
+- rerun routing is explicit when changes are required
+- bootstrap does not start until the spec review is approved
+
+Next Step:
 `bootstrap`
 
-## Step 5 — Bootstrap
+## Step 6 — Bootstrap
 
 Role:
 `packs/vibermode/roles/product/bootstrap.md`
@@ -234,7 +262,7 @@ Success Criteria:
 Next Step:
 `task-planner`
 
-## Step 6 — Task Conversion
+## Step 7 — Task Conversion
 
 Role:
 `packs/vibermode/roles/product/task-planner.md`

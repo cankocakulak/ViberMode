@@ -1,11 +1,11 @@
 # Workflow: Product to Spec
 
-> Canonical specification-stage workflow for turning a raw idea into implementation-ready stories.
+> Canonical specification-stage workflow for turning a raw idea into implementation-ready stories that are reviewed before coding begins.
 
 ## Pipeline
 
 ```text
-idea → brainstorm → PRD → UX → stories
+idea → brainstorm → PRD → UX → stories → spec-review
 ```
 
 ## Step 1 — Brainstorm
@@ -102,8 +102,36 @@ Success Criteria:
 - artifact includes coverage map, summary, and handoff contract
 
 Next Step:
-- stop here for specification-only workflows
-- or continue with `spec-to-code`
+`spec-reviewer`
+
+## Step 5 — Spec Review
+
+Role:
+`packs/vibermode/roles/iterate/spec-reviewer.md`
+
+Purpose:
+Validate that brainstorm, PRD, UX, and stories are aligned, testable, adaptable to the target stack, and ready for task planning.
+
+Inputs:
+- optional: `docs/[project-name]/brainstorm.md`
+- `docs/[project-name]/prd.md`
+- `docs/[project-name]/ux.md`
+- `docs/[project-name]/stories.md`
+- optional: `docs/[project-name]/analysis.md`
+
+Outputs:
+- `docs/[project-name]/spec-review.md`
+
+Success Criteria:
+- verdict is explicit
+- findings cite artifacts and concrete weaknesses
+- rerun routing identifies which upstream stage must change when the verdict is not approved
+- weak or contradictory specs do not silently pass into task planning
+
+Next Step:
+- stop here for specification-only workflows when `APPROVED`
+- rerun the routed specification stages automatically when `CHANGES_REQUESTED`
+- continue with `bootstrap` or `spec-to-code` only when `APPROVED`
 
 ## Artifacts
 
@@ -112,9 +140,10 @@ docs/[project-name]/
 ├── brainstorm.md
 ├── prd.md
 ├── ux.md
-└── stories.md
+├── stories.md
+└── spec-review.md
 ```
 
 ## Stop Condition
 
-This workflow is complete when `stories.md` exists and its coverage map accounts for all P0 requirements and primary UX flows.
+This workflow is complete only when `stories.md` exists, its coverage map accounts for all P0 requirements and primary UX flows, and `spec-review.md` returns `APPROVED`.

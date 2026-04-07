@@ -52,6 +52,12 @@ Follow these steps exactly, in order.
 
 Find the highest-priority task whose `status` is `pending` and whose dependencies are satisfied. This is your one and only task.
 
+Before doing any coding, emit one plain progress line that names the task:
+
+```text
+STATUS — şu anda implementation yapıyorum: [Task ID] - [Task Title]
+```
+
 ### Step 3: Branch
 
 Check you are on the correct branch from `tasks.json` field `branchName`.
@@ -80,12 +86,24 @@ Run the task's declared validation plan. Prefer the lightest check that satisfie
 
 If bootstrap recorded a validation baseline, reuse its commands unless the task declares a narrower command.
 
+Script-first enforcement:
+- if bootstrap or the repo declares a repo-owned `testCommand`, `buildCommand`, or script such as `./Scripts/test.sh`, `npm test`, or `xcodebuild ...`, actually run that command before claiming success
+- do not replace a repo-owned build or test command with prose, pseudocode, or a weaker syntax-only check
+- `swiftc -parse`, `tsc --noEmit`, or similar syntax-only checks may support `quick` validation, but they do not satisfy `build` or `runtime` for app targets
+- for Apple app targets, `swift build` or `swiftc -parse` is not enough when the repo has an `.xcodeproj`, scheme, or bootstrap `xcodebuild` command
+
 If `task.validation.runtimeCritical` is `true`, run one immediate mini smoke check before marking the task done:
 - use the smallest task-specific command path that can exercise `task.validation.miniScenarios`
 - prefer a narrow launch/check over the full slice validator
 - if the mini smoke check fails, stop and report the failure instead of marking the task done
 
 Fix failures before continuing.
+
+Evidence rules:
+- only mark validation `passed: true` when the command actually ran
+- record the exact command(s) attempted and their exit status
+- if a required build/test/runtime command cannot run because of environment or tooling, do not mark the task done; stop and report a blocker instead
+- implementation prose such as "xcodebuild validation needed" is not validation evidence
 
 ### Step 6: Update tasks.json
 
@@ -141,6 +159,7 @@ Rules:
 - when bootstrap context exists, record whether bootstrap-provided commands or assumptions were reused during validation
 - always record the executed validation level, commands, pass/fail outcome, and any verified runtime scenarios
 - when `runtimeCritical=true`, record whether the mini smoke check ran and which `miniScenarios` were verified
+- include command result evidence such as exit codes or a concise command outcome summary
 
 ### Step 8: Report Status
 
@@ -172,6 +191,7 @@ Before reporting completion, ensure one of these is true:
 - no relevant automated checks exist, and the manual validation approach is recorded in `run-state.json`
 - the recorded validation evidence satisfies the task's declared `validation.level`
 - if `runtimeCritical=true`, the recorded evidence must include the immediate mini smoke result
+- if the task declared `build` or `runtime`, syntax-only parsing is not enough
 
 ## Behavior Guidelines
 
@@ -181,3 +201,4 @@ Before reporting completion, ensure one of these is true:
 4. **No fake checks** — Only run commands that actually exist in the project
 5. **Update state structurally** — `run-state.json` replaces freeform progress notes
 6. **No checkpoint questions** — Never ask whether to continue to the next task unless the workflow is blocked and needs real user input
+7. **Fail closed on missing evidence** — If the required command did not run, the task is not done

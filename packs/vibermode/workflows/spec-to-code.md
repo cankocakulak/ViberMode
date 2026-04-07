@@ -123,6 +123,7 @@ Outputs:
 
 Success Criteria:
 - real validation commands are executed and recorded
+- repo-owned test/build scripts are attempted when they are part of the bootstrap baseline or project contract
 - stack-appropriate runnable evidence exists for the slice under review
 - failures and blockers are explicit rather than hidden inside implementation notes
 - mobile app validation does not treat package-only compile checks as sufficient
@@ -158,6 +159,7 @@ Success Criteria:
 - issues cite files and lines
 - validation checks product and implementation contracts
 - review consumes runtime validator evidence instead of trusting prose claims
+- review does not approve when `validation-report.md` is missing or lacks explicit command outcomes
 - every failing issue is routed as `reopen-task` or `create-followup-task`
 - review outcome is clear enough to either approve the slice or send it back into implementation
 
@@ -224,3 +226,4 @@ Design intent:
 - allow repo/runtime setup context to feed execution without duplicating repo state into every task by default
 - keep execution state separate from task definitions
 - make repeated runs deterministic and resumable
+- keep release gating fail-closed: missing validation or review evidence must block completion rather than silently passing
