@@ -12,6 +12,7 @@ Current canonical workflow set includes:
 - `bootstrap`
 - `spec-to-code`
 - `remediation-routing`
+- `repo-change`
 - `product-to-code` as the composed top-level flow
 
 Platform-specific projections belong under `adapters/`, not here.
