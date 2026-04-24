@@ -49,7 +49,7 @@ Prefer upstream artifacts over pasted summaries when both exist.
 
 ### Document
 
-Use `packs/vibermode/templates/prd-template.md` as the base structure.
+Use `{baseDir}/templates/prd-template.md` as the base structure.
 
 Rules:
 - Always produce the artifact at `docs/[project-name]/prd.md`
@@ -66,7 +66,7 @@ Rules:
 
 ```
 File: docs/[project-name]/prd.md
-Content: Complete PRD using `packs/vibermode/templates/prd-template.md`
+Content: Complete PRD using `{baseDir}/templates/prd-template.md`
 ```
 
 Always produce the artifact. PRDs are reference documents.

@@ -37,7 +37,8 @@ Success Criteria:
 - task ordering respects dependency chain
 - bootstrap handoff is reflected in branch or runtime execution context when available
 - `run-state.json` must reference tasks by `taskId` rather than duplicating task definitions
-- first implementation target is obvious
+- every task carries explicit validation requirements when the slice needs them
+- the first implementation target is obvious
 - handoff clearly identifies the first implementation task and the stable artifacts required for execution
 
 Next Step:
@@ -58,7 +59,7 @@ Implement one task at a time while preserving boundaries and updating structured
 This step is intentionally loop-shaped:
 - pick the highest-priority eligible task
 - implement only that task
-- run available validation checks
+- run the task's declared validation checks
 - update `tasks.json`
 - update `run-state.json`
 - either continue to the next task or stop on a hard blocker
@@ -87,12 +88,13 @@ Success Criteria:
 - lineage and dependencies remain intact
 - bootstrap branch/setup context is respected when the artifact exists
 - available tests or validation checks are run and pass before the task is considered complete
+- if the task is marked runtime-critical, a narrow smoke check is attempted before allowing the task to close
 - if no automated tests exist for the affected area, the run must record the validation approach used
 - `run-state.json` remains execution state only and does not duplicate task definitions from `tasks.json`
 
 Next Step:
 - `implementation-runner` again if tasks remain
-- `reviewer` when the target slice is ready for validation
+- `runtime-validator` when the target slice is ready for runnable validation
 
 Loop stop conditions:
 - all eligible tasks are complete
@@ -128,8 +130,13 @@ Success Criteria:
 - failures and blockers are explicit rather than hidden inside implementation notes
 - mobile app validation does not treat package-only compile checks as sufficient
 
+Stage result rules:
+- return `SKIPPED_NOT_READY` when tasks are still pending
+- return `SKIPPED_BLOCKED` when implementation is already blocked and runnable validation would be misleading
+- return `PASS`, `FAIL`, or `BLOCKED` only when the validation gate actually ran
+
 Next Step:
-- `reviewer`
+- `reviewer` only when runtime validation produced reusable evidence
 
 ## Step 4 — Review
 
@@ -163,9 +170,24 @@ Success Criteria:
 - every failing issue is routed as `reopen-task` or `create-followup-task`
 - review outcome is clear enough to either approve the slice or send it back into implementation
 
+Stage result rules:
+- return `SKIPPED_NOT_READY` when tasks remain pending
+- return `SKIPPED_BLOCKED` when implementation or validation is already blocked
+- return `BLOCKED` when runtime evidence is missing or incomplete
+- return `APPROVED` or `CHANGES_REQUESTED` only when the slice is actually reviewable
+
 Next Step:
 - done if approved
 - `remediation-routing` if changes are required, then return to implementation
+
+## Workflow Status Semantics
+
+After validation and review, the orchestration layer should synthesize one explicit workflow status:
+- `COMPLETE` when review is approved
+- `INCOMPLETE_TASKS_PENDING` when the execution loop still has remaining work
+- `INCOMPLETE_VALIDATION_FAILED` when runtime validation ran and failed
+- `INCOMPLETE_REMEDIATION_PENDING` when review or validation findings must be routed back into tasks
+- `BLOCKED` when the scaffold, environment, or execution gate prevents safe continuation
 
 ## Artifacts
 

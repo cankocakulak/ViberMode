@@ -123,16 +123,16 @@ Mid-size Next.js 14 SaaS app with App Router. UI is built on shadcn/ui with Tail
 ## Project Structure
 ```
 app/
-├── (auth)/        — Login, signup, password reset
-├── (dashboard)/   — Main app screens, layout with sidebar
-├── api/           — Route handlers, RESTish patterns
+├── (auth)/ — Login, signup, password reset
+├── (dashboard)/ — Main app screens, layout with sidebar
+├── api/ — Route handlers, RESTish patterns
 components/
-├── ui/            — shadcn/ui primitives (button, input, dialog...)
-├── features/      — Feature-specific components
+├── ui/ — shadcn/ui primitives (button, input, dialog...)
+├── features/ — Feature-specific components
 lib/
-├── db/            — Drizzle schema + queries
-├── auth/          — NextAuth config
-├── utils/         — Formatters, validators
+├── db/ — Drizzle schema + queries
+├── auth/ — NextAuth config
+├── utils/ — Formatters, validators
 ```
 
 ## Patterns & Conventions

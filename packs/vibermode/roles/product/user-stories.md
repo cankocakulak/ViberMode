@@ -49,7 +49,7 @@ Prefer PRD and UX artifacts over pasted summaries when both exist.
 
 ### Document
 
-Use `packs/vibermode/templates/stories-template.md` as the base structure.
+Use `{baseDir}/templates/stories-template.md` as the base structure.
 
 Rules:
 - Always produce the artifact at `docs/[project-name]/stories.md`
@@ -69,9 +69,9 @@ Rules:
 
 ### Artifact
 
-```
+```text
 File: docs/[project-name]/stories.md
-Content: Complete story document using `packs/vibermode/templates/stories-template.md`
+Content: Complete story document using `{baseDir}/templates/stories-template.md`
 ```
 
 Always produce the artifact when using this agent in the product pipeline.

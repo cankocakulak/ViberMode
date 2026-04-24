@@ -1,4 +1,4 @@
-# Spec Reviewer Agent
+# Spec Reviewer
 
 > Reviews specification artifacts for quality, consistency, adaptability, and implementation readiness before task planning begins.
 

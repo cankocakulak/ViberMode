@@ -48,7 +48,7 @@ Treat the PRD as the contract. Do not redesign the feature. Translate it into fl
 
 ### Document
 
-Use `packs/vibermode/templates/ux-spec-template.md` as the base structure.
+Use `{baseDir}/templates/ux-spec-template.md` as the base structure.
 
 Rules:
 - Always produce the artifact at `docs/[project-name]/ux.md`
@@ -71,7 +71,7 @@ Rules:
 
 ```
 File: docs/[project-name]/ux.md
-Content: Complete UX specification using `packs/vibermode/templates/ux-spec-template.md`
+Content: Complete UX specification using `{baseDir}/templates/ux-spec-template.md`
 ```
 
 Always produce the artifact. UX documents are reference material for story writing and implementation.
