@@ -13,6 +13,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **prd** | `packs/vibermode/roles/product/prd.md` | Produces lean, developer-ready PRDs |
 | **ux-designer** | `packs/vibermode/roles/product/ux-designer.md` | UX flows, interaction patterns, visual direction |
 | **user-stories** | `packs/vibermode/roles/product/user-stories.md` | Generates prioritized user stories with acceptance criteria |
+| **bootstrap** | `packs/vibermode/roles/product/bootstrap.md` | Prepares repo, branch, and runnable validation baseline |
 | **task-planner** | `packs/vibermode/roles/product/task-planner.md` | Converts user stories into `tasks.json` for the implementation pipeline |
 | **implementation-runner** | `packs/vibermode/roles/product/implementation-runner.md` | Implements one task per session from `tasks.json` |
 
@@ -31,6 +32,15 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **planner** | `packs/vibermode/roles/iterate/planner.md` | Investigates bugs or plans features — thinks before acting |
 | **reviewer** | `packs/vibermode/roles/iterate/reviewer.md` | Validates code quality, identifies issues |
 | **ux-tweaker** | `packs/vibermode/roles/iterate/ux-tweaker.md` | UI/UX perspective: design patterns, accessibility |
+| **ux-investigator** | `packs/vibermode/roles/iterate/ux-investigator.md` | Investigates an existing interface, clarifies UX friction, and improves the surface |
+| **modularizer** | `packs/vibermode/roles/iterate/modularizer.md` | Finds safe modularization seams and plans or applies incremental refactors |
+| **tester** | `packs/vibermode/roles/iterate/tester.md` | Verifies a surface with CLI plus runtime evidence and focused smoke checks |
+| **integration-auditor** | `packs/vibermode/roles/iterate/integration-auditor.md` | Audits whether a feature is actually wired across routes, state, events, and services |
+| **surface-hardener** | `packs/vibermode/roles/iterate/surface-hardener.md` | Hardens an existing screen or flow for edge states, resilience, and accessibility |
+| **runtime-validator** | `packs/vibermode/roles/iterate/runtime-validator.md` | Executes formal post-implementation build and runtime validation |
+| **spec-reviewer** | `packs/vibermode/roles/iterate/spec-reviewer.md` | Reviews spec artifacts before task planning begins |
+| **remediation-router** | `packs/vibermode/roles/iterate/remediation-router.md` | Routes failed review or validation findings back into execution state |
+| **change-task-planner** | `packs/vibermode/roles/iterate/change-task-planner.md` | Converts an existing-repo change plan into `tasks.json` |
 
 ## How to Use
 
@@ -41,6 +51,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **prd** agent" → Read `packs/vibermode/roles/product/prd.md`
 - "Use the **ux-designer** agent" → Read `packs/vibermode/roles/product/ux-designer.md`
 - "Use the **user-stories** agent" → Read `packs/vibermode/roles/product/user-stories.md`
+- "Use the **bootstrap** agent" → Read `packs/vibermode/roles/product/bootstrap.md`
 - "Use the **task-planner** agent" → Read `packs/vibermode/roles/product/task-planner.md`
 - "Use the **implementation-runner** agent" → Read `packs/vibermode/roles/product/implementation-runner.md`
 - "Use the **ralph-converter** agent" → Read `packs/vibermode/roles/product/ralph-converter.md`
@@ -49,6 +60,15 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **planner** agent" → Read `packs/vibermode/roles/iterate/planner.md`
 - "Use the **reviewer** agent" → Read `packs/vibermode/roles/iterate/reviewer.md`
 - "Use the **ux-tweaker** agent" → Read `packs/vibermode/roles/iterate/ux-tweaker.md`
+- "Use the **ux-investigator** agent" → Read `packs/vibermode/roles/iterate/ux-investigator.md`
+- "Use the **modularizer** agent" → Read `packs/vibermode/roles/iterate/modularizer.md`
+- "Use the **tester** agent" → Read `packs/vibermode/roles/iterate/tester.md`
+- "Use the **integration-auditor** agent" → Read `packs/vibermode/roles/iterate/integration-auditor.md`
+- "Use the **surface-hardener** agent" → Read `packs/vibermode/roles/iterate/surface-hardener.md`
+- "Use the **runtime-validator** agent" → Read `packs/vibermode/roles/iterate/runtime-validator.md`
+- "Use the **spec-reviewer** agent" → Read `packs/vibermode/roles/iterate/spec-reviewer.md`
+- "Use the **remediation-router** agent" → Read `packs/vibermode/roles/iterate/remediation-router.md`
+- "Use the **change-task-planner** agent" → Read `packs/vibermode/roles/iterate/change-task-planner.md`
 
 ## Rules
 

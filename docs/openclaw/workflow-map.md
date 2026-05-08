@@ -3,10 +3,12 @@
 ## Overview
 
 OpenClaw currently has active runtime workflows for:
+
 - `product-to-spec`
 - `spec-to-code`
 
-ViberMode's canonical target shape now adds:
+ViberMode's canonical target shape adds:
+
 - `bootstrap`
 
 This yields three base workflows:
@@ -18,16 +20,17 @@ This yields three base workflows:
 And one composed workflow:
 
 ```text
-product-to-code = product-to-spec → bootstrap → spec-to-code
+product-to-code = product-to-spec -> bootstrap -> spec-to-code
 ```
 
 ## Current Recommendation
 
-Until `bootstrap` is fully projected into OpenClaw and validated end-to-end, prepare the repo manually first.
+Until `bootstrap` is fully projected into OpenClaw and validated end to end, prepare the repository manually first.
 
 Practical rule:
-- existing repo: clone it yourself first, then pass the local absolute path
-- greenfield app: create the target folder or repo root yourself first, then let bootstrap scaffold inside it
+
+- existing repo: clone it first, then pass the local absolute path
+- greenfield app: create the target folder or repo root first, then let bootstrap scaffold inside it
 
 This keeps artifact paths deterministic and avoids repo-resolution ambiguity during the first rollout.
 
@@ -36,6 +39,7 @@ This keeps artifact paths deterministic and avoids repo-resolution ambiguity dur
 Treat the project root as one canonical local path for the whole run.
 
 Short-term compatibility:
+
 - existing OpenClaw workflows use `target_repo`
 - treat `target_repo` as the same thing as canonical `workspace_path`
 
@@ -57,6 +61,7 @@ stack: swiftui-ios | nextjs-web | react-native | node-api
 ### 1. Product To Spec
 
 Use when:
+
 - starting from an idea
 - creating `brainstorm.md`, `prd.md`, `ux.md`, and `stories.md`
 
@@ -69,6 +74,7 @@ Expected artifact root:
 ### 2. Bootstrap
 
 Use when:
+
 - the repo/runtime baseline is not yet trusted
 - stack scaffold, branch setup, and first runnable validation still need to happen
 
@@ -81,6 +87,7 @@ Expected artifact:
 ### 3. Spec To Code
 
 Use when:
+
 - specification artifacts already exist
 - implementation should start from `stories.md`
 
@@ -97,9 +104,9 @@ Ideal user-facing behavior:
 
 ```text
 product-to-code
-  → product-to-spec
-  → bootstrap
-  → spec-to-code
+  -> product-to-spec
+  -> bootstrap
+  -> spec-to-code
 ```
 
 This keeps the user-facing experience to one top-level workflow while preserving internal stage boundaries.
@@ -109,6 +116,7 @@ This keeps the user-facing experience to one top-level workflow while preserving
 OpenClaw should treat workflow orchestration as a supervised system, not just a sequence of child runs.
 
 Operational rules:
+
 - every delegated step has a minimum wait window, a hard timeout, and at most one automatic retry
 - before killing a child run, verify whether the expected artifact already exists
 - if a child times out without artifact output, cancel it and retry the same step once with the same artifact context
@@ -116,14 +124,17 @@ Operational rules:
 - if a child asks for clarification and no new user input is available, retry once with a best-effort artifact-first instruction before declaring the workflow blocked
 
 Practical implication:
+
 - `product-to-spec`, `bootstrap`, `spec-to-code`, and `remediation-routing` should all inherit the same watchdog model
 - timeout handling belongs to the orchestrator/supervisor layer, not to the specialist skills themselves
 
 Current limitation:
+
 - the timeout table is currently policy, not fully enforced runtime behavior
 - without a real watchdog loop, a delegated child may still hang until manually cancelled
 
 Implementation target:
+
 - use one shared watchdog wrapper around delegated `stage-runner` child executions
 - track `started_at`, `expected_artifacts`, `hard_timeout`, and `retry_count`
 - cancel and retry exactly once when the hard timeout is exceeded without output

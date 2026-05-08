@@ -18,4 +18,4 @@ The goal is:
 Use this adapter only for notes about the integration boundary, not as a second OpenClaw workspace tree.
 
 See also:
-- `docs/openclaw-workflows/workflow-map.md` for the current OpenClaw workflow mapping and target bootstrap integration shape
+- `docs/openclaw/workflow-map.md` for the current OpenClaw workflow mapping and target bootstrap integration shape

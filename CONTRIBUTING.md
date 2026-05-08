@@ -6,16 +6,16 @@ ViberMode has two agent categories with different output contracts:
 
 | Category | Location | Output Contract |
 |----------|----------|-----------------|
-| **Iterate agents** | `packs/vibermode/roles/iterate/` | Plan → Changes → Patch → Tests |
+| **Iterate agents** | `packs/vibermode/roles/iterate/` | Investigation/Strategy → Changes (if any) → Verification |
 | **Product agents** | `packs/vibermode/roles/product/` | Analysis → Document → Next Step Handoff → Artifacts |
 
 Choose the right category before creating an agent.
 
 ---
 
-## Creating a Code Agent
+## Creating an Iterate Agent
 
-Code agents produce technical output: specifications, code changes, reviews.
+Iterate agents produce targeted technical output: context summaries, plans, audits, focused changes, and verification.
 
 ### Template
 
@@ -46,17 +46,14 @@ Who is this agent? What expertise does it have?
 
 ## Output Contract
 
-### Plan
+### Analysis or Strategy
 Reasoning and approach before acting.
 
 ### Changes
-Explicit list of file modifications.
+Explicit list of file modifications, when the agent edits files.
 
-### Patch
-Complete, working code.
-
-### Tests
-Verification steps or test code.
+### Verification
+Evidence, checks, or runtime observations.
 
 ## Behavior Guidelines
 - Specific rules for this agent
@@ -182,6 +179,7 @@ Before submitting an agent:
 - [ ] Includes at least one complete example
 - [ ] Works standalone (no hidden dependencies)
 - [ ] Is opinionated — makes decisions, not suggestions
+- [ ] Iterate agents remain callable without requiring pipeline artifacts unless explicitly intended
 
 ## Creating Workflows
 

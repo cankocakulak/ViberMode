@@ -1,42 +1,42 @@
 # Simple Prompt Chain
 
-Bu dosya OpenClaw tarafında workflow'ları sırayla çalıştırmak için en sade prompt zincirini verir.
+This document shows the smallest prompt chain for running OpenClaw workflows in sequence.
 
-## Kısa Karar
+## Short Answer
 
-- **Evet**: kanonik yapı artık anlamlı ve modüler.
-- **Hayır, tamamen bitmedi**: OpenClaw runtime projection tarafı hâlâ güncellenmeli.
+- **Yes**: the canonical ViberMode structure is now meaningfully modular.
+- **No, not fully done**: the OpenClaw runtime projection still needs more end-to-end hardening.
 
-Bugün için en güvenli kullanım:
-- repo veya hedef klasörü önce manuel hazırla
-- sonra workflow'lara aynı absolute path'i ver
+The safest current usage pattern is:
 
-## 1. Sadece Spec Üretmek
+- prepare the repository or target folder manually first
+- then pass the same absolute path into each workflow step
+
+## 1. Generate Specifications Only
 
 ```bash
 /prose run /Users/mcan/.openclaw/agents/vibermode-orchestrator/workspace/workflows/product-to-spec/product-to-spec.prose \
-idea:"Öğrencinin çalıştığı saatleri günden güne takip edebileceği zincir uygulaması" \
+idea:"A streak app for students to track daily study hours" \
 target_repo:"/ABSOLUTE/PATH/TO/PROJECT" \
 project_name:"study-chain" \
 analysis_artifact:"" \
 constraints:"" \
 direction:"" \
-audience:"öğrenciler" \
+audience:"students" \
 product_context:"" \
 platform:"mobile" \
 branding_context:"" \
-personas:"öğrenci"
+personas:"student"
 ```
 
-Üretilenler:
+Generated artifacts:
+
 - `docs/study-chain/brainstorm.md`
 - `docs/study-chain/prd.md`
 - `docs/study-chain/ux.md`
 - `docs/study-chain/stories.md`
 
-## 2. Bootstrap Çalıştırmak
-
-Bu workflow OpenClaw'a projection edildiğinde sade kullanım şöyle olmalı:
+## 2. Run Bootstrap
 
 ```bash
 /prose run /Users/mcan/.openclaw/agents/vibermode-orchestrator/workspace/workflows/bootstrap/bootstrap.prose \
@@ -52,10 +52,11 @@ analysis_artifact:"" \
 constraints:""
 ```
 
-Üretilen:
+Generated artifact:
+
 - `docs/study-chain/bootstrap.md`
 
-## 3. Spec To Code Çalıştırmak
+## 3. Run Spec To Code
 
 ```bash
 /prose run /Users/mcan/.openclaw/agents/vibermode-orchestrator/workspace/workflows/spec-to-code/spec-to-code.prose \
@@ -65,17 +66,16 @@ analysis_artifact:"" \
 branch_prefix:"feature"
 ```
 
-Üretilenler:
+Generated artifacts:
+
 - `docs/study-chain/tasks.json`
 - `docs/study-chain/run-state.json`
 
-## 4. Tek Komutta Hepsi
-
-Bu workflow OpenClaw'a projection edildiğinde sade kullanım şöyle olmalı:
+## 4. Run Everything In One Command
 
 ```bash
 /prose run /Users/mcan/.openclaw/agents/vibermode-orchestrator/workspace/workflows/product-to-code/product-to-code.prose \
-idea:"Öğrencinin çalıştığı saatleri günden güne takip edebileceği zincir uygulaması" \
+idea:"A streak app for students to track daily study hours" \
 workspace_path:"/ABSOLUTE/PATH/TO/PROJECT" \
 repo_mode:"greenfield" \
 repo_url:"" \
@@ -87,33 +87,33 @@ platform:"mobile" \
 analysis_artifact:"" \
 constraints:"" \
 direction:"" \
-audience:"öğrenciler" \
+audience:"students" \
 product_context:"" \
 branding_context:"" \
-personas:"öğrenci" \
+personas:"student" \
 branch_prefix:"feature"
 ```
 
-## En Sade Operasyon Sırası
+## Simplest Operating Sequence
 
 ### Greenfield
 
-1. Hedef klasörü oluştur.
-2. `product-to-spec` çalıştır.
-3. `bootstrap` çalıştır.
-4. `spec-to-code` çalıştır.
+1. Create the target folder.
+2. Run `product-to-spec`.
+3. Run `bootstrap`.
+4. Run `spec-to-code`.
 
 ### Brownfield
 
-1. Repo'yu clone et.
-2. Aynı local path'i workflow input'u olarak kullan.
-3. Gerekirse önce `analyzer` çalıştır.
-4. `product-to-spec` çalıştır.
-5. `bootstrap` çalıştır.
-6. `spec-to-code` çalıştır.
+1. Clone the repository.
+2. Use the same local path as workflow input.
+3. Run `analyzer` first if needed.
+4. Run `product-to-spec`.
+5. Run `bootstrap`.
+6. Run `spec-to-code`.
 
-## En Pratik Kural
+## Practical Rule
 
-- Aynı run boyunca **tek bir absolute path** kullan.
-- `target_repo` veya `workspace_path` ne verdinse bütün akış onun üstünde kalsın.
-- Bugün için repo hazırlığını manuel yapmak daha güvenli.
+- Use one absolute path for the whole run.
+- Keep `target_repo` or `workspace_path` stable across the flow.
+- For now, manual repository preparation is still the safest setup.

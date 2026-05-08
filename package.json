@@ -4,21 +4,21 @@
   "description": "Vendor-agnostic AI agent development framework",
   "private": true,
   "type": "module",
-  "main": "src/index.js",
   "exports": {
-    ".": "./src/index.js",
     "./packs/*": "./packs/*",
-    "./adapters/*": "./adapters/*"
+    "./adapters/*": "./adapters/*",
+    "./scripts/*": "./scripts/*"
   },
   "files": [
-    "src",
     "packs",
     "adapters",
+    "docs",
     "scripts"
   ],
   "scripts": {
     "install:codex": "bash adapters/codex/install/install-skills.sh",
-    "validate": "echo 'Agent validation not yet implemented'"
+    "validate:references": "node scripts/validate-reference-map.mjs",
+    "validate": "npm run validate:references"
   },
   "keywords": [
     "ai",

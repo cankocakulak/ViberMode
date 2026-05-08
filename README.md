@@ -71,10 +71,13 @@ adapters/                       # Platform-specific projections
 scripts/                        # Compatibility wrappers for moved scripts
 
 AGENTS.md                       # Agent index for Codex App, Claude Code, etc.
-src/                            # Future runtime code
+docs/                           # Public architecture and integration notes
 ```
 
-Canonical content now lives under `packs/`. Platform integrations live under `adapters/`.
+Canonical content lives under `packs/`. Platform integrations live under `adapters/`. Public architecture and integration notes live under `docs/`.
+
+Visual reference:
+- `docs/reference/repo-visual-map.md` — Mermaid diagrams for repo topology, pack structure, projections, and workflow shape
 
 ## Agents
 
@@ -95,18 +98,31 @@ Legacy aliases:
 - `ralph-converter` → `task-planner`
 - `ralph-runner` → `implementation-runner`
 
+Compatibility note:
+- treat the `ralph-*` names as legacy only; prefer the canonical names above for new usage
+
 **Output contract:** `Analysis → Document → Next Step Handoff → Artifacts`
 
 ### Iterate Agents (Standalone Toolkit)
 
-| Agent | Perspective | Produces |
-|-------|-------------|----------|
-| `scout` | "What is this code?" | Context summary |
-| `planner` | "How should I fix/build this?" | Strategy + changes required |
-| `reviewer` | "Is this code good?" | Quality verdict + improvements |
-| `ux-tweaker` | "How should this look/feel?" | UX improvements + accessibility |
+| Family | Agent | Produces |
+|-------|-------|----------|
+| Understand | `scout` | Context summary |
+| Understand | `planner` | Strategy + changes required |
+| Improve | `ux-tweaker` | UX improvements + accessibility |
+| Improve | `ux-investigator` | UX findings, recommended direction, focused improvements |
+| Improve | `modularizer` | Structural findings, cut lines, safe refactor plan |
+| Improve | `surface-hardener` | Edge-state, resilience, and accessibility improvements |
+| Verify | `integration-auditor` | End-to-end connection audit across routes, state, events, and services |
+| Verify | `tester` | Ad-hoc verification evidence from CLI plus runtime checks |
+| Verify | `reviewer` | Quality verdict + improvements |
 
 Four perspectives, use any independently.
+
+Verification distinctions:
+- `integration-auditor` asks "is the path connected?"
+- `tester` asks "does this behavior actually work?"
+- `runtime-validator` is the formal pipeline gate used by implementation workflows
 
 ## Workflow
 
@@ -116,11 +132,15 @@ Canonical composed pipeline:
 product-to-spec → bootstrap → spec-to-code
 ```
 
-Canonical workflow docs:
+Primary workflow docs:
 - `product-to-spec` — idea to completed specification artifacts
-- `bootstrap` — repo/runtime preparation before implementation
 - `spec-to-code` — completed specs to tasks, implementation loop, and review
 - `product-to-code` — composed workflow that runs all three stages
+- `repo-change` — change planning and execution inside an existing repository
+
+Support workflow docs:
+- `bootstrap` — repo/runtime preparation before implementation
+- `remediation-routing` — route failed validation or review findings back into execution
 
 **Common shortcuts:**
 - New project: `product-to-spec → bootstrap → spec-to-code`
@@ -130,6 +150,10 @@ Canonical workflow docs:
 - Implementation-only work: `spec-to-code`
 - Bug fix: `Planner → implement`
 - UX improvement: `UX Tweaker → implement`
+- UI diagnosis plus refinement: `UX Investigator → UX Tweaker → Tester`
+- Safe refactor: `Modularizer → implement → Tester`
+- Wiring check: `Integration Auditor → Tester`
+- Release-surface hardening: `Surface Hardener → Tester`
 - Small addition: `Planner → implement`
 - Exploration: `Brainstormer → PRD`
 - Design-first: `UX Designer → User Stories`
@@ -148,12 +172,22 @@ Type `/` in chat to invoke any agent:
 /user-stories    — UX-aware, sprint-ready stories
 /task-planner    — Convert stories to tasks.json
 /implementation-runner — Implement next task from tasks.json
-/ralph-converter — Legacy alias for task-planner
-/ralph-runner    — Legacy alias for implementation-runner
 /scout           — Quick module context summary
 /planner         — Investigate bugs or plan features
 /reviewer        — Code review and quality check
 /ux-tweaker      — UI/UX refinements
+/ux-investigator — Investigate UX friction, clarify direction, refine the surface
+/modularizer     — Find safe refactor seams and modularization cuts
+/tester          — Verify a surface with evidence from CLI and runtime behavior
+/integration-auditor — Audit whether a feature is actually wired end to end
+/surface-hardener — Harden empty/loading/error/a11y/edge states
+```
+
+Compatibility aliases still supported:
+
+```text
+/ralph-converter — Legacy alias for task-planner
+/ralph-runner    — Legacy alias for implementation-runner
 ```
 
 Integration files: `adapters/cursor/commands/` (slash commands) + `adapters/cursor/rules/viber-mode.mdc` (always-on context)
@@ -177,12 +211,22 @@ Then use agents naturally in Codex App:
 "Create user stories"            → viber-user-stories
 "Convert stories to tasks.json"  → viber-task-planner
 "Implement the next task"        → viber-implementation-runner
-"Convert stories to prd.json"    → viber-ralph-converter (legacy alias)
-"Implement the next story"       → viber-ralph-runner (legacy alias)
 "Understand this module"          → viber-scout
 "Why is this broken?"            → viber-planner
 "Review this code"               → viber-reviewer
 "Improve the UX of..."           → viber-ux-tweaker
+"Investigate why this UI feels off" → viber-ux-investigator
+"Modularize this area safely"    → viber-modularizer
+"Test whether this feature is really working" → viber-tester
+"Audit whether this is actually wired up" → viber-integration-auditor
+"Harden this flow for edge cases" → viber-surface-hardener
+```
+
+Legacy compatibility:
+
+```text
+"Convert stories to prd.json"    → viber-ralph-converter
+"Implement the next story"       → viber-ralph-runner
 ```
 
 Skills are installed to `~/.codex/skills/` and auto-trigger based on intent.
@@ -197,7 +241,7 @@ ViberMode's role for OpenClaw is to provide:
 - lightweight integration guidance under `adapters/openclaw/`
 
 OpenClaw workflow planning notes:
-- `docs/openclaw-workflows/workflow-map.md`
+- `docs/openclaw/workflow-map.md`
 
 ### Any Other Tool — AGENTS.md
 
@@ -234,6 +278,15 @@ cp -r viber-mode/adapters/cursor/ .cursor/
 ```
 
 All agents referenced via `viber-mode/packs/vibermode/roles/` paths — works out of the box.
+
+## Documentation
+
+- `docs/README.md` - documentation map
+- `docs/architecture/` - framework analysis, vision, and rollout notes
+- `docs/reference/capability-map.md` - what each agent, skill, and workflow is for
+- `docs/reference/decision-tree.md` - how to choose the right capability quickly
+- `docs/reference/agent-surface-map.yaml` - machine-readable capability and surface index
+- `docs/openclaw/` - OpenClaw integration, boundary, and workflow notes
 
 ## Roadmap
 

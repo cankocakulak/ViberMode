@@ -1,0 +1,370 @@
+version: 1
+updated_for_repo: viber-mode
+surface_notes:
+  codex:
+    status: broadest-coverage
+    source_root: adapters/codex/skills
+  cursor:
+    status: partial-command-coverage
+    source_root: adapters/cursor/commands
+  any_tool:
+    status: canonical-agent-names-via-agents-md
+    source_root: AGENTS.md
+  openclaw:
+    status: documented-orchestration-surface
+    source_root: docs/openclaw
+
+capabilities:
+  - id: analyzer
+    kind: product-agent
+    callability: always-callable
+    tier: primary
+    family: product
+    purpose: discover project structure and constraints in an existing codebase
+    surfaces:
+      codex_skill: viber-analyzer
+      cursor_command: /analyzer
+      any_tool_agent: analyzer
+      canonical_role: packs/vibermode/roles/product/analyzer.md
+
+  - id: brainstormer
+    kind: product-agent
+    callability: always-callable
+    tier: primary
+    family: product
+    purpose: generate and compare product directions before requirements are fixed
+    surfaces:
+      codex_skill: viber-brainstormer
+      cursor_command: /brainstormer
+      any_tool_agent: brainstormer
+      canonical_role: packs/vibermode/roles/product/brainstormer.md
+
+  - id: prd
+    kind: product-agent
+    callability: artifact-aware
+    tier: primary
+    family: product
+    purpose: produce a lean implementation-aware product requirements document
+    surfaces:
+      codex_skill: viber-prd
+      cursor_command: /prd
+      any_tool_agent: prd
+      canonical_role: packs/vibermode/roles/product/prd.md
+
+  - id: ux-designer
+    kind: product-agent
+    callability: artifact-aware
+    tier: primary
+    family: product
+    purpose: define UX flows, interaction shape, and visual direction
+    surfaces:
+      codex_skill: viber-ux-designer
+      cursor_command: /ux-designer
+      any_tool_agent: ux-designer
+      canonical_role: packs/vibermode/roles/product/ux-designer.md
+
+  - id: user-stories
+    kind: product-agent
+    callability: artifact-aware
+    tier: primary
+    family: product
+    purpose: convert product intent into backlog-style stories
+    surfaces:
+      codex_skill: viber-user-stories
+      cursor_command: /user-stories
+      any_tool_agent: user-stories
+      canonical_role: packs/vibermode/roles/product/user-stories.md
+
+  - id: bootstrap
+    kind: product-agent
+    callability: artifact-aware
+    tier: support
+    family: product
+    purpose: establish repo root, branch, setup baseline, and runnable validation context
+    surfaces:
+      codex_skill: viber-bootstrap
+      cursor_command: null
+      any_tool_agent: bootstrap
+      canonical_role: packs/vibermode/roles/product/bootstrap.md
+
+  - id: task-planner
+    kind: product-agent
+    callability: artifact-required
+    tier: support
+    family: product
+    purpose: convert stories into tasks.json
+    surfaces:
+      codex_skill: viber-task-planner
+      cursor_command: /task-planner
+      any_tool_agent: task-planner
+      canonical_role: packs/vibermode/roles/product/task-planner.md
+
+  - id: implementation-runner
+    kind: product-agent
+    callability: artifact-required
+    tier: support
+    family: product
+    purpose: implement one eligible task and update execution state
+    surfaces:
+      codex_skill: viber-implementation-runner
+      cursor_command: /implementation-runner
+      any_tool_agent: implementation-runner
+      canonical_role: packs/vibermode/roles/product/implementation-runner.md
+
+  - id: ralph-converter
+    kind: legacy-alias
+    tier: legacy
+    canonical: task-planner
+    surfaces:
+      codex_skill: viber-ralph-converter
+      cursor_command: /ralph-converter
+      any_tool_agent: ralph-converter
+      canonical_role: packs/vibermode/roles/product/ralph-converter.md
+
+  - id: ralph-runner
+    kind: legacy-alias
+    tier: legacy
+    canonical: implementation-runner
+    surfaces:
+      codex_skill: viber-ralph-runner
+      cursor_command: /ralph-runner
+      any_tool_agent: ralph-runner
+      canonical_role: packs/vibermode/roles/product/ralph-runner.md
+
+  - id: scout
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: understand
+    purpose: build fast context on a file, folder, module, or component
+    surfaces:
+      codex_skill: viber-scout
+      cursor_command: /scout
+      any_tool_agent: scout
+      canonical_role: packs/vibermode/roles/iterate/scout.md
+
+  - id: planner
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: understand
+    purpose: plan a bug fix, feature, or refactor before implementation
+    surfaces:
+      codex_skill: viber-planner
+      cursor_command: /planner
+      any_tool_agent: planner
+      canonical_role: packs/vibermode/roles/iterate/planner.md
+
+  - id: ux-tweaker
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: improve
+    purpose: refine an existing UI for feel, clarity, accessibility, and responsiveness
+    surfaces:
+      codex_skill: viber-ux-tweaker
+      cursor_command: /ux-tweaker
+      any_tool_agent: ux-tweaker
+      canonical_role: packs/vibermode/roles/iterate/ux-tweaker.md
+
+  - id: ux-investigator
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: improve
+    purpose: diagnose UX friction and improve the current surface
+    surfaces:
+      codex_skill: viber-ux-investigator
+      cursor_command: /ux-investigator
+      any_tool_agent: ux-investigator
+      canonical_role: packs/vibermode/roles/iterate/ux-investigator.md
+
+  - id: modularizer
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: improve
+    purpose: find safe modularization seams and incremental refactor cuts
+    surfaces:
+      codex_skill: viber-modularizer
+      cursor_command: /modularizer
+      any_tool_agent: modularizer
+      canonical_role: packs/vibermode/roles/iterate/modularizer.md
+
+  - id: surface-hardener
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: improve
+    purpose: harden edge states, resilience, and accessibility
+    surfaces:
+      codex_skill: viber-surface-hardener
+      cursor_command: /surface-hardener
+      any_tool_agent: surface-hardener
+      canonical_role: packs/vibermode/roles/iterate/surface-hardener.md
+
+  - id: integration-auditor
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: verify
+    purpose: audit whether a feature is actually wired end to end
+    distinction: path and wiring audit, more structural than tester
+    surfaces:
+      codex_skill: viber-integration-auditor
+      cursor_command: /integration-auditor
+      any_tool_agent: integration-auditor
+      canonical_role: packs/vibermode/roles/iterate/integration-auditor.md
+
+  - id: tester
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: verify
+    purpose: verify a feature with CLI and runtime evidence
+    distinction: ad-hoc developer-driven verification, narrower than runtime-validator
+    surfaces:
+      codex_skill: viber-tester
+      cursor_command: /tester
+      any_tool_agent: tester
+      canonical_role: packs/vibermode/roles/iterate/tester.md
+
+  - id: reviewer
+    kind: iterate-agent
+    callability: artifact-aware
+    tier: primary
+    family: verify
+    purpose: review quality, risks, regressions, and contract alignment
+    surfaces:
+      codex_skill: viber-reviewer
+      cursor_command: /reviewer
+      any_tool_agent: reviewer
+      canonical_role: packs/vibermode/roles/iterate/reviewer.md
+
+  - id: runtime-validator
+    kind: iterate-agent
+    callability: artifact-aware
+    tier: support
+    family: verify
+    purpose: run post-implementation build and runtime validation
+    distinction: formal pipeline-grade validation gate with validation-report artifact
+    surfaces:
+      codex_skill: viber-runtime-validator
+      cursor_command: null
+      any_tool_agent: runtime-validator
+      canonical_role: packs/vibermode/roles/iterate/runtime-validator.md
+
+  - id: spec-reviewer
+    kind: iterate-agent
+    callability: artifact-aware
+    tier: support
+    family: verify
+    purpose: approve or block a specification set for implementation readiness
+    surfaces:
+      codex_skill: viber-spec-reviewer
+      cursor_command: null
+      any_tool_agent: spec-reviewer
+      canonical_role: packs/vibermode/roles/iterate/spec-reviewer.md
+
+  - id: remediation-router
+    kind: iterate-agent
+    callability: artifact-aware
+    tier: support
+    family: verify
+    purpose: route review or validation findings back into the execution loop
+    surfaces:
+      codex_skill: viber-remediation-router
+      cursor_command: null
+      any_tool_agent: remediation-router
+      canonical_role: packs/vibermode/roles/iterate/remediation-router.md
+
+  - id: change-task-planner
+    kind: iterate-agent
+    callability: artifact-aware
+    tier: support
+    family: translate
+    purpose: convert change or remediation output into updated task structures
+    distinction: existing-repo sibling of task-planner, uses plan.md rather than stories.md
+    surfaces:
+      codex_skill: viber-change-task-planner
+      cursor_command: null
+      any_tool_agent: change-task-planner
+      canonical_role: packs/vibermode/roles/iterate/change-task-planner.md
+
+  - id: product-to-spec
+    kind: workflow
+    callability: artifact-aware
+    tier: primary
+    family: workflow
+    purpose: run the idea-to-spec path
+    surfaces:
+      codex_skill: viber-product-to-spec
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/product-to-spec.md
+      openclaw_status: documented-target
+
+  - id: spec-to-code
+    kind: workflow
+    callability: artifact-required
+    tier: primary
+    family: workflow
+    purpose: move from completed specs into tasks, implementation, validation, and review
+    surfaces:
+      codex_skill: viber-spec-to-code
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/spec-to-code.md
+      openclaw_status: documented-active
+
+  - id: product-to-code
+    kind: workflow
+    callability: artifact-aware
+    tier: primary
+    family: workflow
+    purpose: run the full path from idea through implementation
+    surfaces:
+      codex_skill: viber-product-to-code
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/product-to-code.md
+      openclaw_status: documented-target
+
+  - id: repo-change
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: workflow
+    purpose: handle change planning and execution inside an existing repository without forcing the full greenfield flow
+    surfaces:
+      codex_skill: viber-repo-change
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/repo-change.md
+
+  - id: bootstrap-workflow
+    kind: workflow
+    callability: artifact-aware
+    tier: support
+    family: workflow
+    display_name: bootstrap
+    purpose: prepare repo and validation baseline before implementation
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/bootstrap.md
+      openclaw_status: documented-target
+
+  - id: remediation-routing
+    kind: workflow
+    callability: artifact-required
+    tier: support
+    family: workflow
+    purpose: route failed review or validation findings back into implementation state
+    surfaces:
+      codex_skill: viber-remediation-routing
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/remediation-routing.md
+      openclaw_status: documented-target
