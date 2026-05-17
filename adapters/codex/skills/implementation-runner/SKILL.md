@@ -5,7 +5,7 @@ description: "Use when the user asks to implement the next planned task, continu
 
 # Implementation Runner
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/product/implementation-runner.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/product/implementation-runner.md`.
 
 Before starting:
 1. Read `tasks.json` for the task list

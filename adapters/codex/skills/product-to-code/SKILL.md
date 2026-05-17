@@ -5,7 +5,7 @@ description: "Use when the user wants the full path from raw idea to reviewed im
 
 # Product to Code
 
-Read and follow the full workflow instructions at `viber-mode/packs/vibermode/workflows/product-to-code.md`.
+Read and follow the full workflow instructions at `../viber-mode/packs/vibermode/workflows/product-to-code.md`.
 
 Before starting:
 1. Derive or confirm `project-name`

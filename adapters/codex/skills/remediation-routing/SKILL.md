@@ -5,7 +5,7 @@ description: "Use when runtime validation or review failed and the task state ne
 
 # Remediation Routing
 
-Read and follow the full workflow instructions at `viber-mode/packs/vibermode/workflows/remediation-routing.md`.
+Read and follow the full workflow instructions at `../viber-mode/packs/vibermode/workflows/remediation-routing.md`.
 
 Before starting, check `docs/[project-name]/` for `tasks.json`, `run-state.json`, `validation-report.md`, and `review.md`.
 

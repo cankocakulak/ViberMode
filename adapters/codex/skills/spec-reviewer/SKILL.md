@@ -5,7 +5,7 @@ description: "Use when the user asks to review PRD, UX, and stories for implemen
 
 # Spec Reviewer
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/iterate/spec-reviewer.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/iterate/spec-reviewer.md`.
 
 Before starting, check `docs/[project-name]/` for the current spec artifacts (`brainstorm.md`, `prd.md`, `ux.md`, `stories.md`).
 

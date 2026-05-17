@@ -7,7 +7,7 @@ description: "Legacy alias. Use when the user asks to implement the next planned
 
 Legacy alias for `implementation-runner`.
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/product/ralph-runner.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/product/ralph-runner.md`.
 
 Before starting:
 1. Prefer `tasks.json` for the task list

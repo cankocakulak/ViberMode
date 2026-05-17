@@ -6,9 +6,11 @@ import path from "node:path";
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const yamlPath = path.join(repoRoot, "docs/reference/agent-surface-map.yaml");
 const agentsPath = path.join(repoRoot, "AGENTS.md");
+const codexInstallScriptPath = path.join(repoRoot, "adapters/codex/install/install-skills.sh");
 
 const yaml = fs.readFileSync(yamlPath, "utf8");
 const agentsText = fs.readFileSync(agentsPath, "utf8");
+const codexInstallScript = fs.readFileSync(codexInstallScriptPath, "utf8");
 
 const errors = [];
 const warnings = [];
@@ -114,6 +116,14 @@ for (const capability of capabilities) {
     const skillPath = path.join(repoRoot, "adapters/codex/skills", skillDir, "SKILL.md");
     if (!fs.existsSync(skillPath)) {
       errors.push(`${id}: missing Codex skill wrapper for ${codexSkill}`);
+    } else {
+      const skillText = fs.readFileSync(skillPath, "utf8");
+      if (
+        skillText.includes("Read and follow the full") &&
+        !skillText.includes("../viber-mode/packs/vibermode/")
+      ) {
+        errors.push(`${id}: Codex skill wrapper should reference ../viber-mode/packs/vibermode/...`);
+      }
     }
   }
 
@@ -132,6 +142,10 @@ for (const capability of capabilities) {
   if (cleanTier === "legacy" && cleanKind !== "legacy-alias") {
     warnings.push(`${id}: legacy tier usually pairs with legacy-alias kind`);
   }
+}
+
+if (!codexInstallScript.includes('SUPPORT_BUNDLE="$CODEX_SKILLS/viber-mode"')) {
+  errors.push("Codex install script is missing the shared viber-mode support bundle");
 }
 
 if (warnings.length > 0) {

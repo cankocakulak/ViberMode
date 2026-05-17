@@ -5,7 +5,7 @@ description: "Use when validation or review findings need to reopen tasks, appen
 
 # Remediation Router
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/iterate/remediation-router.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/iterate/remediation-router.md`.
 
 Before starting, check `docs/[project-name]/` for `tasks.json`, `run-state.json`, `validation-report.md`, and `review.md` when they exist.
 

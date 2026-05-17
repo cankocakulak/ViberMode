@@ -2,6 +2,19 @@
 
 > Canonical implementation-stage workflow for turning completed stories into executable tasks, repeated implementation runs, and production review.
 
+## Fast Path
+
+- Use this only when specification artifacts already exist.
+- Minimum required entry artifact is `docs/[project-name]/stories.md`.
+- Treat `tasks.json` as the first execution artifact and `run-state.json` as execution state only.
+- Start by generating `docs/[project-name]/tasks.json` with `task-planner`.
+- Use `implementation-runner` in a loop, but one task per run only.
+- Do not skip task-level validation while implementing.
+- When the target slice is ready, run `runtime-validator` for real build or smoke evidence.
+- Finish with `reviewer` for plan-to-code and evidence-to-code alignment.
+- If validation or review fails, use `remediation-routing`.
+- If the required spec artifacts do not exist yet, stop and move up to `product-to-spec`.
+
 ## Pipeline
 
 ```text

@@ -7,7 +7,7 @@ description: "Legacy alias. Use when the user asks to convert stories into imple
 
 Legacy alias for `task-planner`.
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/product/ralph-converter.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/product/ralph-converter.md`.
 
 Before starting, check `docs/[project-name]/` for prior pipeline artifacts (stories.md, prd.md, ux.md).
 

@@ -202,6 +202,8 @@ npm run install:codex
 ./adapters/codex/install/install-skills.sh
 ```
 
+The installer also provisions a shared `viber-mode` support bundle under `~/.codex/skills/` so each skill can resolve the canonical pack files it references.
+
 Then use agents naturally in Codex App:
 
 ```

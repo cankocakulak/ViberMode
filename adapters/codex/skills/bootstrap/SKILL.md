@@ -5,7 +5,7 @@ description: "Use when the user asks to prepare a repo/runtime baseline before i
 
 # Bootstrap
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/product/bootstrap.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/product/bootstrap.md`.
 
 Before starting, check `docs/[project-name]/` for prior pipeline artifacts (`analysis.md`, `spec-review.md`, `bootstrap.md`) when they exist.
 

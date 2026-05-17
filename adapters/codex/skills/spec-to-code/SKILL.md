@@ -5,7 +5,7 @@ description: "Use when specification artifacts already exist and the user wants 
 
 # Spec to Code
 
-Read and follow the full workflow instructions at `viber-mode/packs/vibermode/workflows/spec-to-code.md`.
+Read and follow the full workflow instructions at `../viber-mode/packs/vibermode/workflows/spec-to-code.md`.
 
 Before starting:
 1. Confirm `docs/[project-name]/stories.md` exists

@@ -5,7 +5,7 @@ description: "Use when the user wants the full specification pipeline from idea 
 
 # Product to Spec
 
-Read and follow the full workflow instructions at `viber-mode/packs/vibermode/workflows/product-to-spec.md`.
+Read and follow the full workflow instructions at `../viber-mode/packs/vibermode/workflows/product-to-spec.md`.
 
 Before starting:
 1. Derive or confirm `project-name`

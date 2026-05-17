@@ -5,7 +5,7 @@ description: "Use when the user wants to fix a bug, add a feature, or refine beh
 
 # Repo Change
 
-Read and follow the full workflow instructions at `viber-mode/packs/vibermode/workflows/repo-change.md`.
+Read and follow the full workflow instructions at `../viber-mode/packs/vibermode/workflows/repo-change.md`.
 
 Before starting:
 1. Confirm the target repo root

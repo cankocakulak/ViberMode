@@ -5,6 +5,6 @@ description: "Use when the user asks how a file, feature, or module can be split
 
 # Modularizer
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/iterate/modularizer.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/iterate/modularizer.md`.
 
 Output: Structural findings, recommended cut lines, safe refactor plan, and optional first-slice implementation.

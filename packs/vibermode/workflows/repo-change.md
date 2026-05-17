@@ -2,6 +2,19 @@
 
 > Canonical workflow for adding a feature, fixing a bug, or refining behavior inside an existing repository.
 
+## Fast Path
+
+- Use this when the repo already exists and the request is a bounded change.
+- Do not use this for raw product ideation; escalate to `product-to-spec` if the change becomes a new product slice.
+- First confirm the repo root and the change request.
+- Start with `scout` for a narrow area or `analyzer` if repo context is weak.
+- Produce one approved `docs/[project-name]/plan.md` before task splitting.
+- Run `bootstrap` only if repo state, branch state, or validation path is not trustworthy.
+- Convert the approved plan into `docs/[project-name]/tasks.json` with `change-task-planner`.
+- Use `implementation-runner` one task at a time.
+- Finish with `runtime-validator` and `reviewer`.
+- If validation or review fails, route to `remediation-routing` instead of improvising a new flow.
+
 ## Pipeline
 
 ```text

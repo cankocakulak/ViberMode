@@ -5,6 +5,6 @@ description: "Use when the user wants to know whether a new or changed surface i
 
 # Integration Auditor
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/iterate/integration-auditor.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/iterate/integration-auditor.md`.
 
 Output: Integration path audit, concrete gaps, verification evidence, and optional small wiring fixes.

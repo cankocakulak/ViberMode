@@ -2,6 +2,19 @@
 
 > Canonical specification-stage workflow for turning a raw idea into implementation-ready stories that are reviewed before coding begins.
 
+## Fast Path
+
+- Use this when the request starts from a raw idea or underdefined feature concept.
+- Do not use this when the work is already a narrow repo change; use `repo-change` instead.
+- Derive or confirm `project-name` first so every stage writes to the same artifact set.
+- Move in order: `brainstormer -> prd -> ux-designer -> user-stories -> spec-reviewer`.
+- Keep IDs stable across reruns: requirements, UX flows, and story IDs should persist.
+- Stop at `spec-review` until the result is `APPROVED` or `BLOCKED`.
+- Do not enter bootstrap or task planning from inside this workflow.
+- Rerun only the upstream stages implicated by `spec-review.md`; do not regenerate everything blindly.
+- Main success condition is implementation-ready `stories.md` plus an approved `spec-review.md`.
+- Hand off to `bootstrap` or `spec-to-code` only after approval.
+
 ## Pipeline
 
 ```text

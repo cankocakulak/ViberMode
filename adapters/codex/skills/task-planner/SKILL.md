@@ -5,7 +5,7 @@ description: "Use when the user asks to convert stories into implementation task
 
 # Task Planner
 
-Read and follow the full agent instructions at `viber-mode/packs/vibermode/roles/product/task-planner.md`.
+Read and follow the full agent instructions at `../viber-mode/packs/vibermode/roles/product/task-planner.md`.
 
 Before starting, check `docs/[project-name]/` for prior pipeline artifacts (`stories.md`, `prd.md`, `ux.md`, `analysis.md`).
 
