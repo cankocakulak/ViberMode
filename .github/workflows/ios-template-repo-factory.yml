@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: Checkout ViberMode
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Resolve smoke repo name
         id: repo-name
