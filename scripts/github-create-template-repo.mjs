@@ -3,11 +3,12 @@
 import fs from "node:fs";
 
 class HttpError extends Error {
-  constructor(message, response, body) {
+  constructor(message, response, body, apiPath) {
     super(message);
     this.name = "HttpError";
     this.status = response.status;
     this.body = body;
+    this.apiPath = apiPath;
   }
 }
 
@@ -114,7 +115,7 @@ async function github(path, options = {}) {
 
   if (!okStatuses.includes(response.status)) {
     const message = body?.message || response.statusText;
-    throw new HttpError(`GitHub API ${response.status}: ${message}`, response, body);
+    throw new HttpError(`GitHub API ${response.status} on ${path}: ${message}`, response, body, path);
   }
 
   return body;
@@ -125,7 +126,15 @@ function repoPath(owner, repo) {
 }
 
 async function main() {
-  const actor = await github("/user");
+  let actorLogin = process.env.GITHUB_ACTOR || "unknown";
+  if (actorLogin === "unknown") {
+    try {
+      actorLogin = (await github("/user")).login;
+    } catch {
+      actorLogin = "unknown";
+    }
+  }
+
   const template = await github(repoPath(config.templateOwner, config.templateRepo));
 
   if (!template.is_template) {
@@ -135,7 +144,7 @@ async function main() {
   if (config.dryRun) {
     const result = {
       status: "dry_run",
-      actor: actor.login,
+      actor: actorLogin,
       full_name: `${config.destinationOwner}/${config.newRepoName}`,
       html_url: `https://github.com/${config.destinationOwner}/${config.newRepoName}`,
       private: config.private,
@@ -175,7 +184,7 @@ async function main() {
 
   const result = {
     status,
-    actor: actor.login,
+    actor: actorLogin,
     full_name: repo.full_name,
     html_url: repo.html_url,
     clone_url: repo.clone_url,
