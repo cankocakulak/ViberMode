@@ -342,6 +342,18 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/repo-change.md
 
+  - id: ios-app-store-factory
+    kind: workflow
+    callability: artifact-aware
+    tier: support
+    family: workflow
+    purpose: generate an iOS app repo from a template and prepare the App Store Connect/TestFlight automation path
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/ios-app-store-factory.md
+
   - id: bootstrap-workflow
     kind: workflow
     callability: artifact-aware

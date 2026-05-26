@@ -1,0 +1,103 @@
+name: iOS Template Repo Factory Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      template_owner:
+        description: GitHub owner of the template repository.
+        required: true
+        default: KantAkademi2
+      template_repo:
+        description: GitHub template repository name.
+        required: true
+        default: ios-boilerplate
+      destination_owner:
+        description: GitHub user or org that should receive the generated repo.
+        required: true
+        default: KantAkademi2
+      new_repo_name:
+        description: Optional repo name. Empty creates ios-factory-smoke-${run_number}.
+        required: false
+        default: ""
+      visibility:
+        description: Visibility for the generated repo.
+        required: true
+        type: choice
+        options:
+          - private
+          - public
+        default: private
+      include_all_branches:
+        description: Copy all template branches instead of only the default branch.
+        required: true
+        type: boolean
+        default: false
+      allow_existing:
+        description: Treat an existing destination repo as success.
+        required: true
+        type: boolean
+        default: true
+      dry_run:
+        description: Check token and template access without creating a repo.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  create-repo:
+    name: Create repo from template
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout ViberMode
+        uses: actions/checkout@v4
+
+      - name: Resolve smoke repo name
+        id: repo-name
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          repo_name="${{ inputs.new_repo_name }}"
+          if [ -z "$repo_name" ]; then
+            repo_name="ios-factory-smoke-${GITHUB_RUN_NUMBER}"
+          fi
+
+          echo "repo_name=$repo_name" >> "$GITHUB_OUTPUT"
+
+      - name: Report token mode
+        env:
+          HAS_FACTORY_TOKEN: ${{ secrets.APP_FACTORY_GITHUB_TOKEN != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "$HAS_FACTORY_TOKEN" = "true" ]; then
+            echo "Using APP_FACTORY_GITHUB_TOKEN."
+          else
+            echo "::warning::APP_FACTORY_GITHUB_TOKEN is not configured. Falling back to GITHUB_TOKEN, which usually cannot read private templates or create repos."
+          fi
+
+      - name: Create repository
+        id: create
+        env:
+          APP_FACTORY_GITHUB_TOKEN: ${{ secrets.APP_FACTORY_GITHUB_TOKEN || github.token }}
+          TEMPLATE_OWNER: ${{ inputs.template_owner }}
+          TEMPLATE_REPO: ${{ inputs.template_repo }}
+          DESTINATION_OWNER: ${{ inputs.destination_owner }}
+          NEW_REPO_NAME: ${{ steps.repo-name.outputs.repo_name }}
+          REPO_PRIVATE: ${{ inputs.visibility == 'private' }}
+          INCLUDE_ALL_BRANCHES: ${{ inputs.include_all_branches }}
+          ALLOW_EXISTING: ${{ inputs.allow_existing }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          DESCRIPTION: Created by the ViberMode iOS template repo factory smoke workflow.
+        run: node scripts/github-create-template-repo.mjs
+
+      - name: Print result
+        run: |
+          echo "status=${{ steps.create.outputs.status }}"
+          echo "repo=${{ steps.create.outputs.full_name }}"
+          echo "url=${{ steps.create.outputs.html_url }}"

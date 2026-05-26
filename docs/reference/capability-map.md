@@ -55,6 +55,7 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 | I want the full idea-to-code path | `product-to-code` |
 | I want to work inside an existing repo without the full greenfield flow | `repo-change` |
 | I need repo baseline and runnable setup clarified first | `bootstrap` |
+| I want to factory-create iOS repos and prepare App Store automation | `ios-app-store-factory` |
 
 ## Product Agents
 
