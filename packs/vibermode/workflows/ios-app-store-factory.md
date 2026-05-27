@@ -8,12 +8,14 @@
 template repo generation -> app identity setup -> asset generation -> signing setup -> App Store Connect registration -> archive/build -> TestFlight upload -> metadata/review handoff
 ```
 
-The first executable slice is repository generation from a GitHub template. It is implemented as:
+The first executable slice is repository generation from a GitHub template. ViberMode carries reusable implementation material only:
 
 ```text
-.github/workflows/ios-template-repo-factory.yml
 scripts/github-create-template-repo.mjs
+docs/examples/github-actions/daily-ios-repo-factory.yml
 ```
+
+Do not run the live schedule from the public ViberMode repository. Copy the example workflow into a private automation host, or run the script from a Codex automation environment that injects `GH_TOKEN` securely at runtime.
 
 ## Entry Contract
 
@@ -50,7 +52,7 @@ Inputs:
 
 Required permission:
 
-- `GH_TOKEN` repository secret in the ViberMode repository
+- `GH_TOKEN` secret or environment variable in the private automation host
 - The token must be a fine-grained GitHub PAT whose resource owner is `ViberBoyz`
 - Repository permissions: Administration read/write and Contents read/write
 
@@ -173,7 +175,8 @@ Minimum shape:
 ## Execution Notes
 
 - Start with Stage 1 only when validating GitHub permissions.
-- The scheduled workflow runs daily at `06:00 UTC`, which is `09:00 Europe/Istanbul`.
+- The example scheduled workflow runs daily at `06:00 UTC`, which is `09:00 Europe/Istanbul`.
+- The public ViberMode repository must not store the live `GH_TOKEN` secret and should not host the active scheduled workflow.
 - Do not begin Apple signing or App Store Connect stages until repo generation succeeds.
 - Prefer `dry_run=true` for permission checks before creating real repos.
 - Delete smoke repos manually after validation if they are no longer needed.

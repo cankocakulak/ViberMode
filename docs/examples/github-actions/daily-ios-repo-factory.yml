@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout ViberMode
+      - name: Checkout automation host
         uses: actions/checkout@v5
 
       - name: Resolve repo name
@@ -50,7 +50,7 @@ jobs:
           set -euo pipefail
 
           if [ "$HAS_GH_TOKEN" != "true" ]; then
-            echo "::error::GH_TOKEN repository secret is not configured in the ViberMode repository."
+            echo "::error::GH_TOKEN repository secret is not configured in this private automation host."
             exit 1
           fi
 
