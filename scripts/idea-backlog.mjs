@@ -186,6 +186,32 @@ function validateIdea(idea, index) {
     idea.bundle_id_slug = cleanSlug(idea.bundle_id_slug, `${prefix}.bundle_id_slug`).replace(/-/g, "");
   }
 
+  if (idea.status === "ready") {
+    const requiredReadyFields = [
+      "category",
+      "cluster",
+      "specific_gap",
+      "mvp_wedge",
+      "why_now",
+    ];
+
+    for (const field of requiredReadyFields) {
+      requireValue(`${prefix}.${field}`, idea[field]);
+    }
+
+    if (!Array.isArray(idea.evidence_sources) || idea.evidence_sources.length === 0) {
+      throw new Error(`${prefix}.evidence_sources must contain at least one source before status can be ready`);
+    }
+
+    if (!Array.isArray(idea.competitors) || idea.competitors.length === 0) {
+      throw new Error(`${prefix}.competitors must contain at least one comparable app before status can be ready`);
+    }
+
+    if (!idea.metric_snapshot || typeof idea.metric_snapshot !== "object") {
+      throw new Error(`${prefix}.metric_snapshot is required before status can be ready`);
+    }
+  }
+
   idea.factory = idea.factory || {};
   idea.factory.status = idea.factory.status || "queued";
   if (!ALLOWED_FACTORY_STATUSES.has(idea.factory.status)) {

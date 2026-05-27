@@ -86,6 +86,7 @@ Visual reference:
 | Agent | Purpose | Input From | Produces |
 |-------|---------|------------|----------|
 | `analyzer` | Discover existing project structure and patterns | — | Project snapshot |
+| `app-researcher` | Research mobile app/category opportunities before backlog handoff | Category + sources | Research pack + candidate ideas |
 | `brainstormer` | Rapid ideation, tech direction | Analyzer | Ideas + recommendation |
 | `prd` | Lean product requirements + tech stack | Brainstormer | PRD document |
 | `ux-designer` | Flows, visual direction, branding, references | PRD | UX specification |
@@ -133,6 +134,7 @@ product-to-spec → bootstrap → spec-to-code
 ```
 
 Primary workflow docs:
+- `app-opportunity-research` — standalone category/source analysis for mobile app opportunities
 - `idea-research-backlog` — independent research loop that maintains a private ranked app idea backlog
 - `daily-ios-app-pipeline` — consumes the private backlog, creates an iOS repo, and runs implementation
 - `product-to-spec` — idea to completed specification artifacts

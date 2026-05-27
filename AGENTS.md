@@ -9,6 +9,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | Agent | File | Description |
 |-------|------|-------------|
 | **analyzer** | `packs/vibermode/roles/product/analyzer.md` | Discovers project structure, tech stack, patterns |
+| **app-researcher** | `packs/vibermode/roles/product/app-researcher.md` | Researches mobile app opportunities before backlog/factory handoff |
 | **brainstormer** | `packs/vibermode/roles/product/brainstormer.md` | Rapid ideation, generates structured creative options |
 | **prd** | `packs/vibermode/roles/product/prd.md` | Produces lean, developer-ready PRDs |
 | **ux-designer** | `packs/vibermode/roles/product/ux-designer.md` | UX flows, interaction patterns, visual direction |
@@ -47,6 +48,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 When the user says any of the following, read the agent file and follow it:
 
 - "Use the **analyzer** agent" → Read `packs/vibermode/roles/product/analyzer.md`
+- "Use the **app-researcher** agent" → Read `packs/vibermode/roles/product/app-researcher.md`
 - "Use the **brainstormer** agent" → Read `packs/vibermode/roles/product/brainstormer.md`
 - "Use the **prd** agent" → Read `packs/vibermode/roles/product/prd.md`
 - "Use the **ux-designer** agent" → Read `packs/vibermode/roles/product/ux-designer.md`

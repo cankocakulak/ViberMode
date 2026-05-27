@@ -2,6 +2,8 @@
 
 Operational notes for the private state repository used by the ViberMode iOS app factory.
 
+For the full stage and automation map, see `docs/operations/app-factory-automation-overview.md`.
+
 ## Purpose
 
 Use a private ViberBoyz repo for research outputs, idea backlog, and factory run manifests.
@@ -36,6 +38,56 @@ node scripts/ios-app-factory-prepare.mjs ...
 ```
 
 Do not write the token into prompts, repo files, git remotes, or logs.
+
+## Research Data Flow
+
+Standalone app research output should live outside `ideas/backlog.json` until it has been reviewed.
+
+Recommended layout:
+
+```text
+sources/
+└── app-store/
+    └── revenue-pop-growth/
+        └── 2026-05-11_2026-05-20_US_Education.csv
+
+research-runs/
+└── 2026-05-27/
+    └── education-us/
+        ├── source-inventory.json
+        ├── normalized-apps.jsonl
+        ├── clusters.json
+        ├── opportunities.json
+        ├── gap-research-plant-nature-id.json
+        ├── gap-research-plant-nature-id.md
+        ├── rejected.json
+        ├── decision.md
+        └── backlog-candidates.json
+```
+
+Analyze a static App Store metric CSV:
+
+```bash
+node scripts/analyze-app-store-csv.mjs \
+  --input "/Users/mcan/app-factory-state/App Store Top Apps Revenue PoP Growth (May 11, 2026 - May 20, 2026, US), Detailed.csv" \
+  --output-dir /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/research-runs/2026-05-27/education-us \
+  --source-id app-store-education-revenue-growth-2026-05-11 \
+  --market US \
+  --category Education
+```
+
+This creates a standalone research pack. It does not automatically add ideas to the backlog because a static CSV is directional evidence, not a complete opportunity decision.
+
+Add a live App Store/iTunes gap probe for one top cluster:
+
+```bash
+node scripts/research-app-store-gap.mjs \
+  --research-dir /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/research-runs/2026-05-27/education-us \
+  --cluster "Plant / nature ID" \
+  --market US
+```
+
+This records live search and public review sources, writes `gap-research-[cluster].json/.md`, and updates `backlog-candidates.json` with reviewable candidate drafts. Review those drafts before upserting anything into `ideas/backlog.json`.
 
 ## Backlog Commands
 

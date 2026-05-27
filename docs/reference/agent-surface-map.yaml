@@ -27,6 +27,18 @@ capabilities:
       any_tool_agent: analyzer
       canonical_role: packs/vibermode/roles/product/analyzer.md
 
+  - id: app-researcher
+    kind: product-agent
+    callability: artifact-aware
+    tier: primary
+    family: product
+    purpose: research mobile app opportunities from category data, market signals, and competitor gaps
+    surfaces:
+      codex_skill: viber-app-researcher
+      cursor_command: null
+      any_tool_agent: app-researcher
+      canonical_role: packs/vibermode/roles/product/app-researcher.md
+
   - id: brainstormer
     kind: product-agent
     callability: always-callable
@@ -365,6 +377,18 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/idea-research-backlog.md
+
+  - id: app-opportunity-research
+    kind: workflow
+    callability: artifact-aware
+    tier: primary
+    family: workflow
+    purpose: produce a standalone app opportunity research pack from category/source evidence
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/app-opportunity-research.md
 
   - id: daily-ios-app-pipeline
     kind: workflow
