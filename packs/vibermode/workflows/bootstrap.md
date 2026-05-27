@@ -20,17 +20,18 @@ This workflow sits between specification work and implementation work when the t
 
 For composed `product-to-code` runs, `COMPLETE` and `COMPLETE_NOOP` may continue to `spec-to-code`; `BLOCKED` must stop the workflow.
 
-## Step 1 — Resolve Workspace
+## Step 1 — Resolve Runtime Workspace
 
 Role:
 `packs/vibermode/roles/product/bootstrap.md`
 
 Purpose:
-Resolve one canonical local project root for artifacts and code.
+Resolve one canonical local project root for runtime setup and validation.
 
 Inputs:
 - `workspace_path`
 - `project_name`
+- optional: `repo_url`
 - optional: `analysis_artifact`
 
 Outputs:
@@ -39,6 +40,7 @@ Outputs:
 Success Criteria:
 - one canonical local project root is chosen
 - artifact destination resolves inside that root
+- if the composed workflow started from `repo_url`, that repo has already been acquired before bootstrap starts
 - downstream steps will not need to guess the active workspace
 
 ## Step 2 — Repo Preflight
@@ -122,6 +124,7 @@ docs/[project-name]/
 ## Execution Notes
 
 - Use this workflow for ready repos, template-derived repos, and greenfield app creation when preflight validation is still needed.
+- In composed `product-to-code` runs that start from `repo_url`, workspace acquisition happens before `product-to-spec`; bootstrap must validate the acquired local repo rather than cloning after spec artifacts exist.
 - Skip this workflow only in standalone contexts when the repo root, branch, and runnable baseline are already known and recorded.
 - In composed `product-to-code`, do not skip the bootstrap artifact; write `bootstrap.md` with `COMPLETE_NOOP` when the existing baseline is being reused.
 - `workspace_path` is the canonical root. Do not resolve workflow artifacts against the orchestrator workspace.

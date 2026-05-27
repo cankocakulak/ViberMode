@@ -1,19 +1,19 @@
 # Workflow: Product to Code
 
-> Canonical composed workflow: `product-to-spec` followed by `bootstrap` followed by `spec-to-code`.
+> Canonical composed workflow: optional workspace acquisition, then `product-to-spec`, `bootstrap`, and `spec-to-code`.
 
 ## Pipeline Overview
 
 This workflow is the default path for a new product idea:
 
 ```text
-idea → product-to-spec → bootstrap → spec-to-code
+idea + optional repo_url → workspace acquisition → product-to-spec → bootstrap → spec-to-code
 ```
 
 Canonical role order:
 
 ```text
-Brainstormer → PRD → UX Designer → User Stories → Spec Reviewer ↺ → Bootstrap → Task Planner → Implementation Runner ↺ → Runtime Validator → Reviewer → Remediation Router (when needed)
+Workspace Acquisition → Brainstormer → PRD → UX Designer → User Stories → Spec Reviewer ↺ → Bootstrap → Task Planner → Implementation Runner ↺ → Runtime Validator → Reviewer → Remediation Router (when needed)
 ```
 
 This workflow is deterministic:
@@ -27,15 +27,20 @@ This workflow is deterministic:
 Before starting, the orchestrator must resolve these inputs:
 
 - `project_name` — stable slug used under `docs/[project-name]/`
-- `workspace_path` — one canonical local repo or project root for both artifacts and code
+- `workspace_path` — one canonical local repo or project root for both artifacts and code, either provided directly or resolved by Stage 0
+- optional `repo_url` — remote repository to clone before specification work begins
+- optional `workspace_parent` — parent directory used when `repo_url` is provided and `workspace_path` is not yet local
 - `product_idea` — raw idea, feature concept, or requested product slice
 - `repo_mode` — `existing-repo` or `greenfield`
 - `platform` and `stack` — enough runtime context for spec adaptability, bootstrap, and validation
 - optional `analysis_artifact` — only when existing-codebase discovery has already run
 
-If `project_name`, `workspace_path`, `platform`, or `stack` cannot be derived safely, stop before Stage 1 and ask for the missing input. Do not let downstream stages infer different roots, stacks, or artifact folders independently.
+If `workspace_path` is not provided but `repo_url` is provided, Stage 0 must clone/acquire the repo and set `workspace_path` before Stage 1. If neither `workspace_path` nor `repo_url` can be derived safely, stop before Stage 1 and ask for the missing input. Do not let downstream stages infer different roots, stacks, or artifact folders independently.
 
 ## Composed Workflow
+
+Stage 0:
+- workspace acquisition using `scripts/acquire-workspace.mjs`
 
 Stage 1:
 - `packs/vibermode/workflows/product-to-spec.md`
@@ -50,12 +55,15 @@ Use `product-to-code` when you want the full path from idea to reviewed implemen
 Use `product-to-spec` when you want to stop after specification artifacts are complete.
 Use `spec-to-code` when specs already exist and you only want the implementation pipeline.
 
+Stage 0 is required for factory-generated or remote-only repos because specification artifacts must be written inside the target repo, not inside the orchestrator workspace.
+
 ## Workflow Scope
 
 Use this workflow when:
 - starting from a raw idea
 - defining a new feature or product slice
 - preparing implementation-ready work with stable artifact handoffs
+- continuing from a generated remote repo that must be cloned before specs are written
 
 Do not use this workflow when:
 - you only need codebase discovery first
@@ -65,6 +73,8 @@ For existing-product work that requires codebase discovery, run `analyzer` first
 
 ## Stage Gate Rules
 
+- Stage 0 must complete before `product-to-spec` whenever the input starts from `repo_url` instead of an existing `workspace_path`.
+- Stage 0 must set exactly one canonical local `workspace_path`; all later artifacts and code changes must resolve inside that path.
 - Stage 1 must write `spec-review.md` and reach `APPROVED` before bootstrap can start.
 - If Stage 1 reaches `CHANGES_REQUESTED`, rerun only the specification stages named in `spec-review.md`, preserving stable requirement IDs, UX flow names, and story IDs wherever possible. Stay in Stage 1 until `spec-review.md` reaches `APPROVED` or `BLOCKED`.
 - If Stage 1 reaches `BLOCKED`, the composed workflow is blocked and later stages must not run.
@@ -89,8 +99,13 @@ Minimum shape:
   "projectName": "[project-name]",
   "workspacePath": "/absolute/path/to/project-root",
   "status": "RUNNING",
-  "currentStage": "product-to-spec",
+  "currentStage": "workspace-acquisition",
   "stages": {
+    "workspace-acquisition": {
+      "status": "PENDING",
+      "artifact": null,
+      "verdict": null
+    },
     "product-to-spec": {
       "status": "PENDING",
       "artifact": "docs/[project-name]/spec-review.md",
@@ -108,7 +123,7 @@ Minimum shape:
     }
   },
   "blockers": [],
-  "nextAction": "Run product-to-spec"
+  "nextAction": "Run workspace acquisition when repo_url is provided; otherwise run product-to-spec"
 }
 ```
 
@@ -123,6 +138,7 @@ Allowed top-level statuses:
 
 Status rules:
 - Update this file after every stage or retryable loop.
+- When Stage 0 runs, update `workspacePath` to the acquired local repo root before writing spec artifacts.
 - Use stage artifacts as the source of truth; do not mark a stage complete from prose alone.
 - If an artifact exists but lacks an explicit verdict, treat the stage as blocked until the artifact is corrected.
 - `COMPLETE` is allowed only after review approves the implemented slice and runtime evidence exists.
@@ -162,7 +178,7 @@ Notes:
 ## Orchestration Rules
 
 1. Derive or confirm `project-name` before starting.
-2. Resolve one canonical `workspace_path` before creating or reading workflow artifacts.
+2. Resolve one canonical `workspace_path` before creating or reading workflow artifacts. If only `repo_url` is known, run Stage 0 first.
 3. Write or update `workflow-status.json` after each stage result.
 4. Use artifact paths as primary inputs whenever an upstream artifact exists.
 5. Do not skip a step unless the workflow rules explicitly allow it.
@@ -175,6 +191,11 @@ Notes:
 9. Review is required before calling the workflow production-ready.
 
 ## Stage Result Mapping
+
+Stage 0: `workspace-acquisition`
+- `COMPLETE` → continue to `product-to-spec`
+- `COMPLETE_NOOP` → continue to `product-to-spec` using the existing local repo
+- `BLOCKED` → stop with top-level `BLOCKED`
 
 Stage 1: `product-to-spec`
 - `APPROVED` → continue to `bootstrap`

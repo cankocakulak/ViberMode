@@ -114,6 +114,33 @@ node scripts/github-create-template-repo.mjs
 
 The script prints the generated repo URL. If the base name already exists, it tries suffixes such as `-2`, `-3`, up to `MAX_NAME_ATTEMPTS`.
 
+## Acquire the Generated Repository
+
+Use `scripts/acquire-workspace.mjs` before running `product-to-code` when the repo exists on GitHub but is not yet cloned locally.
+
+```bash
+TOKEN_SERVICE="<service-name>"
+
+GH_TOKEN="$(security find-generic-password -a "$USER" -s "$TOKEN_SERVICE" -w)" \
+REPO_URL="https://github.com/<target-org>/ios-app-$(TZ=Europe/Istanbul date +%F).git" \
+WORKSPACE_PARENT="/absolute/path/to/generated-ios-apps" \
+PROJECT_NAME="ios-app-$(TZ=Europe/Istanbul date +%F)" \
+node scripts/acquire-workspace.mjs
+```
+
+Expected success shape:
+
+```json
+{
+  "status": "cloned",
+  "repo_url": "https://github.com/<target-org>/ios-app-YYYY-MM-DD.git",
+  "workspace_path": "/absolute/path/to/generated-ios-apps/ios-app-YYYY-MM-DD",
+  "branch": "main"
+}
+```
+
+Pass the returned `workspace_path` into `product-to-code`. If the workspace already exists and is a git repo, the script returns `status: "reused"` instead of cloning again.
+
 ## Private Automation Hosts
 
 If this runs from a private GitHub Actions host instead of local Keychain, store the token as an Actions secret named `GH_TOKEN` in that private host. Do not add the live secret to the public ViberMode repository.

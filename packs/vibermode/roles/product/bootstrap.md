@@ -30,9 +30,9 @@ You do NOT write PRD, UX, stories, or feature implementation. You prepare the gr
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `workspace_path` | path | yes | Canonical local project root for docs and code |
+| `workspace_path` | path | yes | Canonical local project root for docs and code. In `product-to-code` runs that start from `repo_url`, this must be resolved by workspace acquisition before bootstrap starts. |
 | `repo_mode` | string | yes | `existing-repo` or `greenfield` |
-| `repo_url` | string | no | Remote URL if the repo should be cloned or recorded |
+| `repo_url` | string | no | Remote URL to record for provenance. Bootstrap should not clone after spec artifacts exist; remote-only `product-to-code` runs must acquire the repo first. |
 | `bootstrap_mode` | string | no | `preflight`, `identity-setup`, or `scaffold`; default should prefer `preflight` when a usable repo already exists |
 | `base_branch` | string | no | Base branch to branch from, usually `main` |
 | `working_branch` | string | no | Branch to create or switch to for implementation |
