@@ -19,14 +19,14 @@ scripts/github-create-template-repo.mjs
 
 Before running the complete workflow, the orchestrator must resolve these inputs:
 
-- `template_owner` and `template_repo` - GitHub template source, defaulting to `KantAkademi2/ios-boilerplate`
-- `destination_owner` - GitHub user or organization that will own the generated app repo
-- `new_repo_name` - generated repository name
+- `template_owner` and `template_repo` - GitHub template source, currently `KantAkademi2/ios-boilerplate`
+- `destination_owner` - GitHub user or organization that will own the generated app repo, currently `ViberBoyz`
+- `new_repo_name` - generated repository name, defaulting to `ios-app-YYYY-MM-DD` using the Europe/Istanbul date
 - `app_name` - App Store display name
 - `bundle_id` - iOS bundle identifier
 - `team_id` - Apple Developer Team ID
 - `app_store_connect_api_key` - CI-safe App Store Connect API key reference
-- `github_factory_token` - GitHub token with private template read access and destination repo creation permission
+- `GH_TOKEN` - GitHub token with destination repo creation permission
 
 Secrets must be passed through the automation environment. They must not be written into workflow artifacts, logs, generated source files, or chat handoffs.
 
@@ -40,37 +40,38 @@ Create a new GitHub repository from the selected iOS template and prove that the
 
 Inputs:
 
-- `template_owner`
-- `template_repo`
-- `destination_owner`
+- `template_owner`: `KantAkademi2`
+- `template_repo`: `ios-boilerplate`
+- `destination_owner`: `ViberBoyz`
 - `new_repo_name`
-- `visibility`
-- `include_all_branches`
-- `allow_existing`
+- `visibility`: private
+- `include_all_branches`: false
 - `dry_run`
 
 Required permission:
 
-- `APP_FACTORY_GITHUB_TOKEN` repository secret, preferred
-- Fallback `GITHUB_TOKEN` is allowed only for smoke failure evidence; it usually cannot read private templates or create new repositories
+- `GH_TOKEN` repository secret in the ViberMode repository
+- The token must be a fine-grained GitHub PAT whose resource owner is `ViberBoyz`
+- Repository permissions: Administration read/write and Contents read/write
 
 Outputs:
 
 - generated repository full name
 - generated repository URL
-- status: `created`, `existing`, or `dry_run`
+- status: `created` or `dry_run`
 
 Success Criteria:
 
 - template repo is reachable
 - template repo is marked as a GitHub template
-- destination repo is created, or an existing repo is accepted when `allow_existing=true`
+- destination repo is created under `ViberBoyz`
+- name collisions are resolved by appending numeric suffixes such as `-2`, `-3`
 - workflow summary includes the generated repo URL
 
 Stage Result:
 
 - `COMPLETE` - repo exists and can be cloned by downstream stages
-- `BLOCKED_TOKEN` - token cannot read the private template or create repos in the destination owner
+- `BLOCKED_TOKEN` - `GH_TOKEN` is missing or cannot create repos in `ViberBoyz`
 - `BLOCKED_TEMPLATE` - selected source is missing or is not marked as a GitHub template
 - `BLOCKED_DESTINATION` - destination owner rejected repo creation
 
@@ -172,6 +173,7 @@ Minimum shape:
 ## Execution Notes
 
 - Start with Stage 1 only when validating GitHub permissions.
+- The scheduled workflow runs daily at `06:00 UTC`, which is `09:00 Europe/Istanbul`.
 - Do not begin Apple signing or App Store Connect stages until repo generation succeeds.
-- Prefer a throwaway private repo name such as `ios-factory-smoke-[run_number]` for permission tests.
+- Prefer `dry_run=true` for permission checks before creating real repos.
 - Delete smoke repos manually after validation if they are no longer needed.

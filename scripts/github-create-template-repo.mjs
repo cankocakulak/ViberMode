@@ -77,7 +77,7 @@ function writeSummary(result) {
 const args = parseArgs(process.argv.slice(2));
 
 const config = {
-  token: process.env.APP_FACTORY_GITHUB_TOKEN || process.env.GITHUB_TOKEN || process.env.GH_TOKEN,
+  token: process.env.GH_TOKEN,
   templateOwner: args["template-owner"] || process.env.TEMPLATE_OWNER,
   templateRepo: args["template-repo"] || process.env.TEMPLATE_REPO,
   destinationOwner: args.owner || args["destination-owner"] || process.env.DESTINATION_OWNER,
@@ -85,17 +85,21 @@ const config = {
   description: args.description || process.env.DESCRIPTION || "Created by the ViberMode iOS app factory.",
   private: args.public ? false : boolValue(args.private ?? process.env.REPO_PRIVATE, true),
   includeAllBranches: boolValue(args["include-all-branches"] ?? process.env.INCLUDE_ALL_BRANCHES, false),
-  allowExisting: boolValue(args["allow-existing"] ?? process.env.ALLOW_EXISTING, true),
+  maxNameAttempts: Number(args["max-name-attempts"] || process.env.MAX_NAME_ATTEMPTS || 50),
   dryRun: boolValue(args["dry-run"] ?? process.env.DRY_RUN, false),
 };
 
-config.token = requireValue("APP_FACTORY_GITHUB_TOKEN or GITHUB_TOKEN", config.token);
+config.token = requireValue("GH_TOKEN", config.token);
 config.templateOwner = requireValue("TEMPLATE_OWNER", config.templateOwner);
 config.templateRepo = requireValue("TEMPLATE_REPO", config.templateRepo);
 config.destinationOwner = requireValue("DESTINATION_OWNER", config.destinationOwner);
 config.newRepoName = requireValue("NEW_REPO_NAME", config.newRepoName);
 
 validateRepoName(config.newRepoName);
+
+if (!Number.isInteger(config.maxNameAttempts) || config.maxNameAttempts < 1) {
+  throw new Error("MAX_NAME_ATTEMPTS must be a positive integer.");
+}
 
 async function github(path, options = {}) {
   const response = await fetch(`https://api.github.com${path}`, {
@@ -125,6 +129,22 @@ function repoPath(owner, repo) {
   return `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
 }
 
+function candidateRepoName(baseName, attempt) {
+  return attempt === 1 ? baseName : `${baseName}-${attempt}`;
+}
+
+async function repoExists(owner, repo) {
+  try {
+    await github(repoPath(owner, repo));
+    return true;
+  } catch (error) {
+    if (error instanceof HttpError && error.status === 404) {
+      return false;
+    }
+    throw error;
+  }
+}
+
 async function main() {
   let actorLogin = process.env.GITHUB_ACTOR || "unknown";
   if (actorLogin === "unknown") {
@@ -142,6 +162,7 @@ async function main() {
   }
 
   if (config.dryRun) {
+    const exists = await repoExists(config.destinationOwner, config.newRepoName);
     const result = {
       status: "dry_run",
       actor: actorLogin,
@@ -149,6 +170,7 @@ async function main() {
       html_url: `https://github.com/${config.destinationOwner}/${config.newRepoName}`,
       private: config.private,
       template: template.full_name,
+      name_available: !exists,
     };
     outputGitHubActionValues(result);
     writeSummary(result);
@@ -156,34 +178,50 @@ async function main() {
     return;
   }
 
-  const requestBody = {
-    owner: config.destinationOwner,
-    name: config.newRepoName,
-    description: config.description,
-    include_all_branches: config.includeAllBranches,
-    private: config.private,
-  };
-
-  let status = "created";
   let repo;
+  let selectedName = config.newRepoName;
+  let lastConflict;
 
-  try {
-    repo = await github(`${repoPath(config.templateOwner, config.templateRepo)}/generate`, {
-      method: "POST",
-      body: requestBody,
-      okStatuses: [201, 202],
-    });
-  } catch (error) {
-    if (!(error instanceof HttpError) || error.status !== 422 || !config.allowExisting) {
-      throw error;
+  for (let attempt = 1; attempt <= config.maxNameAttempts; attempt += 1) {
+    selectedName = candidateRepoName(config.newRepoName, attempt);
+
+    const requestBody = {
+      owner: config.destinationOwner,
+      name: selectedName,
+      description: config.description,
+      include_all_branches: config.includeAllBranches,
+      private: config.private,
+    };
+
+    try {
+      repo = await github(`${repoPath(config.templateOwner, config.templateRepo)}/generate`, {
+        method: "POST",
+        body: requestBody,
+        okStatuses: [201, 202],
+      });
+      break;
+    } catch (error) {
+      if (!(error instanceof HttpError) || error.status !== 422) {
+        throw error;
+      }
+
+      const exists = await repoExists(config.destinationOwner, selectedName);
+      if (!exists) {
+        throw error;
+      }
+
+      lastConflict = selectedName;
     }
+  }
 
-    repo = await github(repoPath(config.destinationOwner, config.newRepoName));
-    status = "existing";
+  if (!repo) {
+    throw new Error(
+      `Could not find an available repository name after ${config.maxNameAttempts} attempts. Last conflict: ${lastConflict}`,
+    );
   }
 
   const result = {
-    status,
+    status: "created",
     actor: actorLogin,
     full_name: repo.full_name,
     html_url: repo.html_url,
@@ -191,6 +229,8 @@ async function main() {
     ssh_url: repo.ssh_url,
     private: repo.private,
     template: template.full_name,
+    requested_name: config.newRepoName,
+    selected_name: selectedName,
   };
 
   outputGitHubActionValues(result);
