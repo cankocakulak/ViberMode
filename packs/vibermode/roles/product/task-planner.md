@@ -35,6 +35,7 @@ You do NOT invent requirements. You restructure what product agents already prod
 | `bootstrap_artifact` | path | no | Path to bootstrap artifact for repo root, branch, and setup context |
 | `analysis_artifact` | path | no | Path to analysis artifact for codebase patterns |
 | `branch_prefix` | string | no | Git branch prefix for implementation work (default: `ralph/`) |
+| `factory_context` | object/string | no | Orchestrator constraints for generated apps, such as iOS factory required flows and pattern sources |
 
 If an artifact path is provided, read the file before producing output.
 
@@ -99,6 +100,7 @@ Rules:
 - Preserve story IDs via `parentStoryId`
 - Preserve lineage when a story is split
 - Carry dependencies, implementation boundaries, PRD refs, and UX refs into each task
+- Carry factory-context constraints and pattern-source references into task notes when provided
 - When `bootstrap_artifact` exists, carry forward the stable repo root, branch context, and validation baseline into `tasks.json`
 - Keep task ordering aligned with dependency chain
 - If a story is too large, split it without losing lineage to the parent story
@@ -164,6 +166,7 @@ Each task must complete in ONE AI iteration. Split if:
 - When `runtimeCritical=true`, include at least one `miniScenarios` entry for the smallest meaningful immediate validation
 - If a task introduces a new runtime surface, include at least one `scenarios` entry that the runner can verify
 - Do not leave validation implied inside prose-only notes; it must be machine-readable in the task object
+- For `factory_context.type = ios_app_factory`, keep onboarding/routing, first-value/core loop, and paywall shell tasks distinct enough for validation. Real purchase integration must not be merged into the paywall shell task unless explicitly requested.
 
 ## Behavior Guidelines
 

@@ -71,6 +71,7 @@ If not on the correct branch, create or switch to it while preserving the bootst
 Implement the task. Follow these rules:
 - Read the acceptance criteria carefully
 - Read the task `notes` carefully for implementation boundary, lineage, PRD refs, and UX refs
+- If task notes include factory pattern sources, use them as copy-and-adapt references and keep the generated app self-contained after copying relevant code
 - Read the task `validation` object before coding so the required check level is clear
 - Respect bootstrap context such as stable repo root, last known runnable command, and setup blockers
 - Respect `parentStoryId` and `lineage`

@@ -43,6 +43,7 @@ STATUS — şu anda spec review yapıyorum.
 | `analysis_artifact` | path | no | Path to `analysis.md` |
 | `bootstrap_context` | string | no | Stack, repo, or boilerplate assumptions that affect adaptability |
 | `implementation_context` | string | no | Optional notes on target stack, template, or runtime constraints |
+| `factory_context` | object/string | no | Orchestrator constraints for generated apps, such as iOS factory required flows and pattern sources |
 
 If an artifact path is provided, read it before producing output.
 
@@ -121,6 +122,7 @@ Produce the artifact whenever project context is known.
 - [ ] Declared stack or boilerplate can plausibly support the requested product behavior
 - [ ] No hidden scaffold work is being smuggled into ordinary feature stories
 - [ ] Summary and handoff sections are still usable downstream
+- [ ] If `factory_context.type` is `ios_app_factory`, PRD, UX, and stories explicitly cover onboarding, first-value/core loop, and upgrade/paywall shell, with real purchase integration scoped separately unless requested
 
 ## Behavior Guidelines
 

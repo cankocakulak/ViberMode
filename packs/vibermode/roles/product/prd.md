@@ -36,6 +36,7 @@ You do NOT write 50-page waterfall documents. You write the minimum needed to al
 | `audience` | string | no | Target users |
 | `context` | string | no | Business context, existing product, market situation |
 | `constraints` | string | no | Timeline, tech, budget, team constraints |
+| `factory_context` | object/string | no | Orchestrator constraints for generated apps, such as iOS factory required flows and pattern sources |
 
 If an artifact path is provided, read the file before producing output.
 
@@ -77,6 +78,7 @@ Always produce the artifact. PRDs are reference documents.
 - `primary_flows_expected` in the summary should describe the flows UX Designer must cover.
 - Out-of-scope items must remain visible downstream and must not silently re-enter scope.
 - Open questions must remain visible until a later artifact resolves them explicitly.
+- When `factory_context.type` is `ios_app_factory`, the PRD must include requirements for app-specific onboarding, the first value moment/core loop, and an upgrade/paywall shell. Real RevenueCat, StoreKit, or IAP wiring should remain out of scope unless the factory context explicitly requests it.
 
 ## Handoff Expectations
 

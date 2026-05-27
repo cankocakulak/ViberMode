@@ -213,6 +213,71 @@ State sync:
 `);
 }
 
+function buildFactoryContext(selection, args) {
+  const platform = String(selection.platform || "").toLowerCase();
+  if (!platform.includes("ios")) {
+    return null;
+  }
+
+  const patternRepo = args["pattern-repo"] || process.env.IOS_FACTORY_PATTERN_REPO || "ViberBoyz/ios-factory-patterns";
+  const patternRef = args["pattern-ref"] || process.env.IOS_FACTORY_PATTERN_REF || "main";
+
+  return {
+    type: "ios_app_factory",
+    distribution_target: "testflight",
+    pattern_repo: {
+      full_name: patternRepo,
+      ref: patternRef,
+      catalog_path: "catalog.json",
+    },
+    required_flows: [
+      "onboarding",
+      "first_value_moment",
+      "upgrade_paywall_shell",
+    ],
+    stage3_requirements: {
+      onboarding: {
+        required: true,
+        notes: "Create an app-specific first-launch flow with 2-4 screens and persistent completion state.",
+      },
+      first_value_moment: {
+        required: true,
+        notes: "The user must be able to reach the core value loop without making a purchase.",
+      },
+      paywall_shell: {
+        required: true,
+        purchase_integration: "mock_or_placeholder",
+        notes: "Design and implement a visible upgrade/paywall shell. Real RevenueCat/StoreKit wiring is deferred unless explicitly requested.",
+      },
+    },
+    pattern_sources: [
+      {
+        id: "swiftui-value-carousel-onboarding",
+        repo: patternRepo,
+        ref: patternRef,
+        path: "patterns/onboarding/swiftui-value-carousel",
+      },
+      {
+        id: "onboarding-core-paywall-state-machine",
+        repo: patternRepo,
+        ref: patternRef,
+        path: "patterns/app-routing/onboarding-core-paywall-state-machine",
+      },
+      {
+        id: "swiftui-upgrade-paywall-shell",
+        repo: patternRepo,
+        ref: patternRef,
+        path: "patterns/paywall/swiftui-upgrade-shell",
+      },
+    ],
+    implementation_notes: [
+      "Use the pattern repo as copy-and-adapt source material, not as a runtime dependency.",
+      "Keep generated app code self-contained after copying the relevant pattern files.",
+      "Do not block TestFlight evaluation on real IAP. Keep paywall purchase actions honest when purchase infrastructure is not wired.",
+    ],
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -255,6 +320,16 @@ async function main() {
       {
         status: "dry_run",
         selection,
+        product_to_code_input_preview: {
+          project_name: selection.repo_name,
+          workspace_path: path.join(workspaceParent, selection.repo_name),
+          repo_url: `https://github.com/${destinationOwner}/${selection.repo_name}.git`,
+          product_idea: selection.product_idea,
+          repo_mode: "greenfield",
+          platform: selection.platform,
+          stack: selection.stack,
+          factory_context: buildFactoryContext(selection, args),
+        },
         next_action: "Run without --dry-run to create the template repo and clone the workspace.",
       },
       args.output,
@@ -330,6 +405,7 @@ async function main() {
       repo_mode: "greenfield",
       platform: selection.platform,
       stack: selection.stack,
+      factory_context: buildFactoryContext(selection, args),
     },
     next_action:
       "Run ViberMode product-to-code using product_to_code_input, then update this run manifest with validation and commit details.",

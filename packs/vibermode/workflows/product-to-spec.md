@@ -8,6 +8,7 @@
 - Do not use this when the work is already a narrow repo change; use `repo-change` instead.
 - Derive or confirm `project-name` first so every stage writes to the same artifact set.
 - Move in order: `brainstormer -> prd -> ux-designer -> user-stories -> spec-reviewer`.
+- Preserve any orchestrator-provided `factory_context` through PRD, UX, stories, and spec review.
 - Keep IDs stable across reruns: requirements, UX flows, and story IDs should persist.
 - Stop at `spec-review` until the result is `APPROVED` or `BLOCKED`.
 - Do not enter bootstrap or task planning from inside this workflow.
@@ -41,6 +42,7 @@ Inputs:
 - raw product idea
 - optional: `docs/[project-name]/analysis.md`
 - optional constraints or direction bias
+- optional factory context, such as iOS factory required flows and pattern sources
 - optional prior `docs/[project-name]/spec-review.md` when rerunning
 
 Outputs:
@@ -67,6 +69,7 @@ Inputs:
 - `docs/[project-name]/brainstorm.md`
 - optional: `docs/[project-name]/analysis.md`
 - optional audience, product context, constraints
+- optional factory context, such as iOS factory required flows and pattern sources
 - optional prior `docs/[project-name]/spec-review.md` when rerunning
 
 Outputs:
@@ -94,6 +97,7 @@ Inputs:
 - optional: `docs/[project-name]/analysis.md`
 - optional: `docs/[project-name]/brainstorm.md`
 - optional platform or branding context
+- optional factory context, such as iOS factory required flows and pattern sources
 - optional prior `docs/[project-name]/spec-review.md` when rerunning
 
 Outputs:
@@ -121,6 +125,7 @@ Inputs:
 - `docs/[project-name]/ux.md`
 - optional: `docs/[project-name]/analysis.md`
 - optional personas or product context
+- optional factory context, such as iOS factory required flows and pattern sources
 - optional prior `docs/[project-name]/spec-review.md` when rerunning
 
 Outputs:

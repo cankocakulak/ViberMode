@@ -23,6 +23,12 @@ ViberBoyz/ios-*
 Generated private iOS app repositories created from the template.
 
 ```text
+ViberBoyz/ios-factory-patterns
+```
+
+Private copy-and-adapt pattern catalog for generated SwiftUI apps. It currently contains onboarding, paywall shell, and app-routing patterns distilled from existing apps.
+
+```text
 KantAkademi2/ios-boilerplate
 ```
 
@@ -134,6 +140,25 @@ ideas/backlog.json
 
 The run manifest contains `product_to_code_input`, which is the handoff object for Stage 3.
 
+For iOS ideas, `product_to_code_input` also includes `factory_context`:
+
+```json
+{
+  "type": "ios_app_factory",
+  "distribution_target": "testflight",
+  "pattern_repo": {
+    "full_name": "ViberBoyz/ios-factory-patterns",
+    "ref": "main",
+    "catalog_path": "catalog.json"
+  },
+  "required_flows": [
+    "onboarding",
+    "first_value_moment",
+    "upgrade_paywall_shell"
+  ]
+}
+```
+
 ### Stage 3 - Product To Code
 
 Purpose:
@@ -152,6 +177,7 @@ Inputs:
 factory/runs/[run-id].json
 generated repo workspace_path
 product_to_code_input
+product_to_code_input.factory_context
 ```
 
 Expected outputs:
@@ -160,6 +186,7 @@ Expected outputs:
 - validation evidence recorded in the generated repo
 - `factory/runs/[run-id].json` updated with build, validation, and commit details
 - `ideas/backlog.json` updated to reflect progress
+- iOS factory apps include onboarding, a testable first-value/core loop, and a paywall shell using `ViberBoyz/ios-factory-patterns` when useful
 
 Current status:
 This stage has been tested manually through generated repos. The active factory automation is intended to run through this stage only.

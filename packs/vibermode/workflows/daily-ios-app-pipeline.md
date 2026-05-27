@@ -33,6 +33,14 @@ ViberBoyz/app-factory-state
 
 Secrets stay in the automation runtime, not in ViberMode or generated repos.
 
+Reusable iOS implementation patterns:
+
+```text
+ViberBoyz/ios-factory-patterns
+```
+
+This private repo stores copy-and-adapt SwiftUI patterns for onboarding, app routing, and paywall shells. It is referenced from the factory preparation run manifest and consumed during product-to-code.
+
 ## Entry Contract
 
 The orchestrator must resolve:
@@ -144,9 +152,30 @@ Required input from run manifest:
   "product_idea": "...",
   "repo_mode": "greenfield",
   "platform": "ios",
-  "stack": "SwiftUI"
+  "stack": "SwiftUI",
+  "factory_context": {
+    "type": "ios_app_factory",
+    "distribution_target": "testflight",
+    "pattern_repo": {
+      "full_name": "ViberBoyz/ios-factory-patterns",
+      "ref": "main",
+      "catalog_path": "catalog.json"
+    },
+    "required_flows": [
+      "onboarding",
+      "first_value_moment",
+      "upgrade_paywall_shell"
+    ]
+  }
 }
 ```
+
+For iOS factory runs, Stage 2 must treat `factory_context` as part of the product input. The generated app should include:
+
+- app-specific first-launch onboarding
+- a first-value/core loop the tester can reach without payment
+- an upgrade/paywall shell with honest mock or placeholder purchase handling when real IAP is not wired
+- reusable code copied and adapted from `ViberBoyz/ios-factory-patterns` when useful
 
 Success Criteria:
 
@@ -154,6 +183,7 @@ Success Criteria:
 - generated app repo passes its validation commands
 - implementation commit is pushed to the generated repo
 - run manifest is updated with validation and commit details
+- onboarding, first-value, and paywall shell coverage is visible in PRD, UX, stories, and tasks for iOS factory runs
 
 ## Stage 3 - App Store/TestFlight
 

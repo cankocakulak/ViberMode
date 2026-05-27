@@ -33,6 +33,7 @@ Before starting, the orchestrator must resolve these inputs:
 - `product_idea` — raw idea, feature concept, or requested product slice
 - `repo_mode` — `existing-repo` or `greenfield`
 - `platform` and `stack` — enough runtime context for spec adaptability, bootstrap, and validation
+- optional `factory_context` — orchestrator-provided delivery constraints for factory runs, such as required onboarding, first-value, paywall shell, or copy-and-adapt pattern sources
 - optional `analysis_artifact` — only when existing-codebase discovery has already run
 
 If `workspace_path` is not provided but `repo_url` is provided, Stage 0 must clone/acquire the repo and set `workspace_path` before Stage 1. If neither `workspace_path` nor `repo_url` can be derived safely, stop before Stage 1 and ask for the missing input. Do not let downstream stages infer different roots, stacks, or artifact folders independently.
@@ -76,6 +77,7 @@ For existing-product work that requires codebase discovery, run `analyzer` first
 - Stage 0 must complete before `product-to-spec` whenever the input starts from `repo_url` instead of an existing `workspace_path`.
 - Stage 0 must set exactly one canonical local `workspace_path`; all later artifacts and code changes must resolve inside that path.
 - Stage 1 must write `spec-review.md` and reach `APPROVED` before bootstrap can start.
+- Stage 1 must preserve and apply `factory_context` when provided. For `factory_context.type = ios_app_factory`, PRD, UX, and stories must cover onboarding, first-value, and upgrade/paywall shell before spec review can approve.
 - If Stage 1 reaches `CHANGES_REQUESTED`, rerun only the specification stages named in `spec-review.md`, preserving stable requirement IDs, UX flow names, and story IDs wherever possible. Stay in Stage 1 until `spec-review.md` reaches `APPROVED` or `BLOCKED`.
 - If Stage 1 reaches `BLOCKED`, the composed workflow is blocked and later stages must not run.
 - Stage 2 must write `bootstrap.md` and establish one canonical workspace path plus a reusable runnable baseline before implementation begins. In `product-to-code`, bootstrap is required even when it only records that an existing baseline is already trusted.

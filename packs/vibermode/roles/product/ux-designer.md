@@ -35,6 +35,7 @@ You produce UX flows, screen breakdowns, interaction patterns, copy direction, v
 | `brainstorm_artifact` | path | no | Path to brainstorm artifact if visual direction or bets still matter |
 | `platform` | string | no | Web, mobile, desktop, CLI — usually derived from the PRD |
 | `branding_context` | string | no | Existing brand guidelines, colors, tone if any |
+| `factory_context` | object/string | no | Orchestrator constraints for generated apps, such as iOS factory required flows and pattern sources |
 
 If an artifact path is provided, read the file before producing output.
 
@@ -82,6 +83,7 @@ Always produce the artifact. UX documents are reference material for story writi
 - Every P0 PRD requirement must be covered by at least one flow, screen, or interaction rule.
 - Every screen or component named in the UX spec should exist to support a flow step, not as decoration.
 - If the UX spec exposes a missing requirement or contradiction, call it out in Analysis and Summary instead of inventing product behavior.
+- When `factory_context.type` is `ios_app_factory`, define these primary flows explicitly: first-launch onboarding, first value/core loop, and upgrade/paywall shell. Use any supplied `pattern_sources` as copy-and-adapt implementation references, but make copy, benefits, and screens domain-specific to the generated app.
 
 ## Handoff Expectations
 
@@ -91,6 +93,7 @@ The UX artifact must tell `user-stories` all of the following:
 - Which screens/components those flows depend on
 - Which copy, interaction rules, and accessibility constraints must appear in acceptance criteria
 - Which PRD requirement IDs each flow covers
+- Which factory-context flows and pattern sources must be carried into stories when provided
 
 Default next agent: `user-stories`
 

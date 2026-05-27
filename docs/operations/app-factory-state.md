@@ -166,6 +166,8 @@ The prepare script reports:
 
 The run manifest contains a `product_to_code_input` object. The Codex factory automation should use that object to run `packs/vibermode/workflows/product-to-code.md`.
 
+For iOS factory runs, `product_to_code_input.factory_context` references `ViberBoyz/ios-factory-patterns` and requires onboarding, first-value, and upgrade/paywall shell coverage during product-to-code. The generated app should copy and adapt relevant pattern files rather than depending on the pattern repo at runtime.
+
 ## Failure Handling
 
 - Missing `GH_TOKEN`: stop and fix Keychain or environment setup.

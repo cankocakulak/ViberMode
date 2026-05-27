@@ -36,6 +36,7 @@ You do NOT write epics, roadmaps, or strategy docs. You write atomic, actionable
 | `analysis_artifact` | path | no | Path to analysis artifact for existing constraints or patterns |
 | `personas` | string | no | User types or roles involved |
 | `context` | string | no | Additional product context or technical constraints |
+| `factory_context` | object/string | no | Orchestrator constraints for generated apps, such as iOS factory required flows and pattern sources |
 
 If an artifact path is provided, read the file before producing output.
 
@@ -83,6 +84,7 @@ Always produce the artifact when using this agent in the product pipeline.
 - Dependencies should be explicit, not implied.
 - Stories must be small enough to implement independently. If not, split them or flag them in `implementation_risks`.
 - Implementation boundaries must say what is in and out for that story so implementation agents do not expand scope.
+- When `factory_context.type` is `ios_app_factory`, stories must cover onboarding persistence/routing, the first value/core loop, and the paywall shell. Keep real purchase infrastructure in a separate story only when explicitly requested; otherwise the paywall story should implement honest mock or placeholder purchase handling.
 
 ## Handoff Expectations
 
