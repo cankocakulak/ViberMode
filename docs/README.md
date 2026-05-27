@@ -8,6 +8,8 @@ This repository keeps its public documentation under `docs/`.
   - Framework-level analysis, architecture notes, and roadmap documents
 - `docs/openclaw/`
   - OpenClaw integration notes, workflow mapping, boundary analysis, and rollout plans
+- `docs/operations/`
+  - Operational runbooks for safely wiring local or private automation runtimes
 - `docs/reference/`
   - Capability map, decision tree, visual map, and machine-readable surface inventory
 

@@ -17,6 +17,12 @@ docs/examples/github-actions/daily-ios-repo-factory.yml
 
 Do not run the live schedule from the public ViberMode repository. Copy the example workflow into a private automation host, or run the script from a Codex automation environment that injects `GH_TOKEN` securely at runtime.
 
+Token creation and local Keychain setup are documented in:
+
+```text
+docs/operations/ios-repo-factory-token.md
+```
+
 ## Entry Contract
 
 Before running the complete workflow, the orchestrator must resolve these inputs:
