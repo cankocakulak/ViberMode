@@ -354,6 +354,30 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/ios-app-store-factory.md
 
+  - id: idea-research-backlog
+    kind: workflow
+    callability: artifact-aware
+    tier: support
+    family: workflow
+    purpose: maintain a private ranked backlog of researched app ideas before repo generation
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/idea-research-backlog.md
+
+  - id: daily-ios-app-pipeline
+    kind: workflow
+    callability: artifact-aware
+    tier: support
+    family: workflow
+    purpose: consume the private idea backlog, create an iOS repo, and run product-to-code
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/daily-ios-app-pipeline.md
+
   - id: bootstrap-workflow
     kind: workflow
     callability: artifact-aware

@@ -10,6 +10,8 @@ This repository keeps its public documentation under `docs/`.
   - OpenClaw integration notes, workflow mapping, boundary analysis, and rollout plans
 - `docs/operations/`
   - Operational runbooks for safely wiring local or private automation runtimes
+  - `app-factory-state.md` documents the private app idea backlog and factory state repo
+  - `ios-repo-factory-token.md` documents local GitHub token setup for repo generation
 - `docs/reference/`
   - Capability map, decision tree, visual map, and machine-readable surface inventory
 

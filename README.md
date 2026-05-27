@@ -133,6 +133,8 @@ product-to-spec → bootstrap → spec-to-code
 ```
 
 Primary workflow docs:
+- `idea-research-backlog` — independent research loop that maintains a private ranked app idea backlog
+- `daily-ios-app-pipeline` — consumes the private backlog, creates an iOS repo, and runs implementation
 - `product-to-spec` — idea to completed specification artifacts
 - `spec-to-code` — completed specs to tasks, implementation loop, and review
 - `product-to-code` — composed workflow that runs all three stages
