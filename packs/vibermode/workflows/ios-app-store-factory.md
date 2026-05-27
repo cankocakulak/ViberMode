@@ -21,8 +21,8 @@ Do not run the live schedule from the public ViberMode repository. Copy the exam
 
 Before running the complete workflow, the orchestrator must resolve these inputs:
 
-- `template_owner` and `template_repo` - GitHub template source, currently `KantAkademi2/ios-boilerplate`
-- `destination_owner` - GitHub user or organization that will own the generated app repo, currently `ViberBoyz`
+- `template_owner` and `template_repo` - GitHub template source, commonly `KantAkademi2/ios-boilerplate`
+- `destination_owner` - GitHub user or organization that will own the generated app repo
 - `new_repo_name` - generated repository name, defaulting to `ios-app-YYYY-MM-DD` using the Europe/Istanbul date
 - `app_name` - App Store display name
 - `bundle_id` - iOS bundle identifier
@@ -44,7 +44,7 @@ Inputs:
 
 - `template_owner`: `KantAkademi2`
 - `template_repo`: `ios-boilerplate`
-- `destination_owner`: `ViberBoyz`
+- `destination_owner`
 - `new_repo_name`
 - `visibility`: private
 - `include_all_branches`: false
@@ -53,7 +53,7 @@ Inputs:
 Required permission:
 
 - `GH_TOKEN` secret or environment variable in the private automation host
-- The token must be a fine-grained GitHub PAT whose resource owner is `ViberBoyz`
+- The token should be a fine-grained GitHub PAT whose resource owner is the target organization
 - Repository permissions: Administration read/write and Contents read/write
 
 Outputs:
@@ -66,14 +66,14 @@ Success Criteria:
 
 - template repo is reachable
 - template repo is marked as a GitHub template
-- destination repo is created under `ViberBoyz`
+- destination repo is created under the target organization
 - name collisions are resolved by appending numeric suffixes such as `-2`, `-3`
 - workflow summary includes the generated repo URL
 
 Stage Result:
 
 - `COMPLETE` - repo exists and can be cloned by downstream stages
-- `BLOCKED_TOKEN` - `GH_TOKEN` is missing or cannot create repos in `ViberBoyz`
+- `BLOCKED_TOKEN` - `GH_TOKEN` is missing or cannot create repos in the target organization
 - `BLOCKED_TEMPLATE` - selected source is missing or is not marked as a GitHub template
 - `BLOCKED_DESTINATION` - destination owner rejected repo creation
 

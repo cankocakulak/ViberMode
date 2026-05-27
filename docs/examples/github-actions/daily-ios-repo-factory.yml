@@ -9,6 +9,18 @@ on:
         description: Optional repo name. Empty creates ios-app-YYYY-MM-DD using the Europe/Istanbul date.
         required: false
         default: ""
+      template_owner:
+        description: GitHub owner of the template repository.
+        required: true
+        default: KantAkademi2
+      template_repo:
+        description: GitHub template repository name.
+        required: true
+        default: ios-boilerplate
+      destination_owner:
+        description: GitHub user or organization that should receive the generated repo.
+        required: true
+        default: your-org
       dry_run:
         description: Check token and template access without creating a repo.
         required: true
@@ -58,9 +70,9 @@ jobs:
         id: create
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          TEMPLATE_OWNER: KantAkademi2
-          TEMPLATE_REPO: ios-boilerplate
-          DESTINATION_OWNER: ViberBoyz
+          TEMPLATE_OWNER: ${{ github.event.inputs.template_owner || 'KantAkademi2' }}
+          TEMPLATE_REPO: ${{ github.event.inputs.template_repo || 'ios-boilerplate' }}
+          DESTINATION_OWNER: ${{ github.event.inputs.destination_owner }}
           NEW_REPO_NAME: ${{ steps.repo-name.outputs.repo_name }}
           REPO_PRIVATE: "true"
           INCLUDE_ALL_BRANCHES: "false"
