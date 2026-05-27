@@ -12,8 +12,12 @@ Before starting:
 2. Resolve one canonical target repo or workspace root
 3. Use artifact paths as the handoff surface between stages
 4. Do not advance past a blocked stage
+5. Maintain `docs/[project-name]/workflow-status.json` after each stage result
 
 Primary workflow stages:
 - `product-to-spec`
 - `bootstrap`
 - `spec-to-code`
+
+Primary orchestration artifact:
+- `docs/[project-name]/workflow-status.json`

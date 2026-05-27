@@ -6,6 +6,8 @@
 
 - Use this only when specification artifacts already exist.
 - Minimum required entry artifact is `docs/[project-name]/stories.md`.
+- When called from `product-to-code`, `docs/[project-name]/bootstrap.md` is required because bootstrap is the handoff for repo root, branch, scripts, and runnable baseline.
+- When called standalone, `bootstrap.md` is optional only if the caller already provides a trusted target repo root and validation path.
 - Treat `tasks.json` as the first execution artifact and `run-state.json` as execution state only.
 - Start by generating `docs/[project-name]/tasks.json` with `task-planner`.
 - Use `implementation-runner` in a loop, but one task per run only.
@@ -25,6 +27,12 @@ Implementation boundary:
 - `stories.md` is the final specification artifact.
 - `tasks.json` is the first execution artifact.
 - `run-state.json` is the execution-state artifact and must never replace `tasks.json` as the source of truth for task definitions.
+
+Entry modes:
+- `from-product-to-code` — requires `prd.md`, `ux.md`, `stories.md`, `spec-review.md`, and `bootstrap.md`
+- `standalone` — requires `stories.md` and a caller-provided target repo root; strongly prefer `prd.md`, `ux.md`, and `bootstrap.md` when available
+
+If entry mode cannot be determined, prefer the stricter `from-product-to-code` requirements.
 
 ## Step 1 — Task Planning
 
@@ -114,6 +122,11 @@ Loop stop conditions:
 - a hard blocker prevents safe continuation
 - validation fails and cannot be resolved within the current task run
 
+Target slice readiness:
+- For a full `product-to-code` run, the target slice is ready only when every task in `tasks.json` is `done`.
+- For a scoped `spec-to-code` run, the target slice is ready when every task in the declared `scope` is `done` and no dependency outside the scope remains pending.
+- If any task is `pending`, `blocked`, or missing required validation evidence, runtime validation must return `SKIPPED_NOT_READY` or `SKIPPED_BLOCKED` rather than reviewing the slice.
+
 ## Step 3 — Runtime Validation
 
 Role:
@@ -150,6 +163,8 @@ Stage result rules:
 
 Next Step:
 - `reviewer` only when runtime validation produced reusable evidence
+- `remediation-routing` when validation returns `FAIL` with routable findings
+- stop with `BLOCKED` when validation returns `BLOCKED` for an environment, scaffold, or missing-target issue that cannot be converted into task state safely
 
 ## Step 4 — Review
 
@@ -192,6 +207,7 @@ Stage result rules:
 Next Step:
 - done if approved
 - `remediation-routing` if changes are required, then return to implementation
+- after remediation and resumed implementation, run `runtime-validator` again before any later approval
 
 ## Workflow Status Semantics
 
@@ -227,6 +243,7 @@ When runtime validation or review fails, do not jump straight back into coding i
 - `runtime-validator` and `reviewer` produce findings and routing guidance
 - `remediation-routing` applies those decisions to `tasks.json` and `run-state.json`
 - only after that should `implementation-runner` resume
+- after resumed implementation completes the reopened or follow-up tasks, runtime validation and review must run again before the workflow can return `COMPLETE`
 
 ## Execution Model
 

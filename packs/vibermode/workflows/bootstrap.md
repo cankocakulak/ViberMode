@@ -10,6 +10,16 @@ workspace resolution → repo preflight → identity/setup alignment → script-
 
 This workflow sits between specification work and implementation work when the target project root is not yet trusted as runnable.
 
+## Stage Result
+
+`bootstrap.md` must include one explicit result in `## Summary (for downstream agents)`:
+
+- `COMPLETE` — canonical workspace, branch/setup assumptions, and reusable validation baseline are established
+- `COMPLETE_NOOP` — an existing baseline was already trusted, and the artifact records the repo root, branch, scripts, and evidence being reused
+- `BLOCKED` — implementation must not start because repo setup, scaffold, branch state, or runnable validation is incomplete
+
+For composed `product-to-code` runs, `COMPLETE` and `COMPLETE_NOOP` may continue to `spec-to-code`; `BLOCKED` must stop the workflow.
+
 ## Step 1 — Resolve Workspace
 
 Role:
@@ -98,6 +108,7 @@ Success Criteria:
 - success or failure is recorded explicitly
 - blockers are clear enough for downstream work to stop safely if needed
 - mobile app bootstrap does not confuse a library/package compile with a runnable app baseline
+- `## Summary (for downstream agents)` reports `COMPLETE`, `COMPLETE_NOOP`, or `BLOCKED`
 
 ## Artifacts
 
@@ -111,7 +122,8 @@ docs/[project-name]/
 ## Execution Notes
 
 - Use this workflow for ready repos, template-derived repos, and greenfield app creation when preflight validation is still needed.
-- Skip this workflow only when the repo root, branch, and runnable baseline are already known and recorded.
+- Skip this workflow only in standalone contexts when the repo root, branch, and runnable baseline are already known and recorded.
+- In composed `product-to-code`, do not skip the bootstrap artifact; write `bootstrap.md` with `COMPLETE_NOOP` when the existing baseline is being reused.
 - `workspace_path` is the canonical root. Do not resolve workflow artifacts against the orchestrator workspace.
 
 ## Typical Handoffs
