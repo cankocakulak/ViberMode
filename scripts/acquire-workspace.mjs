@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { githubGitConfigEnv } from "./github-network.mjs";
 
 function parseArgs(argv) {
   const args = {};
@@ -63,23 +64,7 @@ function ensureInside(parentPath, targetPath) {
 }
 
 function gitAuthEnv(repoUrl) {
-  const token = process.env.GH_TOKEN;
-  if (!token) return {};
-
-  try {
-    const parsed = new URL(repoUrl);
-    if (parsed.hostname !== "github.com" || !parsed.protocol.startsWith("http")) {
-      return {};
-    }
-  } catch {
-    return {};
-  }
-
-  return {
-    GIT_CONFIG_COUNT: "1",
-    GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
-    GIT_CONFIG_VALUE_0: `Authorization: Basic ${Buffer.from(`x-access-token:${token}`).toString("base64")}`,
-  };
+  return githubGitConfigEnv({ token: process.env.GH_TOKEN, repoUrl });
 }
 
 function sanitizeArg(arg) {
@@ -103,6 +88,48 @@ function runGit(args, options = {}) {
   }
 
   return result.stdout.trim();
+}
+
+function runGitOptional(args, options = {}) {
+  const result = spawnSync("git", args, {
+    cwd: options.cwd,
+    env: {
+      ...process.env,
+      ...options.env,
+    },
+    encoding: "utf8",
+  });
+
+  return {
+    ok: result.status === 0,
+    stdout: result.stdout.trim(),
+    stderr: result.stderr.trim(),
+  };
+}
+
+function resolveHead(workspacePath, repoUrl) {
+  for (let attempt = 1; attempt <= 6; attempt += 1) {
+    const head = runGitOptional(["rev-parse", "HEAD"], { cwd: workspacePath });
+    if (head.ok && head.stdout) return head.stdout;
+
+    runGitOptional(["fetch", "origin"], { cwd: workspacePath, env: gitAuthEnv(repoUrl) });
+    const remoteHead = runGitOptional(["symbolic-ref", "--short", "refs/remotes/origin/HEAD"], { cwd: workspacePath });
+    const remoteBranch = remoteHead.ok && remoteHead.stdout
+      ? remoteHead.stdout.replace(/^origin\//, "")
+      : "main";
+    const remoteRef = `origin/${remoteBranch}`;
+    const remoteCommit = runGitOptional(["rev-parse", remoteRef], { cwd: workspacePath });
+    if (remoteCommit.ok && remoteCommit.stdout) {
+      runGit(["checkout", "-B", remoteBranch, remoteRef], { cwd: workspacePath });
+      return remoteCommit.stdout;
+    }
+
+    if (attempt < 6) {
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5000);
+    }
+  }
+
+  return runGit(["rev-parse", "HEAD"], { cwd: workspacePath });
 }
 
 function outputGitHubActionValues(values) {
@@ -173,7 +200,7 @@ function main() {
       workspace_path: workspacePath,
       workspace_parent: workspaceParent,
       project_name: config.projectName || path.basename(workspacePath),
-      head_sha: runGit(["rev-parse", "HEAD"], { cwd: workspacePath }),
+      head_sha: resolveHead(workspacePath, config.repoUrl),
       branch: runGit(["branch", "--show-current"], { cwd: workspacePath }),
     };
     outputGitHubActionValues(result);
@@ -198,7 +225,7 @@ function main() {
     workspace_path: workspacePath,
     workspace_parent: workspaceParent,
     project_name: config.projectName || path.basename(workspacePath),
-    head_sha: runGit(["rev-parse", "HEAD"], { cwd: workspacePath }),
+    head_sha: resolveHead(workspacePath, config.repoUrl),
     branch: runGit(["branch", "--show-current"], { cwd: workspacePath }),
   };
 

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "project": "app-factory-stage4",
+  "current_task": null,
+  "status": "complete",
+  "updated_at": "2026-05-27T19:09:27.000Z",
+  "notes": [
+    "Implemented the first Stage 4 slice as a preflight-by-default TestFlight submission command.",
+    "Live Apple-side submission is gated behind --submit.",
+    "Added operator guidance for Keychain setup, preflight, live submit, automation guards, and troubleshooting.",
+    "Hardened workflow for app-name fallback, generated app icon readiness, Info.plist readiness, and submission metadata handoff."
+  ]
+}

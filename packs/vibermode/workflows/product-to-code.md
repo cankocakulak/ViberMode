@@ -13,7 +13,7 @@ idea + optional repo_url → workspace acquisition → product-to-spec → boots
 Canonical role order:
 
 ```text
-Workspace Acquisition → Brainstormer → PRD → UX Designer → User Stories → Spec Reviewer ↺ → Bootstrap → Task Planner → Implementation Runner ↺ → Runtime Validator → Reviewer → Remediation Router (when needed)
+Workspace Acquisition → Brainstormer → PRD → UX Designer → User Stories → Spec Reviewer ↺ → Bootstrap → Task Planner → Implementation Runner ↺ → Runtime Validator → Experience Reviewer ↺ → Reviewer → Remediation Router (when needed)
 ```
 
 This workflow is deterministic:
@@ -51,6 +51,7 @@ Stage 2:
 
 Stage 3:
 - `packs/vibermode/workflows/spec-to-code.md`
+- includes task execution, runtime validation, experience hardening for user-facing slices, and final review
 
 Use `product-to-code` when you want the full path from idea to reviewed implementation.
 Use `product-to-spec` when you want to stop after specification artifacts are complete.
@@ -82,6 +83,7 @@ For existing-product work that requires codebase discovery, run `analyzer` first
 - If Stage 1 reaches `BLOCKED`, the composed workflow is blocked and later stages must not run.
 - Stage 2 must write `bootstrap.md` and establish one canonical workspace path plus a reusable runnable baseline before implementation begins. In `product-to-code`, bootstrap is required even when it only records that an existing baseline is already trusted.
 - If Stage 2 reaches `BLOCKED`, Stage 3 must not run.
+- Stage 3 must run experience hardening after runtime validation for user-facing slices. For `factory_context.type = ios_app_factory`, this gate must check onboarding, first-value/core loop, upgrade/paywall shell, keyboard behavior, small-screen fit, and screenshot evidence before final review can approve.
 - All stages must resolve artifacts relative to the same canonical target repo or workspace root.
 - The composed workflow should pass forward only stable artifact paths and explicit stage results, not informal chat summaries.
 
@@ -136,6 +138,7 @@ Allowed top-level statuses:
 - `INCOMPLETE_SPEC_CHANGES_REQUESTED`
 - `INCOMPLETE_TASKS_PENDING`
 - `INCOMPLETE_VALIDATION_FAILED`
+- `INCOMPLETE_EXPERIENCE_CHANGES_REQUESTED`
 - `INCOMPLETE_REMEDIATION_PENDING`
 
 Status rules:
@@ -143,7 +146,7 @@ Status rules:
 - When Stage 0 runs, update `workspacePath` to the acquired local repo root before writing spec artifacts.
 - Use stage artifacts as the source of truth; do not mark a stage complete from prose alone.
 - If an artifact exists but lacks an explicit verdict, treat the stage as blocked until the artifact is corrected.
-- `COMPLETE` is allowed only after review approves the implemented slice and runtime evidence exists.
+- `COMPLETE` is allowed only after runtime evidence exists, experience review is approved or explicitly not applicable, and final review approves the implemented slice.
 
 ## Artifact Folder Convention
 
@@ -167,6 +170,7 @@ docs/[project-name]/
 ├── tasks.json
 ├── run-state.json
 ├── validation-report.md
+├── experience-review.md
 ├── remediation.md
 └── review.md
 ```
@@ -186,11 +190,12 @@ Notes:
 5. Do not skip a step unless the workflow rules explicitly allow it.
 6. Do not advance if the current stage fails its success criteria.
 7. Prefer each artifact's `## Summary (for downstream agents)` section first, then read the full artifact where needed.
-8. Preserve stable IDs and mappings:
+8. For user-facing implementation, treat `experience-review.md` as a required Stage 3 gate before final review.
+9. Preserve stable IDs and mappings:
    - PRD requirement IDs
    - UX flow names
    - story IDs
-9. Review is required before calling the workflow production-ready.
+10. Review is required before calling the workflow production-ready.
 
 ## Stage Result Mapping
 
@@ -212,6 +217,7 @@ Stage 3: `spec-to-code`
 - `COMPLETE` → top-level `COMPLETE`
 - `INCOMPLETE_TASKS_PENDING` → continue `implementation-runner`
 - `INCOMPLETE_VALIDATION_FAILED` → run `remediation-routing`, then re-enter implementation
+- `INCOMPLETE_EXPERIENCE_CHANGES_REQUESTED` → run `remediation-routing`, then re-enter implementation
 - `INCOMPLETE_REMEDIATION_PENDING` → run `remediation-routing`, then re-enter implementation
 - `BLOCKED` → stop with top-level `BLOCKED`
 
@@ -220,7 +226,7 @@ Stage 3: `spec-to-code`
 The composed workflow is successful only when:
 - specification review approved the spec set
 - bootstrap produced `bootstrap.md` with `COMPLETE` or `COMPLETE_NOOP`
-- `spec-to-code` reached a non-blocked implementation outcome with runtime evidence and review completion
+- `spec-to-code` reached a non-blocked implementation outcome with runtime evidence, experience review approval or explicit non-applicability, and final review completion
 - `workflow-status.json` is updated to `COMPLETE`
 
-If validation or review fails downstream, route through `remediation-routing` and re-enter `spec-to-code` rather than skipping back to ad hoc coding.
+If validation, experience review, or final review fails downstream, route through `remediation-routing` and re-enter `spec-to-code` rather than skipping back to ad hoc coding.

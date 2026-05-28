@@ -123,6 +123,18 @@ capabilities:
       any_tool_agent: implementation-runner
       canonical_role: packs/vibermode/roles/product/implementation-runner.md
 
+  - id: ios-submitter
+    kind: product-agent
+    callability: artifact-required
+    tier: support
+    family: product
+    purpose: submit completed generated iOS app builds to internal TestFlight
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: ios-submitter
+      canonical_role: packs/vibermode/roles/product/ios-submitter.md
+
   - id: ralph-converter
     kind: legacy-alias
     tier: legacy
@@ -215,6 +227,19 @@ capabilities:
       any_tool_agent: surface-hardener
       canonical_role: packs/vibermode/roles/iterate/surface-hardener.md
 
+  - id: experience-reviewer
+    kind: iterate-agent
+    callability: artifact-aware
+    tier: support
+    family: verify
+    purpose: review product feel and user-facing experience quality after runtime validation
+    distinction: Stage 3 product-experience gate before final code review
+    surfaces:
+      codex_skill: viber-experience-reviewer
+      cursor_command: null
+      any_tool_agent: experience-reviewer
+      canonical_role: packs/vibermode/roles/iterate/experience-reviewer.md
+
   - id: integration-auditor
     kind: iterate-agent
     callability: always-callable
@@ -283,7 +308,7 @@ capabilities:
     callability: artifact-aware
     tier: support
     family: verify
-    purpose: route review or validation findings back into the execution loop
+    purpose: route validation, experience review, or final review findings back into the execution loop
     surfaces:
       codex_skill: viber-remediation-router
       cursor_command: null
@@ -328,6 +353,18 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/spec-to-code.md
       openclaw_status: documented-active
+
+  - id: experience-hardening
+    kind: workflow
+    callability: artifact-required
+    tier: support
+    family: workflow
+    purpose: run the Stage 3 experience review and routed polish loop before final review
+    surfaces:
+      codex_skill: viber-experience-hardening
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/experience-hardening.md
 
   - id: product-to-code
     kind: workflow
@@ -401,6 +438,18 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/daily-ios-app-pipeline.md
+
+  - id: ios-submit-testflight
+    kind: workflow
+    callability: artifact-required
+    tier: support
+    family: workflow
+    purpose: consume a completed factory run manifest and upload an internal TestFlight build
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/ios-submit-testflight.md
 
   - id: bootstrap-workflow
     kind: workflow

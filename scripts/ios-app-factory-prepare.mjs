@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { githubApiFetch, githubGitConfigEnv } from "./github-network.mjs";
 import {
   boolValue,
   loadBacklog,
@@ -34,23 +35,7 @@ function sanitizeOutput(output) {
 }
 
 function gitAuthEnv(repoUrl = "https://github.com") {
-  const token = process.env.GH_TOKEN;
-  if (!token) return {};
-
-  try {
-    const parsed = new URL(repoUrl);
-    if (parsed.hostname !== "github.com" || !parsed.protocol.startsWith("http")) {
-      return {};
-    }
-  } catch {
-    return {};
-  }
-
-  return {
-    GIT_CONFIG_COUNT: "1",
-    GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
-    GIT_CONFIG_VALUE_0: `Authorization: Basic ${Buffer.from(`x-access-token:${token}`).toString("base64")}`,
-  };
+  return githubGitConfigEnv({ token: process.env.GH_TOKEN, repoUrl });
 }
 
 class HttpError extends Error {
@@ -64,7 +49,7 @@ class HttpError extends Error {
 
 async function github(repoFullName, apiPath, options = {}) {
   const token = requireValue("GH_TOKEN", process.env.GH_TOKEN);
-  const response = await fetch(`https://api.github.com/repos/${repoFullName}${apiPath}`, {
+  const response = await githubApiFetch(`/repos/${repoFullName}${apiPath}`, {
     method: options.method || "GET",
     headers: {
       Accept: "application/vnd.github+json",
@@ -250,6 +235,18 @@ function buildFactoryContext(selection, args) {
         notes: "Design and implement a visible upgrade/paywall shell. Real RevenueCat/StoreKit wiring is deferred unless explicitly requested.",
       },
     },
+    stage3_quality_gate: {
+      workflow: "packs/vibermode/workflows/experience-hardening.md",
+      required_artifact: "docs/[project-name]/experience-review.md",
+      required_checks: [
+        "onboarding_is_app_specific",
+        "first_value_reachable_without_purchase",
+        "paywall_shell_is_app_specific_and_honest",
+        "keyboard_dismissal_for_text_entry",
+        "small_screen_layout_has_no_clipping_or_overlap",
+        "screenshot_or_simulator_evidence_covers_key_flows",
+      ],
+    },
     pattern_sources: [
       {
         id: "swiftui-value-carousel-onboarding",
@@ -274,6 +271,7 @@ function buildFactoryContext(selection, args) {
       "Use the pattern repo as copy-and-adapt source material, not as a runtime dependency.",
       "Keep generated app code self-contained after copying the relevant pattern files.",
       "Do not block TestFlight evaluation on real IAP. Keep paywall purchase actions honest when purchase infrastructure is not wired.",
+      "After runtime validation, run the experience-hardening gate before final review.",
     ],
   };
 }

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "project": "app-factory-stage4",
+  "updated_at": "2026-05-27T19:09:27.000Z",
+  "tasks": [
+    {
+      "id": "stage4-testflight-cli",
+      "title": "Add TestFlight submission CLI and docs",
+      "status": "completed",
+      "scope": [
+        "scripts/ios-submit-testflight.mjs",
+        "packs/vibermode/workflows/ios-submit-testflight.md",
+        "packs/vibermode/roles/product/ios-submitter.md",
+        "docs/operations/app-factory-automation-overview.md",
+        "AGENTS.md",
+        "docs/reference/agent-surface-map.yaml"
+      ],
+      "validation": [
+        {
+          "command": "node --check scripts/ios-submit-testflight.mjs",
+          "status": "passed"
+        },
+        {
+          "command": "npm run validate",
+          "status": "passed"
+        },
+        {
+          "command": "node scripts/ios-submit-testflight.mjs --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-20260527120805-7bc409.json",
+          "status": "passed",
+          "evidence": "preflight_passed for Mood Dots, scheme TemplateApp, Release configuration"
+        }
+      ]
+    },
+    {
+      "id": "stage4-operator-guidance",
+      "title": "Add ViberMode guidance for Apple/Fastlane setup and Stage 4 operation",
+      "status": "completed",
+      "scope": [
+        "docs/operations/ios-testflight-submission-guidance.md",
+        "docs/README.md",
+        "docs/operations/app-factory-automation-overview.md",
+        "docs/operations/app-factory-state.md",
+        "packs/vibermode/workflows/ios-submit-testflight.md",
+        "packs/vibermode/roles/product/ios-submitter.md"
+      ],
+      "validation": [
+        {
+          "command": "npm run validate",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "id": "stage4-readiness-hardening",
+      "title": "Harden Stage 4 for app-name conflicts, missing icons, and metadata handoff",
+      "status": "completed",
+      "scope": [
+        "scripts/ios-submit-testflight.mjs",
+        "packs/vibermode/workflows/ios-submit-testflight.md",
+        "docs/operations/ios-testflight-submission-guidance.md",
+        "docs/operations/app-factory-automation-overview.md"
+      ],
+      "validation": [
+        {
+          "command": "node --check scripts/ios-submit-testflight.mjs",
+          "status": "passed"
+        },
+        {
+          "command": "npm run validate",
+          "status": "passed"
+        },
+        {
+          "command": "node scripts/ios-submit-testflight.mjs --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-20260527120805-7bc409.json --app-name \"Mood Dots by ViberBoyz\" --signing-auth xcode-account --upload-auth api-key",
+          "status": "passed",
+          "evidence": "preflight_passed with submission_assets.status=ready and metadata surfaced"
+        }
+      ]
+    }
+  ]
+}

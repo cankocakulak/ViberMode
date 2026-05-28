@@ -63,6 +63,12 @@ This guide helps a developer or tool choose the right ViberMode capability quick
 
 - Use `surface-hardener`
 
+### The app runs, but may feel generic or not ready to test
+
+- Use `experience-reviewer` after `runtime-validator`
+- Note:
+  - this is a Stage 3 gate for user-facing slices, especially generated iOS apps
+
 ## Spec-Driven Paths
 
 ### I already have `stories.md` and need tasks
@@ -88,7 +94,13 @@ This guide helps a developer or tool choose the right ViberMode capability quick
 
 - Use `reviewer`
 
-### Validation or review failed and I need to route fixes back into tasks
+### I need a product-experience gate before final review
+
+- Use `experience-hardening`
+- Note:
+  - this runs `experience-reviewer`, routes polish findings, and returns to validation before final review
+
+### Validation, experience review, or final review failed and I need to route fixes back into tasks
 
 - Use `remediation-routing`
 - Note:
@@ -116,6 +128,10 @@ This guide helps a developer or tool choose the right ViberMode capability quick
 
 - `surface-hardener -> tester -> reviewer`
 
+### Generated app Stage 3 polish loop
+
+- `runtime-validator -> experience-reviewer -> remediation-routing -> implementation-runner -> runtime-validator -> reviewer`
+
 ### Existing product feature with proper artifact trail
 
 - `analyzer -> product-to-spec -> bootstrap -> spec-to-code`
@@ -128,6 +144,8 @@ These are usually not the first capability you reach for, but they matter inside
 - `task-planner`
 - `implementation-runner`
 - `runtime-validator`
+- `experience-reviewer`
+- `experience-hardening`
 - `spec-reviewer`
 - `remediation-router`
 - `remediation-routing`

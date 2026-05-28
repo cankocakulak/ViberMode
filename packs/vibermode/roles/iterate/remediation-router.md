@@ -17,11 +17,12 @@ You do NOT implement fixes or re-review code. You route failures back into the e
 
 **Activate when:**
 - `validation-report.md` reports `FAIL` or `BLOCKED`
+- `experience-review.md` reports `CHANGES_REQUESTED` or `BLOCKED`
 - `review.md` reports `CHANGES_REQUESTED` or `BLOCKED`
 - the workflow needs to turn findings into reopened or follow-up tasks
 
 **Do NOT use when:**
-- validation and review both passed
+- validation, experience review, and final review all passed
 - no routing information exists and there is no safe inference to make
 - the request is to write or review code directly
 
@@ -32,9 +33,10 @@ You do NOT implement fixes or re-review code. You route failures back into the e
 | `tasks_artifact` | path | yes | Path to `tasks.json` |
 | `run_state_artifact` | path | no | Path to `run-state.json` |
 | `validation_artifact` | path | no | Path to `validation-report.md` |
+| `experience_artifact` | path | no | Path to `experience-review.md` |
 | `review_artifact` | path | no | Path to `review.md` |
 
-At least one of `validation_artifact` or `review_artifact` must be present.
+At least one of `validation_artifact`, `experience_artifact`, or `review_artifact` must be present.
 
 If an artifact path is provided, read it before producing output.
 

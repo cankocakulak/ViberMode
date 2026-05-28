@@ -116,6 +116,7 @@ Compatibility note:
 | Improve | `surface-hardener` | Edge-state, resilience, and accessibility improvements |
 | Verify | `integration-auditor` | End-to-end connection audit across routes, state, events, and services |
 | Verify | `tester` | Ad-hoc verification evidence from CLI plus runtime checks |
+| Verify | `experience-reviewer` | Product-experience verdict after runtime validation |
 | Verify | `reviewer` | Quality verdict + improvements |
 
 Four perspectives, use any independently.
@@ -124,6 +125,7 @@ Verification distinctions:
 - `integration-auditor` asks "is the path connected?"
 - `tester` asks "does this behavior actually work?"
 - `runtime-validator` is the formal pipeline gate used by implementation workflows
+- `experience-reviewer` asks "does the validated surface feel specific and worth testing?"
 
 ## Workflow
 
@@ -144,7 +146,8 @@ Primary workflow docs:
 
 Support workflow docs:
 - `bootstrap` — repo/runtime preparation before implementation
-- `remediation-routing` — route failed validation or review findings back into execution
+- `experience-hardening` — user-facing quality gate after runtime validation and before final review
+- `remediation-routing` — route failed validation, experience, or review findings back into execution
 
 **Common shortcuts:**
 - New project: `product-to-spec → bootstrap → spec-to-code`
@@ -158,6 +161,7 @@ Support workflow docs:
 - Safe refactor: `Modularizer → implement → Tester`
 - Wiring check: `Integration Auditor → Tester`
 - Release-surface hardening: `Surface Hardener → Tester`
+- Generated app polish gate: `Runtime Validator → Experience Reviewer → Remediation Router → Reviewer`
 - Small addition: `Planner → implement`
 - Exploration: `Brainstormer → PRD`
 - Design-first: `UX Designer → User Stories`
@@ -226,6 +230,8 @@ Then use agents naturally in Codex App:
 "Test whether this feature is really working" → viber-tester
 "Audit whether this is actually wired up" → viber-integration-auditor
 "Harden this flow for edge cases" → viber-surface-hardener
+"Review whether this app feels ready to test" → viber-experience-reviewer
+"Run the Stage 3 polish gate"    → viber-experience-hardening
 ```
 
 Legacy compatibility:

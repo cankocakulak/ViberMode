@@ -17,6 +17,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **bootstrap** | `packs/vibermode/roles/product/bootstrap.md` | Prepares repo, branch, and runnable validation baseline |
 | **task-planner** | `packs/vibermode/roles/product/task-planner.md` | Converts user stories into `tasks.json` for the implementation pipeline |
 | **implementation-runner** | `packs/vibermode/roles/product/implementation-runner.md` | Implements one task per session from `tasks.json` |
+| **ios-submitter** | `packs/vibermode/roles/product/ios-submitter.md` | Uploads completed generated iOS apps to internal TestFlight |
 
 ### Legacy Product Aliases
 
@@ -38,9 +39,10 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **tester** | `packs/vibermode/roles/iterate/tester.md` | Verifies a surface with CLI plus runtime evidence and focused smoke checks |
 | **integration-auditor** | `packs/vibermode/roles/iterate/integration-auditor.md` | Audits whether a feature is actually wired across routes, state, events, and services |
 | **surface-hardener** | `packs/vibermode/roles/iterate/surface-hardener.md` | Hardens an existing screen or flow for edge states, resilience, and accessibility |
+| **experience-reviewer** | `packs/vibermode/roles/iterate/experience-reviewer.md` | Reviews product feel and user-facing experience quality after runtime validation |
 | **runtime-validator** | `packs/vibermode/roles/iterate/runtime-validator.md` | Executes formal post-implementation build and runtime validation |
 | **spec-reviewer** | `packs/vibermode/roles/iterate/spec-reviewer.md` | Reviews spec artifacts before task planning begins |
-| **remediation-router** | `packs/vibermode/roles/iterate/remediation-router.md` | Routes failed review or validation findings back into execution state |
+| **remediation-router** | `packs/vibermode/roles/iterate/remediation-router.md` | Routes failed validation, experience, or review findings back into execution state |
 | **change-task-planner** | `packs/vibermode/roles/iterate/change-task-planner.md` | Converts an existing-repo change plan into `tasks.json` |
 
 ## How to Use
@@ -56,6 +58,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **bootstrap** agent" → Read `packs/vibermode/roles/product/bootstrap.md`
 - "Use the **task-planner** agent" → Read `packs/vibermode/roles/product/task-planner.md`
 - "Use the **implementation-runner** agent" → Read `packs/vibermode/roles/product/implementation-runner.md`
+- "Use the **ios-submitter** agent" → Read `packs/vibermode/roles/product/ios-submitter.md`
 - "Use the **ralph-converter** agent" → Read `packs/vibermode/roles/product/ralph-converter.md`
 - "Use the **ralph-runner** agent" → Read `packs/vibermode/roles/product/ralph-runner.md`
 - "Use the **scout** agent" → Read `packs/vibermode/roles/iterate/scout.md`
@@ -67,6 +70,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **tester** agent" → Read `packs/vibermode/roles/iterate/tester.md`
 - "Use the **integration-auditor** agent" → Read `packs/vibermode/roles/iterate/integration-auditor.md`
 - "Use the **surface-hardener** agent" → Read `packs/vibermode/roles/iterate/surface-hardener.md`
+- "Use the **experience-reviewer** agent" → Read `packs/vibermode/roles/iterate/experience-reviewer.md`
 - "Use the **runtime-validator** agent" → Read `packs/vibermode/roles/iterate/runtime-validator.md`
 - "Use the **spec-reviewer** agent" → Read `packs/vibermode/roles/iterate/spec-reviewer.md`
 - "Use the **remediation-router** agent" → Read `packs/vibermode/roles/iterate/remediation-router.md`

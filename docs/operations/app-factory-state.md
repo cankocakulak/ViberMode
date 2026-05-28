@@ -168,6 +168,26 @@ The run manifest contains a `product_to_code_input` object. The Codex factory au
 
 For iOS factory runs, `product_to_code_input.factory_context` references `ViberBoyz/ios-factory-patterns` and requires onboarding, first-value, and upgrade/paywall shell coverage during product-to-code. The generated app should copy and adapt relevant pattern files rather than depending on the pattern repo at runtime.
 
+## TestFlight Submission
+
+After product-to-code completes, Stage 4 may upload a generated app to internal TestFlight:
+
+```bash
+node scripts/ios-submit-testflight.mjs \
+  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json
+```
+
+The plain command runs preflight only. Live Apple-side submission requires:
+
+```bash
+node scripts/ios-submit-testflight.mjs \
+  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
+  --submit \
+  --commit-state
+```
+
+Setup guidance is documented in `docs/operations/ios-testflight-submission-guidance.md`.
+
 ## Failure Handling
 
 - Missing `GH_TOKEN`: stop and fix Keychain or environment setup.
@@ -175,3 +195,4 @@ For iOS factory runs, `product_to_code_input.factory_context` references `ViberB
 - Repo creation failure: verify token permissions for ViberBoyz.
 - Clone failure: verify token has contents read access to the generated repo.
 - Product-to-code failure: keep the generated repo and run manifest; remediate rather than creating a duplicate repo.
+- TestFlight submission failure: keep the generated repo and same run manifest; resolve the `submission.status: blocked` reason and rerun Stage 4.

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
+import { githubApiFetch } from "./github-network.mjs";
 
 class HttpError extends Error {
   constructor(message, response, body, apiPath) {
@@ -102,7 +103,7 @@ if (!Number.isInteger(config.maxNameAttempts) || config.maxNameAttempts < 1) {
 }
 
 async function github(path, options = {}) {
-  const response = await fetch(`https://api.github.com${path}`, {
+  const response = await githubApiFetch(path, {
     method: options.method || "GET",
     headers: {
       Accept: "application/vnd.github+json",

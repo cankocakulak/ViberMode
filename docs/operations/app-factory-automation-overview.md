@@ -155,7 +155,11 @@ For iOS ideas, `product_to_code_input` also includes `factory_context`:
     "onboarding",
     "first_value_moment",
     "upgrade_paywall_shell"
-  ]
+  ],
+  "stage3_quality_gate": {
+    "workflow": "packs/vibermode/workflows/experience-hardening.md",
+    "required_artifact": "docs/[project-name]/experience-review.md"
+  }
 }
 ```
 
@@ -169,6 +173,7 @@ Public ViberMode surfaces:
 - `packs/vibermode/workflows/product-to-code.md`
 - `packs/vibermode/workflows/product-to-spec.md`
 - `packs/vibermode/workflows/spec-to-code.md`
+- `packs/vibermode/workflows/experience-hardening.md`
 - `packs/vibermode/workflows/bootstrap.md`
 
 Inputs:
@@ -184,9 +189,18 @@ Expected outputs:
 
 - implementation commit pushed to the generated iOS repo
 - validation evidence recorded in the generated repo
+- experience review evidence recorded in the generated repo
 - `factory/runs/[run-id].json` updated with build, validation, and commit details
 - `ideas/backlog.json` updated to reflect progress
 - iOS factory apps include onboarding, a testable first-value/core loop, and a paywall shell using `ViberBoyz/ios-factory-patterns` when useful
+
+Internal Stage 3 shape:
+
+```text
+3A functional build -> 3B runtime validation -> 3C experience review -> 3D polish remediation loop -> 3E final review
+```
+
+The experience review is a Stage 3 quality gate. It should catch default-looking onboarding, shallow paywall shells, missing keyboard dismissal, weak first-value flow, small-screen layout problems, and missing screenshot/simulator evidence before the generated repo is considered complete.
 
 Current status:
 This stage has been tested manually through generated repos. The active factory automation is intended to run through this stage only.
@@ -197,19 +211,21 @@ Purpose:
 Archive the generated iOS app, handle signing, create or update the App Store Connect app record, upload a build, and produce a TestFlight-ready result.
 
 Current status:
-Not implemented. The factory automation explicitly stops before this stage.
+First runnable slice is now defined as internal TestFlight submission. The factory automation still explicitly stops before this stage until live submission is enabled.
 
 Expected public ViberMode surfaces to add:
 
-- a role or workflow for iOS submission, for example `ios-submitter`
-- a workflow, for example `packs/vibermode/workflows/ios-submit-testflight.md`
-- scripts only if repeatable CLI work is needed, for example around `xcodebuild`, `altool` or `notarytool` alternatives, App Store Connect API calls, screenshot generation, and metadata validation
+- `packs/vibermode/roles/product/ios-submitter.md`
+- `packs/vibermode/workflows/ios-submit-testflight.md`
+- `scripts/ios-submit-testflight.mjs`
+- `docs/operations/ios-testflight-submission-guidance.md`
 
 Expected inputs:
 
 - generated repo workspace path
 - run manifest path
 - bundle ID and app name
+- unique App Store Connect app name when the in-app display name is unavailable
 - Apple team ID
 - signing configuration
 - App Store Connect API key material from secure runtime storage
@@ -231,6 +247,32 @@ Expected private state updates:
 ```
 
 Stage 4 should not create a new repo. It should consume the Stage 2/3 run manifest and update the same factory run.
+
+The first version is preflight-by-default. A plain run validates credentials, Xcode/Fastlane availability, generated workspace, scheme, app name, and bundle ID. Live Apple-side work requires `--submit`:
+
+```bash
+node scripts/ios-submit-testflight.mjs \
+  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/[run-id].json \
+  --submit \
+  --commit-state
+```
+
+Default Keychain services:
+
+```text
+viberboyz-apple-team-id
+viberboyz-asc-key-id
+viberboyz-asc-issuer-id
+viberboyz-asc-api-key-p8-b64
+viberboyz-apple-id
+viberboyz-asc-team-id (optional)
+```
+
+The live path uses Fastlane `produce` to create or ensure the App Store Connect app when possible, `xcodebuild archive`, `xcodebuild -exportArchive`, and Fastlane `pilot upload` with `distribute_external=false`.
+
+Operator setup and run guidance lives in `docs/operations/ios-testflight-submission-guidance.md`.
+
+Stage 4 should also carry `submission_metadata` in the run manifest. Internal TestFlight can proceed with only app name, bundle ID, icon readiness, signing, and "what to test" notes, but App Store review later needs description, subtitle, keywords, support URL, privacy policy URL, storefronts, price posture, screenshots, privacy answers, and compliance answers.
 
 ## Active Codex Automations
 

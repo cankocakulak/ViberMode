@@ -58,7 +58,7 @@ Optional:
 - `statuses` - eligible idea statuses, default `ready`
 - `commit_state` - commit and push backlog/run-manifest updates
 
-## Stage 0 - Backlog Selection
+## Stage 2A - Backlog Selection
 
 Script:
 
@@ -85,7 +85,7 @@ Success Criteria:
 - one eligible idea is selected
 - selected idea is marked `reserved`
 
-## Stage 1 - Factory Preparation
+## Stage 2B - Repo Factory Preparation
 
 Script:
 
@@ -131,7 +131,7 @@ Success Criteria:
 - repo is cloned locally
 - private state repo records the factory run
 
-## Stage 2 - Product to Code
+## Stage 3 - Product To Code
 
 Workflow:
 
@@ -140,7 +140,7 @@ packs/vibermode/workflows/product-to-code.md
 ```
 
 Purpose:
-Use the run manifest's `product_to_code_input` to produce specs, bootstrap, tasks, implementation, validation, review, commit, and push inside the generated app repo.
+Use the run manifest's `product_to_code_input` to produce specs, bootstrap, tasks, implementation, validation, experience hardening, review, commit, and push inside the generated app repo.
 
 Required input from run manifest:
 
@@ -165,30 +165,50 @@ Required input from run manifest:
       "onboarding",
       "first_value_moment",
       "upgrade_paywall_shell"
-    ]
+    ],
+    "stage3_quality_gate": {
+      "workflow": "packs/vibermode/workflows/experience-hardening.md",
+      "required_artifact": "docs/[project-name]/experience-review.md"
+    }
   }
 }
 ```
 
-For iOS factory runs, Stage 2 must treat `factory_context` as part of the product input. The generated app should include:
+For iOS factory runs, Stage 3 must treat `factory_context` as part of the product input. The generated app should include:
 
 - app-specific first-launch onboarding
 - a first-value/core loop the tester can reach without payment
 - an upgrade/paywall shell with honest mock or placeholder purchase handling when real IAP is not wired
 - reusable code copied and adapted from `ViberBoyz/ios-factory-patterns` when useful
 
+Stage 3 uses `product-to-code`, whose implementation stage includes a subloop:
+
+```text
+functional build -> runtime validation -> experience review -> polish remediation -> final review
+```
+
+The experience review is still part of product-to-code. It is not the App Store/TestFlight stage.
+
 Success Criteria:
 
 - product-to-code reaches `COMPLETE`
 - generated app repo passes its validation commands
+- `experience-review.md` approves the user-facing app experience or explicitly explains why it is not applicable
 - implementation commit is pushed to the generated repo
 - run manifest is updated with validation and commit details
 - onboarding, first-value, and paywall shell coverage is visible in PRD, UX, stories, and tasks for iOS factory runs
+- onboarding, first-value/core loop, upgrade/paywall shell, keyboard behavior, and small-screen fit are checked before completion for iOS factory runs
 
-## Stage 3 - App Store/TestFlight
+## Stage 4 - App Store/TestFlight
 
 Status:
-Future stage. It should not run until signing, App Store Connect API key handling, metadata policy, privacy answers, screenshots, and TestFlight upload are repeatable.
+Internal TestFlight stage is defined in:
+
+```text
+packs/vibermode/workflows/ios-submit-testflight.md
+```
+
+The daily factory automation should continue to stop after product-to-code unless Stage 4 is explicitly enabled for a completed run manifest.
 
 ## Status Rules
 
@@ -203,6 +223,6 @@ Future stage. It should not run until signing, App Store Connect API key handlin
 Use two automations:
 
 - `Viber Idea Research` - runs `idea-research-backlog`, updates private backlog.
-- `Viber iOS App Factory` - runs this workflow, currently through Stage 2.
+- `Viber iOS App Factory` - runs this workflow, currently through Stage 3.
 
-The factory automation should be one sequential run, not separate automations for repo creation and implementation, because Stage 2 depends directly on Stage 1 outputs.
+The factory automation should be one sequential run, not separate automations for repo creation and implementation, because Stage 3 depends directly on the Stage 2 run manifest.

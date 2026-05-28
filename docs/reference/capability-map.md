@@ -50,12 +50,14 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 | I need proof that a feature really works | `tester` |
 | I need to check whether a feature is actually wired end to end | `integration-auditor` |
 | I want to harden empty/loading/error/accessibility states | `surface-hardener` |
+| I want to judge whether a validated app feels specific and testable | `experience-reviewer` |
 | I am starting from an idea and need specs | `product-to-spec` |
 | I already have specs and want implementation execution | `spec-to-code` |
 | I want the full idea-to-code path | `product-to-code` |
 | I want to work inside an existing repo without the full greenfield flow | `repo-change` |
 | I need repo baseline and runnable setup clarified first | `bootstrap` |
 | I want to factory-create iOS repos and prepare App Store automation | `ios-app-store-factory` |
+| I want to upload a generated iOS app to internal TestFlight | `ios-submit-testflight` |
 
 ## Product Agents
 
@@ -308,6 +310,27 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
   - Cursor: `/surface-hardener`
   - Any tool: `surface-hardener`
 
+#### `experience-reviewer`
+
+- Kind: `iterate-agent`
+- Callability: `artifact-aware`
+- Tier: `support`
+- Purpose: Review product feel, interaction quality, and user-facing experience readiness after runtime validation
+- Use when:
+  - a runnable user-facing slice needs a product-quality gate before final review
+  - a generated iOS app might be too generic, thin, or rough for TestFlight testing
+- Avoid when:
+  - implementation has not happened yet
+  - the request is pure code quality review
+- Distinction:
+  - Choose this after `runtime-validator` and before final `reviewer` for user-facing slices.
+- Typical outputs:
+  - `docs/[project-name]/experience-review.md`
+- Surfaces:
+  - Codex: `viber-experience-reviewer`
+  - Cursor: not currently projected
+  - Any tool: `experience-reviewer`
+
 ### Verify
 
 #### `integration-auditor`
@@ -369,8 +392,9 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 | Capability | Status | Notes |
 |-----------|--------|-------|
 | `runtime-validator` | Codex-only support | Formal pipeline-grade build/runtime gate with `validation-report.md` output |
+| `experience-reviewer` | Codex-only support | Product-experience gate with `experience-review.md` output |
 | `spec-reviewer` | Codex-only support | Spec approval gate before implementation begins |
-| `remediation-router` | Codex-only support | Routes failed review or validation findings back into execution state |
+| `remediation-router` | Codex-only support | Routes failed validation, experience, or review findings back into execution state |
 | `change-task-planner` | Codex-only support | Existing-repo sibling of `task-planner`; converts `plan.md` rather than `stories.md` |
 
 ## Workflows
@@ -398,7 +422,7 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 - Kind: `workflow`
 - Callability: `artifact-required`
 - Tier: `primary`
-- Purpose: Convert completed specs into tasks, implementation runs, validation, and review
+- Purpose: Convert completed specs into tasks, implementation runs, validation, experience hardening, and review
 - Requires:
   - completed specification artifacts
 - Surfaces:
@@ -450,6 +474,19 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 - Surfaces:
   - Canonical workflow only
   - OpenClaw: documented target workflow
+
+#### `experience-hardening`
+
+- Kind: `workflow`
+- Callability: `artifact-required`
+- Tier: `support`
+- Purpose: Run the Stage 3 product-experience review and routed polish loop before final review
+- Use when:
+  - runtime validation passed but a user-facing slice needs product feel, onboarding, paywall, keyboard, screenshot, or small-screen quality checks
+- Surfaces:
+  - Codex: `viber-experience-hardening`
+  - Cursor: not currently projected
+  - OpenClaw: not currently projected
 
 #### `remediation-routing`
 

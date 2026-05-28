@@ -13,14 +13,15 @@
 - Use `implementation-runner` in a loop, but one task per run only.
 - Do not skip task-level validation while implementing.
 - When the target slice is ready, run `runtime-validator` for real build or smoke evidence.
+- Run `experience-reviewer` for user-facing slices before final review.
 - Finish with `reviewer` for plan-to-code and evidence-to-code alignment.
-- If validation or review fails, use `remediation-routing`.
+- If validation, experience review, or final review fails, use `remediation-routing`.
 - If the required spec artifacts do not exist yet, stop and move up to `product-to-spec`.
 
 ## Pipeline
 
 ```text
-stories + bootstrap → task planning → task execution loop → runtime validation → review
+stories + bootstrap → task planning → task execution loop → runtime validation → experience hardening → review
 ```
 
 Implementation boundary:
@@ -162,11 +163,63 @@ Stage result rules:
 - return `PASS`, `FAIL`, or `BLOCKED` only when the validation gate actually ran
 
 Next Step:
-- `reviewer` only when runtime validation produced reusable evidence
+- `experience-reviewer` only when runtime validation produced reusable evidence and the slice has a user-facing surface
+- `reviewer` only when the slice has no user-facing surface and experience review is explicitly not applicable
 - `remediation-routing` when validation returns `FAIL` with routable findings
 - stop with `BLOCKED` when validation returns `BLOCKED` for an environment, scaffold, or missing-target issue that cannot be converted into task state safely
 
-## Step 4 — Review
+## Step 4 — Experience Hardening
+
+Workflow:
+`packs/vibermode/workflows/experience-hardening.md`
+
+Primary role:
+`packs/vibermode/roles/iterate/experience-reviewer.md`
+
+Purpose:
+Review the implemented product experience after runtime validation and route polish work back into tasks before final code review.
+
+This step exists because a slice can build, launch, and satisfy basic task checks while still feeling generic, unfinished, or unfit for real product testing.
+
+Inputs:
+- `docs/[project-name]/tasks.json`
+- optional: `docs/[project-name]/run-state.json`
+- optional: `docs/[project-name]/bootstrap.md`
+- `docs/[project-name]/prd.md`
+- `docs/[project-name]/ux.md`
+- `docs/[project-name]/stories.md`
+- `docs/[project-name]/validation-report.md`
+- optional: screenshots, simulator notes, or other runtime evidence
+- optional: `factory_context`
+- target repo root
+
+Outputs:
+- `docs/[project-name]/experience-review.md`
+- updated `docs/[project-name]/tasks.json` when findings are routed
+- updated `docs/[project-name]/run-state.json` when findings are routed
+- optional: updated `docs/[project-name]/remediation.md`
+
+Success Criteria:
+- verdict is explicit
+- runtime evidence is used rather than ignored
+- first-value path, interaction quality, visual/copy quality, edge states, and accessibility are assessed for user-facing slices
+- every failing issue is routed as `reopen-task` or `create-followup-task`
+- for `factory_context.type = ios_app_factory`, onboarding, first-value/core loop, upgrade/paywall shell, keyboard dismissal, small-screen fit, and screenshot evidence are checked
+- if the slice is not user-facing, `SKIPPED_NOT_APPLICABLE` is recorded explicitly
+
+Stage result rules:
+- return `SKIPPED_NOT_READY` when tasks remain pending
+- return `SKIPPED_NOT_APPLICABLE` only for non-user-facing slices
+- return `BLOCKED` when evidence is too thin to inspect a user-facing slice
+- return `APPROVED` when the experience gate passes
+- return `CHANGES_REQUESTED` when findings must be routed back into implementation
+
+Next Step:
+- `reviewer` when approved or skipped as not applicable
+- `remediation-routing` when changes are required, then return to implementation
+- after remediation and resumed implementation, run `runtime-validator` and `experience-reviewer` again before final review
+
+## Step 5 — Review
 
 Role:
 `packs/vibermode/roles/iterate/reviewer.md`
@@ -184,6 +237,7 @@ Inputs:
 - optional: `docs/[project-name]/bootstrap.md`
 - optional: `docs/[project-name]/run-state.json`
 - `docs/[project-name]/validation-report.md`
+- `docs/[project-name]/experience-review.md` when the slice is user-facing
 - implementation artifact or code diff
 
 Outputs:
@@ -195,6 +249,7 @@ Success Criteria:
 - validation checks product and implementation contracts
 - review consumes runtime validator evidence instead of trusting prose claims
 - review does not approve when `validation-report.md` is missing or lacks explicit command outcomes
+- review does not approve a user-facing slice when `experience-review.md` is missing, blocked, or requests changes
 - every failing issue is routed as `reopen-task` or `create-followup-task`
 - review outcome is clear enough to either approve the slice or send it back into implementation
 
@@ -202,20 +257,22 @@ Stage result rules:
 - return `SKIPPED_NOT_READY` when tasks remain pending
 - return `SKIPPED_BLOCKED` when implementation or validation is already blocked
 - return `BLOCKED` when runtime evidence is missing or incomplete
+- return `BLOCKED` when required experience evidence is missing for a user-facing slice
 - return `APPROVED` or `CHANGES_REQUESTED` only when the slice is actually reviewable
 
 Next Step:
 - done if approved
 - `remediation-routing` if changes are required, then return to implementation
-- after remediation and resumed implementation, run `runtime-validator` again before any later approval
+- after remediation and resumed implementation, run `runtime-validator` and `experience-reviewer` again before any later approval
 
 ## Workflow Status Semantics
 
 After validation and review, the orchestration layer should synthesize one explicit workflow status:
-- `COMPLETE` when review is approved
+- `COMPLETE` when experience review is approved or not applicable and final review is approved
 - `INCOMPLETE_TASKS_PENDING` when the execution loop still has remaining work
 - `INCOMPLETE_VALIDATION_FAILED` when runtime validation ran and failed
-- `INCOMPLETE_REMEDIATION_PENDING` when review or validation findings must be routed back into tasks
+- `INCOMPLETE_EXPERIENCE_CHANGES_REQUESTED` when experience review findings must be routed back into tasks
+- `INCOMPLETE_REMEDIATION_PENDING` when final review or validation findings must be routed back into tasks
 - `BLOCKED` when the scaffold, environment, or execution gate prevents safe continuation
 
 ## Artifacts
@@ -226,6 +283,8 @@ docs/[project-name]/
 ├── tasks.json
 ├── run-state.json
 ├── validation-report.md
+├── experience-review.md
+├── remediation.md
 └── review.md
 ```
 
@@ -234,16 +293,18 @@ Relationship note:
 - `tasks.json` is the source of truth for task definitions, dependencies, and lineage
 - `run-state.json` tracks execution state and run history, and should reference tasks by `taskId` instead of copying full task definitions
 - `validation-report.md` records executed build/launch/smoke evidence for the current slice
+- `experience-review.md` checks user-facing product quality after runtime validation and before final review
+- `remediation.md` records routed validation, experience, or review findings when the loop must resume
 - `review.md` validates an implementation slice after execution work has accumulated; it does not replace per-task execution state in `run-state.json`
 
 ## Failure Routing
 
-When runtime validation or review fails, do not jump straight back into coding inside this workflow.
+When runtime validation, experience review, or final review fails, do not jump straight back into coding inside this workflow.
 
-- `runtime-validator` and `reviewer` produce findings and routing guidance
+- `runtime-validator`, `experience-reviewer`, and `reviewer` produce findings and routing guidance
 - `remediation-routing` applies those decisions to `tasks.json` and `run-state.json`
 - only after that should `implementation-runner` resume
-- after resumed implementation completes the reopened or follow-up tasks, runtime validation and review must run again before the workflow can return `COMPLETE`
+- after resumed implementation completes the reopened or follow-up tasks, runtime validation, experience review, and final review must run again before the workflow can return `COMPLETE`
 
 ## Execution Model
 
@@ -266,9 +327,11 @@ implementation-runner again if tasks remain
   ↓
 runtime-validator when the slice is ready
   ↓
+experience-reviewer when the slice is user-facing
+  ↓
 reviewer when the slice is ready
   ↓
-remediation-routing if validation/review fails
+remediation-routing if validation/experience review/final review fails
   ↓
 implementation-runner again
 ```
@@ -279,3 +342,4 @@ Design intent:
 - keep execution state separate from task definitions
 - make repeated runs deterministic and resumable
 - keep release gating fail-closed: missing validation or review evidence must block completion rather than silently passing
+- make user-facing quality iterative: skeleton first, then evidence-backed polish before final approval
