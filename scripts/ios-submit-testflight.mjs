@@ -273,6 +273,161 @@ function arrayValue(value) {
   return String(value).split(",").map((item) => item.trim()).filter(Boolean);
 }
 
+function artifactPath(workspacePath, artifact) {
+  if (!artifact) return null;
+  const value = String(artifact);
+  return path.isAbsolute(value) ? value : path.join(workspacePath, value);
+}
+
+function fileExists(filePath) {
+  return Boolean(filePath && fs.existsSync(filePath) && fs.statSync(filePath).isFile());
+}
+
+function directoryExists(dirPath) {
+  return Boolean(dirPath && fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory());
+}
+
+function walkFiles(root, maxDepth = 4) {
+  const files = [];
+
+  function walk(current, depth) {
+    if (depth > maxDepth) return;
+    let entries;
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      if ([".git", "DerivedData", "build", "xcuserdata", "testflight"].includes(entry.name)) continue;
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath, depth + 1);
+      } else if (entry.isFile()) {
+        files.push(fullPath);
+      }
+    }
+  }
+
+  if (directoryExists(root)) walk(root, 0);
+  return files;
+}
+
+function screenshotEvidenceFiles(context) {
+  const result = context.manifest.product_to_code_result || {};
+  const explicit = [
+    ...arrayValue(result.experience_review?.screenshots),
+    ...arrayValue(result.experience_review?.videos),
+    ...arrayValue(result.artifacts?.screenshots),
+    ...arrayValue(result.artifacts?.screenshot_dir),
+    ...arrayValue(result.artifacts?.visual_evidence),
+  ];
+
+  const candidates = new Set();
+  for (const item of explicit) {
+    const candidate = artifactPath(context.workspacePath, item);
+    if (fileExists(candidate)) candidates.add(candidate);
+    if (directoryExists(candidate)) {
+      for (const filePath of walkFiles(candidate)) candidates.add(filePath);
+    }
+  }
+
+  const projectName = context.manifest.product_to_code_input?.project_name || context.manifest.selection?.repo_name;
+  const defaultDirs = [
+    projectName ? path.join(context.workspacePath, "Docs", projectName, "screenshots") : null,
+    projectName ? path.join(context.workspacePath, "Docs", projectName, "visual-evidence") : null,
+    projectName ? path.join(context.workspacePath, "docs", projectName, "screenshots") : null,
+    projectName ? path.join(context.workspacePath, "docs", projectName, "visual-evidence") : null,
+    path.join(context.workspacePath, "artifacts", "screenshots"),
+    path.join(context.workspacePath, "artifacts", "stage3-screenshots"),
+    path.join(context.workspacePath, "artifacts", "visual-evidence"),
+  ].filter(Boolean);
+
+  for (const dirPath of defaultDirs) {
+    for (const filePath of walkFiles(dirPath)) candidates.add(filePath);
+  }
+
+  return [...candidates].filter((filePath) => /\.(png|jpe?g|heic|webp|mov|mp4)$/i.test(filePath));
+}
+
+function textHasApprovedVerdict(text) {
+  return /(?:^|\n)\s*(?:Verdict:\s*APPROVED|##\s*Verdict\s*\n+\s*APPROVED)\b/i.test(text);
+}
+
+function stage3QualityIssues(context) {
+  const issues = [];
+  const result = context.manifest.product_to_code_result || {};
+  const factoryContext = context.manifest.product_to_code_input?.factory_context || {};
+  const qualityGate = factoryContext.stage3_quality_gate || {};
+  const isIosFactory = factoryContext.type === "ios_app_factory";
+
+  if (result.status !== "complete") {
+    issues.push("product_to_code_result.status is not complete");
+  }
+
+  const artifacts = result.artifacts || {};
+  const experienceReviewPath = artifactPath(context.workspacePath, artifacts.experience_review);
+  if (!fileExists(experienceReviewPath)) {
+    issues.push("Stage 3 experience-review.md artifact is missing");
+  } else {
+    const reviewText = fs.readFileSync(experienceReviewPath, "utf8");
+    if (!textHasApprovedVerdict(reviewText)) {
+      issues.push("Stage 3 experience review is not approved");
+    }
+
+    const requiredSections = [
+      "## Evidence Reviewed",
+      "## First Value and Core Loop",
+      "## Interaction Quality",
+      "## Visual and Copy Quality",
+      "## Edge States and Accessibility",
+      "## Issues",
+      "## Task Resolution",
+      "## Summary (for downstream agents)",
+    ];
+    for (const section of requiredSections) {
+      if (!reviewText.includes(section)) {
+        issues.push(`Stage 3 experience review is missing required section: ${section}`);
+      }
+    }
+
+    if (isIosFactory && !reviewText.includes("## Factory Requirements")) {
+      issues.push("Stage 3 iOS factory experience review is missing ## Factory Requirements");
+    }
+
+    if (/UI launch smoke/i.test(reviewText) && !/\.png|\.jpg|\.jpeg|\.heic|\.webp|\.mov|\.mp4/i.test(reviewText)) {
+      issues.push("Stage 3 visual evidence cites UI launch smoke but no screenshot/video files");
+    }
+  }
+
+  if (isIosFactory) {
+    const experienceResult = result.experience_review || {};
+    if (!["approved", "APPROVED"].includes(experienceResult.status)) {
+      issues.push("product_to_code_result.experience_review.status is not approved");
+    }
+
+    const screenshots = screenshotEvidenceFiles(context);
+    const requiredFlows = qualityGate.required_visual_evidence?.flows || [
+      "onboarding",
+      "first_value_moment",
+      "core_loop",
+      "upgrade_paywall_shell",
+    ];
+    if (screenshots.length < requiredFlows.length) {
+      issues.push(`Stage 3 screenshot/video evidence is incomplete: found ${screenshots.length}, expected at least ${requiredFlows.length}`);
+    }
+
+    const onboardingSteps = Number(experienceResult.onboarding_steps ?? 0);
+    const minOnboardingSteps = Number(qualityGate.min_onboarding_steps ?? 3);
+    if (onboardingSteps > 0 && onboardingSteps < minOnboardingSteps) {
+      issues.push(`Stage 3 onboarding has ${onboardingSteps} step(s), expected at least ${minOnboardingSteps}`);
+    }
+  }
+
+  return issues;
+}
+
 function summarizeMetadata(metadata) {
   return {
     app_store_name: metadata.app_store_name || null,
@@ -443,27 +598,59 @@ function ensureLine(filePath, line) {
   return true;
 }
 
+const FULL_APP_STORE_ORIENTATIONS = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+
+function upsertYamlBuildSetting(text, key, value, anchor) {
+  const desired = `    ${key}: ${value}`;
+  const lines = text.split("\n");
+  const next = [];
+  let seen = false;
+  let changed = false;
+
+  for (const line of lines) {
+    if (line.trim().startsWith(`${key}:`)) {
+      if (!seen) next.push(desired);
+      if (line !== desired || seen) changed = true;
+      seen = true;
+    } else {
+      next.push(line);
+    }
+  }
+
+  let output = next.join("\n");
+  if (!seen && output.includes(anchor)) {
+    output = output.replace(anchor, `${anchor}\n${desired}`);
+    changed = true;
+  }
+
+  return { text: output, changed };
+}
+
 function updateProjectYamlForSubmission(workspacePath) {
   const projectPath = path.join(workspacePath, "project.yml");
   if (!fs.existsSync(projectPath)) return false;
 
   let text = fs.readFileSync(projectPath, "utf8");
   let changed = false;
-  const insertAfter = (needle, additions) => {
-    if (!text.includes(needle)) return;
-    const missing = additions.filter((line) => !text.includes(line.trim()));
-    if (missing.length === 0) return;
-    text = text.replace(needle, `${needle}\n${missing.join("\n")}`);
-    changed = true;
+
+  const upsert = (key, value, anchor) => {
+    const result = upsertYamlBuildSetting(text, key, value, anchor);
+    text = result.text;
+    changed = result.changed || changed;
   };
 
-  insertAfter("    INFOPLIST_KEY_CFBundleDisplayName: $(APP_DISPLAY_NAME)", [
-    "    INFOPLIST_KEY_CFBundleIconName: AppIcon",
-  ]);
-  insertAfter("    INFOPLIST_KEY_UILaunchScreen_Generation: YES", [
-    "    INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
-    "    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
-  ]);
+  upsert(
+    "INFOPLIST_KEY_CFBundleIconName",
+    "AppIcon",
+    "    INFOPLIST_KEY_CFBundleDisplayName: $(APP_DISPLAY_NAME)");
+  upsert(
+    "INFOPLIST_KEY_UISupportedInterfaceOrientations",
+    FULL_APP_STORE_ORIENTATIONS,
+    "    INFOPLIST_KEY_UILaunchScreen_Generation: YES");
+  upsert(
+    "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad",
+    FULL_APP_STORE_ORIENTATIONS,
+    "    INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight");
 
   if (changed) fs.writeFileSync(projectPath, text);
   return changed;
@@ -511,6 +698,12 @@ function checkSubmissionAssets(workspacePath) {
   }
   if (!combinedProjectText.includes("UISupportedInterfaceOrientations_iPad")) {
     issues.push("Missing iPad supported interface orientations for App Store validation");
+  }
+  if (
+    pbxprojText.includes("INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad")
+    && !pbxprojText.includes(`INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "${FULL_APP_STORE_ORIENTATIONS}";`)
+  ) {
+    issues.push("iPad supported interface orientations must include portrait, upside down, and both landscape orientations for App Store validation");
   }
 
   return {
@@ -1012,8 +1205,8 @@ function preflightResult(context, credentials) {
   const issues = [];
   if (!commandExists("xcodebuild")) issues.push("xcodebuild is not available");
   if (!commandExists("fastlane")) issues.push("fastlane is not available");
-  if (context.manifest.product_to_code_result?.status !== "complete") {
-    issues.push("product_to_code_result.status is not complete");
+  for (const issue of stage3QualityIssues(context)) {
+    issues.push(`stage3 quality: ${issue}`);
   }
   const assetCheck = checkSubmissionAssets(context.workspacePath);
   for (const issue of assetCheck.issues) {
