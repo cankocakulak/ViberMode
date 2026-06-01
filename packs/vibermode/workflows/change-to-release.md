@@ -42,11 +42,13 @@ Optional:
 - `project_name` - artifact folder slug under `docs/[project-name]/`; default to the target repo directory name
 - `artifact_root` - artifact directory; default to `<target_repo>/docs/[project-name]/`
 - `release_target` - `none`, `ios-testflight`, `web-deploy`, or custom
+- `platform_policy` - `release-only`, `parity-when-shared-native`, or custom; default to `release-only`
 - `release_manifest` - platform-specific release state file when needed
 - `existing_artifacts` - analysis, plan, validation, review, screenshots, or release state
 - `scope` - files, screens, features, or platform slice to constrain the pass
 
 Default `release_target` is `none`.
+Default `platform_policy` is `release-only`.
 
 ## Per-Repo Run Model
 
@@ -57,6 +59,13 @@ Default `release_target` is `none`.
 - Write all generated artifacts into `artifact_root`; do not store per-app run state in ViberMode.
 - For multiple apps, create one automation per repo or invoke the same automation separately with a different `target_repo` and `change_request_path`.
 - Do not batch multiple repositories into one `change-release-status.json`.
+- Treat `release_target` as the delivery target and `platform_policy` as the implementation/validation policy. For example, `release_target=ios-testflight` may still use `platform_policy=parity-when-shared-native` so shared native behavior is checked on Android without requiring Android release.
+
+## Platform Policy
+
+- `release-only`: implement and validate only the platform needed for the release target unless another platform is directly affected.
+- `parity-when-shared-native`: for native multi-platform apps, evaluate shared product behavior across native clients. Implement the sibling platform when the change is small, safe, and uses existing APIs. If sibling-platform work is large, risky, or requires separate product decisions, record a parity follow-up instead of blocking the release target.
+- Custom policies must explicitly state which platforms can be changed, which must only be checked, and which release adapters are allowed.
 
 Example invocation shape:
 
@@ -212,6 +221,7 @@ Minimum shape:
   "artifactRoot": "/absolute/path/to/repo/docs/[project-name]",
   "changeRequestPath": "/absolute/path/to/repo/docs/[project-name]/change-request.md",
   "releaseTarget": "none",
+  "platformPolicy": "release-only",
   "status": "RUNNING",
   "currentStage": "change-intake",
   "stages": {
@@ -241,6 +251,7 @@ Minimum shape:
     "needsUserDecision": [],
     "hold": [],
     "outOfScope": [],
+    "parityFollowup": [],
     "done": []
   },
   "blockers": [],
