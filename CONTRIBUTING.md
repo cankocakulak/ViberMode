@@ -180,6 +180,10 @@ Before submitting an agent:
 - [ ] Works standalone (no hidden dependencies)
 - [ ] Is opinionated — makes decisions, not suggestions
 - [ ] Iterate agents remain callable without requiring pipeline artifacts unless explicitly intended
+- [ ] `docs/reference/agent-surface-map.yaml` is updated when adding, renaming, or removing a public capability
+- [ ] Codex skill wrappers are added or updated when the capability should be callable from Codex
+- [ ] Cursor command wrappers are added or updated only when the capability should be callable from Cursor
+- [ ] `npm run validate` passes
 
 ## Creating Workflows
 

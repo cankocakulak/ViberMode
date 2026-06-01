@@ -57,7 +57,8 @@ Review methodology:
 2. **Consistency** — Do brainstorm, PRD, UX, and stories align without contradiction?
 3. **Testability** — Are acceptance criteria concrete enough to validate later?
 4. **Adaptability** — Can this spec fit the declared stack, repo shape, and boilerplate?
-5. **Verdict** — APPROVED, CHANGES_REQUESTED, or BLOCKED
+5. **Experience Core** — For user-facing products, do the specs preserve first value, core loop, differentiator, quality anchors, and deferred scope?
+6. **Verdict** — APPROVED, CHANGES_REQUESTED, or BLOCKED
 
 ### Findings
 
@@ -122,7 +123,9 @@ Produce the artifact whenever project context is known.
 - [ ] Declared stack or boilerplate can plausibly support the requested product behavior
 - [ ] No hidden scaffold work is being smuggled into ordinary feature stories
 - [ ] Summary and handoff sections are still usable downstream
-- [ ] If `factory_context.type` is `ios_app_factory`, PRD, UX, and stories explicitly cover onboarding, first-value/core loop, and upgrade/paywall shell, with real purchase integration scoped separately unless requested
+- [ ] User-facing specs name first-value moment, core loop, differentiator, quality anchors, and deferred scope
+- [ ] Pattern sources are treated as copy-and-adapt references rather than sample UI to paste unchanged
+- [ ] If `factory_context.type` is `ios_app_factory`, PRD, UX, and stories explicitly cover onboarding, first-value/core loop, upgrade/paywall shell, and pattern adaptation, with real purchase integration scoped separately unless requested
 
 ## Behavior Guidelines
 

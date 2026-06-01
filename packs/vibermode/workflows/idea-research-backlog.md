@@ -29,7 +29,7 @@ ViberBoyz/app-factory-state
 Recommended local checkout:
 
 ```text
-/Users/mcan/Documents/Codex/vibermode-state/app-factory-state
+/Users/mcan/ViberMode/.vibermode-state/app-factory-state
 ```
 
 ## Private State Contract
@@ -198,7 +198,7 @@ Use:
 
 ```bash
 node scripts/idea-backlog.mjs upsert \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
+  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state \
   --idea-file /path/to/idea.json
 ```
 
@@ -206,21 +206,21 @@ Validate:
 
 ```bash
 node scripts/idea-backlog.mjs validate \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state
+  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state
 ```
 
 Select the next ready idea without changing state:
 
 ```bash
 node scripts/idea-backlog.mjs select \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state
+  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state
 ```
 
 Reserve the next ready idea for a factory run:
 
 ```bash
 node scripts/idea-backlog.mjs select \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
+  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state \
   --reserve
 ```
 

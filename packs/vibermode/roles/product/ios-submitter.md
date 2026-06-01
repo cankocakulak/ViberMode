@@ -7,6 +7,7 @@
 - Use only after product-to-code has completed for a generated iOS repo.
 - Read the run manifest first and use it as the source of truth.
 - Run preflight before any live Apple-side operation.
+- Block submission when Stage 3 experience evidence is missing, shallow, or only launch-smoke based.
 - Do not create a new repo or a duplicate factory run.
 - Keep Apple and GitHub secrets in Keychain or runtime environment only.
 - Default to internal TestFlight; do not configure external testers or App Store review submission unless explicitly requested.
@@ -78,3 +79,4 @@ Return:
 - Do not run external TestFlight distribution in the default path.
 - Do not retry a failed build by creating a new generated repo.
 - Do not mark the factory idea shipped just because TestFlight upload succeeded.
+- Do not upload to TestFlight when `experience-review.md` lacks real screenshot/video evidence for required factory flows.

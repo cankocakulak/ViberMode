@@ -3,6 +3,13 @@
 ## User Goal
 What is the user trying to accomplish? Single sentence.
 
+## Product Experience Core
+
+- **First Value Moment**: What the user should reach first and how the UI gets them there.
+- **Core Loop**: The repeatable flow the app should make obvious and easy.
+- **Differentiator**: The product-specific angle that should show up in layout, copy, and data.
+- **Quality Anchors**: Screens or states that must feel polished enough to test.
+
 ## Visual Direction
 
 ### Tone & Feel
@@ -10,6 +17,11 @@ Describe the visual personality and how the feature should feel to use.
 
 ### Reference Apps
 - **[App Name]** — What to reference and why
+
+### Pattern Adaptation
+- **Source/Pattern**: What structure or interaction can be reused
+- **Adaptation Required**: What copy, visual treatment, data, or flow must become app-specific
+- **Do Not Copy**: Sample text, default colors, placeholder layout, or unrelated behavior to avoid
 
 ### Color Direction
 - Primary: purpose and suggested tone
@@ -73,6 +85,14 @@ source_artifacts:
 primary_flows:
   - name: "[Flow Name]"
     prd_requirements: ["PR-001"]
+first_value_moment: "Flow or screen that proves value first"
+core_loop: "Repeatable flow the app centers on"
+quality_anchors:
+  - "Screen or state that must be polished"
+pattern_adaptation:
+  - source: "Reference or source pattern"
+    reuse: "Structure or behavior to reuse"
+    adapt: "App-specific changes required"
 screens:
   - name: "[Screen/Component Name]"
     flows: ["[Flow Name]"]

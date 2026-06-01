@@ -9,6 +9,7 @@
 - Start with `experience-reviewer`.
 - If the experience review requests changes, route findings through `remediation-routing`, resume `implementation-runner`, then rerun `runtime-validator` and `experience-reviewer`.
 - Only continue to final `reviewer` after experience review returns `APPROVED` or `SKIPPED_NOT_APPLICABLE`.
+- Orchestrators should treat this as a bounded self-iteration loop, not a single report. Re-enter remediation automatically for up to 3 experience passes before stopping for human review.
 - For iOS factory runs, onboarding, first-value, upgrade/paywall shell, keyboard behavior, and screenshot evidence are part of the gate.
 
 ## Pipeline
@@ -62,6 +63,8 @@ Success Criteria:
 - interaction, visual, copy, edge-state, and accessibility issues are checked
 - iOS factory required flows are evaluated when `factory_context.type = ios_app_factory`
 - every issue has a task resolution mode
+- iOS factory runs include actual screenshot or video file paths for onboarding, first value, core loop, and upgrade/paywall shell
+- iOS factory runs fail if onboarding is one screen or a raw `List`/form-style explanation
 
 Stage result rules:
 
@@ -127,16 +130,22 @@ Then rerun:
 
 The experience hardening loop is complete only when the new review returns `APPROVED` or `SKIPPED_NOT_APPLICABLE`.
 
+Automation rule:
+- Do not stop after the first `CHANGES_REQUESTED` result.
+- Convert the findings into tasks, implement them, refresh screenshots/runtime evidence, and rerun this workflow.
+- Stop with `BLOCKED` only after 3 failed experience passes, a non-routable environment blocker, or a missing dependency that cannot be fixed inside the generated repo.
+
 ## iOS Factory Gate
 
 For `factory_context.type = ios_app_factory`, do not treat the app as factory-complete until the experience review verifies:
 
 - onboarding is adapted to the app's actual user and use case
+- onboarding has at least 3 meaningful steps/screens and is not a plain `List` or form
 - first-value/core loop is reachable before purchase
-- paywall or upgrade shell is app-specific and honest about mock purchase handling
+- paywall or upgrade shell is app-specific, visually credible, and honest about mock purchase handling
 - keyboard dismissal and focus behavior are acceptable for text-entry surfaces
 - small-screen layouts do not clip or overlap important text/actions
-- screenshots or simulator notes cover onboarding, first value, core loop, and upgrade shell when capture is available
+- screenshot or video files cover onboarding, first value, core loop, and upgrade shell when capture is available
 - copied pattern code has been adapted rather than left as sample copy or default colors
 
 ## Outputs

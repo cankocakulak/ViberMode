@@ -21,9 +21,13 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 │  │ Analyzer │→│Brainstormer│→│ PRD │→│UX Design│→│ Stories  │ │
 │  └──────────┘ └────────────┘ └─────┘ └────────┘ └────┬─────┘ │
 │                                                       ↓        │
-│                              ┌───────────┐    ┌──────────────┐ │
-│                              │ Converter │───→│ Ralph Runner │↺│
-│                              └───────────┘    └──────────────┘ │
+│                           ┌───────────┐ ┌──────────────┐      │
+│                           │ Bootstrap │→│ Task Planner │      │
+│                           └───────────┘ └──────┬───────┘      │
+│                                                ↓              │
+│                                      ┌──────────────────────┐ │
+│                                      │Implementation Runner│↺│
+│                                      └──────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
@@ -52,21 +56,18 @@ ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, r
 
 ```
 packs/                          # Canonical authoring roots
-├── vibermode/
-│   ├── roles/                  # Generic agent role contracts
-│   ├── workflows/              # Generic workflow contracts
-│   └── templates/              # Generic templates
-└── simmer/
-    └── paper-trading/          # Domain pack consumed by simmer-supervisor
+└── vibermode/
+    ├── roles/                  # Generic agent role contracts
+    ├── workflows/              # Generic workflow contracts
+    └── templates/              # Generic templates
 
 adapters/                       # Platform-specific projections
 ├── codex/
 │   ├── skills/                 # Codex skill wrappers
 │   └── install/                # Codex install/publish scripts
-├── cursor/
-│   ├── commands/               # Cursor slash commands
-│   └── rules/                  # Cursor always-on context
-└── openclaw/                   # OpenClaw projection/publish surface
+└── cursor/
+    ├── commands/               # Cursor slash commands
+    └── rules/                  # Cursor always-on context
 
 scripts/                        # Compatibility wrappers for moved scripts
 
@@ -78,6 +79,23 @@ Canonical content lives under `packs/`. Platform integrations live under `adapte
 
 Visual reference:
 - `docs/reference/repo-visual-map.md` — Mermaid diagrams for repo topology, pack structure, projections, and workflow shape
+
+## What ViberMode Provides
+
+ViberMode is easier to read as a set of services, not as a flat list of agents.
+
+| Service | What it does | Start here |
+|---------|--------------|------------|
+| Product to Code | Turns a raw idea or product slice into specs, tasks, implementation, validation, and review | `docs/use-cases/product-to-code.md` |
+| Existing Repo Change to Release | Turns feedback or requested changes into validated repo changes, optionally released | `docs/use-cases/existing-repo-change-to-release.md` |
+| iOS App Factory | Researches app ideas, creates iOS repos, runs implementation, and prepares TestFlight delivery | `docs/use-cases/ios-app-factory.md` |
+| App Opportunity Research | Produces research packs and optional backlog candidates without creating repos | `docs/use-cases/app-opportunity-research.md` |
+| Standalone Repo Toolkit | Gives focused help for investigation, planning, UX, testing, refactor, and review work | iterate agents |
+
+Read `docs/architecture/service-map.md` for the full service-level map.
+Read `docs/use-cases/` for concrete operating paths and automation mappings.
+
+Repository boundary decisions, including why OpenClaw projection docs, the Simmer domain pack, and the old monolithic `ios-app-store-factory` workflow are not part of ViberMode core, are recorded in `docs/architecture/boundary-decisions.md`.
 
 ## Agents
 
@@ -114,12 +132,13 @@ Compatibility note:
 | Improve | `ux-investigator` | UX findings, recommended direction, focused improvements |
 | Improve | `modularizer` | Structural findings, cut lines, safe refactor plan |
 | Improve | `surface-hardener` | Edge-state, resilience, and accessibility improvements |
+| Translate | `change-triager` | Scoped change brief from feedback, bug notes, and release requests |
 | Verify | `integration-auditor` | End-to-end connection audit across routes, state, events, and services |
 | Verify | `tester` | Ad-hoc verification evidence from CLI plus runtime checks |
 | Verify | `experience-reviewer` | Product-experience verdict after runtime validation |
 | Verify | `reviewer` | Quality verdict + improvements |
 
-Four perspectives, use any independently.
+Use any independently, or compose them inside a larger workflow.
 
 Verification distinctions:
 - `integration-auditor` asks "is the path connected?"
@@ -128,6 +147,8 @@ Verification distinctions:
 - `experience-reviewer` asks "does the validated surface feel specific and worth testing?"
 
 ## Workflow
+
+Workflows are the operating procedures that combine roles into services. For a service-level view, start with `docs/architecture/service-map.md`.
 
 Canonical composed pipeline:
 
@@ -143,6 +164,7 @@ Primary workflow docs:
 - `spec-to-code` — completed specs to tasks, implementation loop, and review
 - `product-to-code` — composed workflow that runs all three stages
 - `repo-change` — change planning and execution inside an existing repository
+- `change-to-release` — existing-repo changes with validation, experience hardening, and optional release
 
 Support workflow docs:
 - `bootstrap` — repo/runtime preparation before implementation
@@ -162,6 +184,7 @@ Support workflow docs:
 - Wiring check: `Integration Auditor → Tester`
 - Release-surface hardening: `Surface Hardener → Tester`
 - Generated app polish gate: `Runtime Validator → Experience Reviewer → Remediation Router → Reviewer`
+- Existing repo change to release: `Change Triager → Repo Change → Experience Hardening → Release adapter`
 - Small addition: `Planner → implement`
 - Exploration: `Brainstormer → PRD`
 - Design-first: `UX Designer → User Stories`
@@ -230,6 +253,8 @@ Then use agents naturally in Codex App:
 "Test whether this feature is really working" → viber-tester
 "Audit whether this is actually wired up" → viber-integration-auditor
 "Harden this flow for edge cases" → viber-surface-hardener
+"Triage these change notes"       → viber-change-triager
+"Apply these changes and prepare release" → viber-change-to-release
 "Review whether this app feels ready to test" → viber-experience-reviewer
 "Run the Stage 3 polish gate"    → viber-experience-hardening
 ```
@@ -237,23 +262,11 @@ Then use agents naturally in Codex App:
 Legacy compatibility:
 
 ```text
-"Convert stories to prd.json"    → viber-ralph-converter
-"Implement the next story"       → viber-ralph-runner
+"Convert stories to tasks.json"  → viber-ralph-converter
+"Implement the next task"        → viber-ralph-runner
 ```
 
 Skills are installed to `~/.codex/skills/` and auto-trigger based on intent.
-
-### OpenClaw
-
-OpenClaw-specific agent workspaces and runtime behavior are authored in the OpenClaw repo, not projected from ViberMode.
-
-ViberMode's role for OpenClaw is to provide:
-- canonical pack content under `packs/`
-- shared contracts, templates, and reference material
-- lightweight integration guidance under `adapters/openclaw/`
-
-OpenClaw workflow planning notes:
-- `docs/openclaw/workflow-map.md`
 
 ### Any Other Tool — AGENTS.md
 
@@ -294,11 +307,13 @@ All agents referenced via `viber-mode/packs/vibermode/roles/` paths — works ou
 ## Documentation
 
 - `docs/README.md` - documentation map
-- `docs/architecture/` - framework analysis, vision, and rollout notes
+- `docs/architecture/service-map.md` - service-level map showing which workflows combine into larger outcomes
+- `docs/architecture/boundary-decisions.md` - what is intentionally outside ViberMode core
+- `docs/use-cases/` - concrete operating paths and automation mappings
+- `docs/architecture/` - framework analysis and service-level architecture notes
 - `docs/reference/capability-map.md` - what each agent, skill, and workflow is for
 - `docs/reference/decision-tree.md` - how to choose the right capability quickly
 - `docs/reference/agent-surface-map.yaml` - machine-readable capability and surface index
-- `docs/openclaw/` - OpenClaw integration, boundary, and workflow notes
 
 ## Roadmap
 

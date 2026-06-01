@@ -101,7 +101,7 @@ Command shape:
 ```bash
 node scripts/analyze-app-store-csv.mjs \
   --input "/path/to/App Store Top Apps Revenue PoP Growth.csv" \
-  --output-dir /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/research-runs/YYYY-MM-DD/education-us \
+  --output-dir /Users/mcan/ViberMode/.vibermode-state/app-factory-state/research-runs/YYYY-MM-DD/education-us \
   --source-id app-store-education-revenue-growth-YYYY-MM-DD \
   --market US \
   --category Education
@@ -137,7 +137,7 @@ Command shape:
 
 ```bash
 node scripts/research-app-store-gap.mjs \
-  --research-dir /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/research-runs/YYYY-MM-DD/education-us \
+  --research-dir /Users/mcan/ViberMode/.vibermode-state/app-factory-state/research-runs/YYYY-MM-DD/education-us \
   --cluster "Plant / nature ID" \
   --market US
 ```
@@ -146,7 +146,7 @@ Optional query override:
 
 ```bash
 node scripts/research-app-store-gap.mjs \
-  --research-dir /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/research-runs/YYYY-MM-DD/education-us \
+  --research-dir /Users/mcan/ViberMode/.vibermode-state/app-factory-state/research-runs/YYYY-MM-DD/education-us \
   --cluster "Plant / nature ID" \
   --queries "plant identifier,plant care,pet safe plants,plant toxicity"
 ```
@@ -180,7 +180,7 @@ This workflow does not directly create repos. If a candidate is approved for fac
 
 ```bash
 node scripts/idea-backlog.mjs upsert \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
+  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state \
   --idea-file /path/to/candidate.json
 ```
 
@@ -188,7 +188,7 @@ Then:
 
 ```bash
 node scripts/idea-backlog.mjs validate \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state
+  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state
 ```
 
 ## Success Criteria

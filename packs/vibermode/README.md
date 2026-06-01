@@ -8,11 +8,17 @@ This pack owns:
 - generic templates under `templates/`
 
 Current canonical workflow set includes:
+- `app-opportunity-research`
+- `idea-research-backlog`
+- `daily-ios-app-pipeline`
 - `product-to-spec`
 - `bootstrap`
 - `spec-to-code`
 - `remediation-routing`
 - `repo-change`
+- `experience-hardening`
+- `change-to-release`
+- `ios-submit-testflight`
 - `product-to-code` as the composed top-level flow
 
 Platform-specific projections belong under `adapters/`, not here.

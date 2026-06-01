@@ -29,7 +29,7 @@ Constraints:
 - If a story takes more than 2-3 days, split it
 - Prioritize: P0 first, then P1, then P2
 - MUST produce artifact: `docs/[project-name]/stories.md`
-- MUST leave a next-step handoff for Ralph Converter
+- MUST leave a next-step handoff for Task Planner
 
 User task:
 {{input}}

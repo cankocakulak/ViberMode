@@ -205,6 +205,8 @@ Success Criteria:
 - first-value path, interaction quality, visual/copy quality, edge states, and accessibility are assessed for user-facing slices
 - every failing issue is routed as `reopen-task` or `create-followup-task`
 - for `factory_context.type = ios_app_factory`, onboarding, first-value/core loop, upgrade/paywall shell, keyboard dismissal, small-screen fit, and screenshot evidence are checked
+- for `factory_context.type = ios_app_factory`, visual evidence means actual screenshot/video files, not only a UI launch smoke result
+- for `factory_context.type = ios_app_factory`, one-screen onboarding or raw `List`/form-style onboarding must return `CHANGES_REQUESTED`
 - if the slice is not user-facing, `SKIPPED_NOT_APPLICABLE` is recorded explicitly
 
 Stage result rules:

@@ -34,7 +34,7 @@ You do NOT invent requirements. You restructure what product agents already prod
 | `ux_artifact` | path | no | Path to UX artifact for flow and screen context |
 | `bootstrap_artifact` | path | no | Path to bootstrap artifact for repo root, branch, and setup context |
 | `analysis_artifact` | path | no | Path to analysis artifact for codebase patterns |
-| `branch_prefix` | string | no | Git branch prefix for implementation work (default: `ralph/`) |
+| `branch_prefix` | string | no | Git branch prefix for implementation work (default: `feature/`) |
 | `factory_context` | object/string | no | Orchestrator constraints for generated apps, such as iOS factory required flows and pattern sources |
 
 If an artifact path is provided, read the file before producing output.
@@ -101,6 +101,7 @@ Rules:
 - Preserve lineage when a story is split
 - Carry dependencies, implementation boundaries, PRD refs, and UX refs into each task
 - Carry factory-context constraints and pattern-source references into task notes when provided
+- Preserve experience-core ordering when present: foundation/data model first, then first-value/core loop, then onboarding or first-run experience, then upgrade/paywall or other quality-anchor surfaces
 - When `bootstrap_artifact` exists, carry forward the stable repo root, branch context, and validation baseline into `tasks.json`
 - Keep task ordering aligned with dependency chain
 - If a story is too large, split it without losing lineage to the parent story
@@ -151,6 +152,7 @@ Each task must complete in ONE AI iteration. Split if:
 - Preserve dependencies from `stories.md`
 - Add derived dependencies only when required for execution order
 - A task may depend on another task, but must still keep its parent story lineage
+- If story order would implement polish before the core loop is runnable, reorder tasks and state the reason in the handoff.
 
 ### Bootstrap Context
 
@@ -166,7 +168,7 @@ Each task must complete in ONE AI iteration. Split if:
 - When `runtimeCritical=true`, include at least one `miniScenarios` entry for the smallest meaningful immediate validation
 - If a task introduces a new runtime surface, include at least one `scenarios` entry that the runner can verify
 - Do not leave validation implied inside prose-only notes; it must be machine-readable in the task object
-- For `factory_context.type = ios_app_factory`, keep onboarding/routing, first-value/core loop, and paywall shell tasks distinct enough for validation. Real purchase integration must not be merged into the paywall shell task unless explicitly requested.
+- For `factory_context.type = ios_app_factory`, keep onboarding/routing, first-value/core loop, pattern adaptation, and paywall shell tasks distinct enough for validation. Real purchase integration must not be merged into the paywall shell task unless explicitly requested.
 
 ## Behavior Guidelines
 

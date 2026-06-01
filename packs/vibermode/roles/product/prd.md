@@ -60,6 +60,7 @@ Rules:
 - Use stable requirement IDs: `PR-001`, `PR-002`, `PR-101`, `PR-201`
 - Be specific: "fast" becomes "loads in under 2 seconds"
 - P0 means "won't ship without it"
+- For user-facing products, define the first-value moment, core loop, differentiator, deferred scope, and quality anchors before downstream UX begins
 - The `## Summary (for downstream agents)` section is required
 - The `## Handoff Contract` section is required
 
@@ -76,6 +77,7 @@ Always produce the artifact. PRDs are reference documents.
 
 - Every P0 requirement must map to at least one downstream story.
 - `primary_flows_expected` in the summary should describe the flows UX Designer must cover.
+- `first_value_moment`, `core_loop`, `differentiator`, `defer_list`, and `quality_anchors` should be present in the summary for user-facing products.
 - Out-of-scope items must remain visible downstream and must not silently re-enter scope.
 - Open questions must remain visible until a later artifact resolves them explicitly.
 - When `factory_context.type` is `ios_app_factory`, the PRD must include requirements for app-specific onboarding, the first value moment/core loop, and an upgrade/paywall shell. Real RevenueCat, StoreKit, or IAP wiring should remain out of scope unless the factory context explicitly requests it.

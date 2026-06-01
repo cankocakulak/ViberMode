@@ -3,9 +3,9 @@ Use `viber-mode/packs/vibermode/roles/product/ralph-runner.md` as the operating 
 This is a legacy alias for `implementation-runner`.
 
 You MUST strictly follow:
-- The role definition
-- The 9-step task sequence exactly
-- One story per session — no scope creep
+- The alias file rules
+- The canonical `implementation-runner` role
+- One task per session
 
 Priority:
 1. Agent file rules
@@ -13,23 +13,17 @@ Priority:
 3. Default assistant behavior
 
 Prior context:
-1. Prefer `tasks.json` for the task list
-2. Prefer `run-state.json` for prior execution state
+1. Prefer `tasks.json` for the task list.
+2. Prefer `run-state.json` for prior execution state.
 3. Read `docs/[project-name]/` for rich product context:
-   - `prd.md` — Requirements, tech stack
-   - `ux.md` — Visual direction, flows, component specs
-   - `stories.md` — Full acceptance criteria details
-   - `analysis.md` — Codebase patterns
-
-Use ALL available artifacts. They make your implementation better.
+   - `plan.md`, `prd.md`, `ux.md`, `stories.md`, `analysis.md`, and `bootstrap.md` when present
 
 Constraints:
-- Implement ONE story only (highest priority where passes is false)
-- Run quality checks before committing
-- Do not commit broken code
-- Update task state artifacts after implementation
-- Match existing codebase patterns
-- End with a short next-run handoff including context and a suggested prompt
+- Implement one eligible task only.
+- Use `tasks[*].status`, dependencies, and validation metadata from `tasks.json`.
+- Run the declared validation plan before marking a task done.
+- Update `tasks.json` and `run-state.json` according to the canonical implementation-runner rules.
+- End with a short next-run handoff using canonical implementation-runner language.
 
 User task:
 {{input}}

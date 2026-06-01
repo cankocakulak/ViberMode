@@ -19,6 +19,21 @@ function toFsPath(relPath) {
   return path.join(repoRoot, relPath);
 }
 
+function toRepoRel(absPath) {
+  return path.relative(repoRoot, absPath).split(path.sep).join("/");
+}
+
+function walkFiles(rootDir) {
+  if (!fs.existsSync(rootDir)) return [];
+
+  return fs.readdirSync(rootDir, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(rootDir, entry.name);
+    if (entry.isDirectory()) return walkFiles(entryPath);
+    if (entry.isFile()) return [entryPath];
+    return [];
+  });
+}
+
 function parseCapabilities(text) {
   const lines = text.split(/\r?\n/);
   const capabilities = [];
@@ -79,6 +94,10 @@ if (capabilities.length === 0) {
 
 const validTiers = new Set(["primary", "support", "legacy"]);
 const validKinds = new Set(["product-agent", "iterate-agent", "workflow", "legacy-alias"]);
+const mappedCanonicalRoles = new Set();
+const mappedCanonicalWorkflows = new Set();
+const mappedCodexSkillDirs = new Set();
+const mappedCursorCommands = new Set();
 
 for (const capability of capabilities) {
   const { id, kind, tier, surfaces } = capability;
@@ -99,6 +118,9 @@ for (const capability of capabilities) {
   const cursorCommand = unquote(surfaces.cursor_command);
   const anyToolAgent = unquote(surfaces.any_tool_agent);
 
+  if (canonicalRole) mappedCanonicalRoles.add(canonicalRole);
+  if (canonicalWorkflow) mappedCanonicalWorkflows.add(canonicalWorkflow);
+
   if (canonicalRole && !fs.existsSync(toFsPath(canonicalRole))) {
     errors.push(`${id}: missing canonical role ${canonicalRole}`);
   }
@@ -113,6 +135,7 @@ for (const capability of capabilities) {
 
   if (codexSkill) {
     const skillDir = codexSkill.replace(/^viber-/, "");
+    mappedCodexSkillDirs.add(skillDir);
     const skillPath = path.join(repoRoot, "adapters/codex/skills", skillDir, "SKILL.md");
     if (!fs.existsSync(skillPath)) {
       errors.push(`${id}: missing Codex skill wrapper for ${codexSkill}`);
@@ -129,6 +152,7 @@ for (const capability of capabilities) {
 
   if (cursorCommand) {
     const commandFile = cursorCommand.replace(/^\//, "") + ".md";
+    mappedCursorCommands.add(cursorCommand.replace(/^\//, ""));
     const commandPath = path.join(repoRoot, "adapters/cursor/commands", commandFile);
     if (!fs.existsSync(commandPath)) {
       errors.push(`${id}: missing Cursor command wrapper for ${cursorCommand}`);
@@ -141,6 +165,87 @@ for (const capability of capabilities) {
 
   if (cleanTier === "legacy" && cleanKind !== "legacy-alias") {
     warnings.push(`${id}: legacy tier usually pairs with legacy-alias kind`);
+  }
+}
+
+const canonicalRolePaths = walkFiles(path.join(repoRoot, "packs/vibermode/roles"))
+  .filter((filePath) => filePath.endsWith(".md"))
+  .map(toRepoRel)
+  .sort();
+
+for (const rolePath of canonicalRolePaths) {
+  if (!mappedCanonicalRoles.has(rolePath)) {
+    errors.push(`unmapped canonical role ${rolePath}`);
+  }
+}
+
+const canonicalWorkflowPaths = walkFiles(path.join(repoRoot, "packs/vibermode/workflows"))
+  .filter((filePath) => filePath.endsWith(".md"))
+  .map(toRepoRel)
+  .sort();
+
+for (const workflowPath of canonicalWorkflowPaths) {
+  if (!mappedCanonicalWorkflows.has(workflowPath)) {
+    errors.push(`unmapped canonical workflow ${workflowPath}`);
+  }
+}
+
+const codexSkillsRoot = path.join(repoRoot, "adapters/codex/skills");
+if (fs.existsSync(codexSkillsRoot)) {
+  const codexSkillDirs = fs.readdirSync(codexSkillsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+
+  for (const skillDir of codexSkillDirs) {
+    if (!mappedCodexSkillDirs.has(skillDir)) {
+      errors.push(`unmapped Codex skill wrapper adapters/codex/skills/${skillDir}/SKILL.md`);
+    }
+  }
+}
+
+const cursorCommandsRoot = path.join(repoRoot, "adapters/cursor/commands");
+const allowedUnmappedCursorCommands = new Set(["kickoff"]);
+if (fs.existsSync(cursorCommandsRoot)) {
+  const cursorCommands = fs.readdirSync(cursorCommandsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+    .map((entry) => entry.name.replace(/\.md$/, ""))
+    .sort();
+
+  for (const command of cursorCommands) {
+    if (!mappedCursorCommands.has(command) && !allowedUnmappedCursorCommands.has(command)) {
+      warnings.push(`Cursor command /${command} is not mapped in agent-surface-map.yaml`);
+    }
+  }
+}
+
+const executableScriptRoots = [
+  path.join(repoRoot, "scripts"),
+  path.join(repoRoot, "adapters/codex/install"),
+];
+
+for (const scriptRoot of executableScriptRoots) {
+  for (const scriptPath of walkFiles(scriptRoot)) {
+    const firstLine = fs.readFileSync(scriptPath, "utf8").split(/\r?\n/, 1)[0];
+    const mode = fs.statSync(scriptPath).mode;
+
+    if (firstLine.startsWith("#!") && (mode & 0o111) === 0) {
+      errors.push(`${toRepoRel(scriptPath)} has a shebang but is not executable`);
+    }
+  }
+}
+
+for (const sourceRootName of ["packs", "adapters", "docs", "scripts"]) {
+  const sourceRoot = path.join(repoRoot, sourceRootName);
+  for (const filePath of walkFiles(sourceRoot)) {
+    if (path.basename(filePath) !== ".gitkeep") continue;
+
+    const siblingNames = fs.readdirSync(path.dirname(filePath))
+      .filter((name) => name !== ".gitkeep");
+
+    if (siblingNames.length > 0) {
+      errors.push(`${toRepoRel(filePath)} is keeping a populated directory alive; remove it`);
+    }
   }
 }
 

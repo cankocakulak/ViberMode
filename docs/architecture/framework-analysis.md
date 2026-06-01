@@ -2,110 +2,118 @@
 
 ## Overview
 - **Type**: Vendor-agnostic AI agent framework and workflow-definition repository
-- **Primary language(s)**: Markdown, shell, minimal JSON/package metadata
-- **Framework(s)**: Tool-agnostic agent definitions with Codex and Cursor integration layers
+- **Primary language(s)**: Markdown, JavaScript, shell, YAML/JSON metadata
+- **Framework(s)**: Tool-agnostic agent definitions with Codex and Cursor integration notes
 - **Package manager**: npm
 - **Monorepo**: No
 
-ViberMode is a documentation-first framework whose real product is the set of agent contracts under `packs/vibermode/roles/`. The repository is easy to read and structurally clean, but it currently behaves more like a prompt-contract framework than an executable runtime because validation, orchestration, and enforcement are still mostly absent.
+ViberMode is a documentation-first framework whose product is the set of portable agent and workflow contracts under `packs/`. The repository is generally readable and well organized, but it now has enough generated artifacts, compatibility surfaces, and operational scripts that cleanup should be handled as a small controlled pass rather than ad hoc deletion.
 
 ## Tech Stack
 | Layer | Technology | Notes |
 |-------|-----------|-------|
-| Source of truth | Markdown role specs | `packs/vibermode/roles/product/` and `packs/vibermode/roles/iterate/` define actual behavior |
-| Codex integration | `SKILL.md` wrappers | `adapters/codex/skills/*` forwards intent to canonical role files |
-| Cursor integration | Slash commands + MDC rules | `adapters/cursor/commands/*` and `adapters/cursor/rules/viber-mode.mdc` expose the same roles in Cursor |
-| Workflow definition | Markdown workflow docs | `packs/vibermode/workflows/*.md` defines sequencing and artifact contracts |
-| Packaging | npm metadata | The package exports framework assets such as `packs/*`, `adapters/*`, and `scripts/*` |
-| Installation | Shell script | `adapters/codex/install/install-skills.sh` copies skill wrappers into Codex |
-| Validation | Placeholder only | `npm run validate` currently echoes a message and performs no checks |
+| Source of truth | Markdown role/workflow specs | `packs/vibermode/roles/` and `packs/vibermode/workflows/` define canonical behavior |
+| Codex integration | `SKILL.md` wrappers | `adapters/codex/skills/*` forwards intent to canonical role/workflow files; 33 wrappers are mapped |
+| Cursor integration | Slash commands + MDC rules | `adapters/cursor/commands/*` and `adapters/cursor/rules/viber-mode.mdc`; coverage is intentionally partial |
+| Workflow definition | Markdown workflow docs | Includes product/spec/code, repo-change, release, remediation, and iOS factory flows |
+| Operations tooling | Node.js scripts | App research, backlog, repo factory, workspace acquisition, TestFlight submission, and reference validation |
+| Packaging | npm metadata | Exports `packs/*`, `adapters/*`, and `scripts/*`; no runtime dependency tree |
+| Installation | Shell script | `adapters/codex/install/install-skills.sh` copies skill wrappers and a shared support bundle into Codex |
+| Validation | Node reference validator | `npm run validate` runs `scripts/validate-reference-map.mjs`; current run passed for 39 capabilities |
 
 ## Project Structure
 ```text
 packs/
-├── vibermode/
-│   ├── roles/          # Sequential + iterate role contracts
-│   ├── workflows/      # product-to-spec, spec-to-code, product-to-code
-│   └── templates/      # PRD, UX, and stories templates
-└── simmer/
-    └── paper-trading/  # Simmer domain pack
+└── vibermode/
+    ├── roles/          # Product and iterate role contracts
+    ├── workflows/      # Product, repo-change, release, remediation, and iOS factory workflows
+    └── templates/      # PRD, UX, and stories templates
 
 adapters/
-├── codex/              # Skill wrappers + install helpers
-├── cursor/             # Slash commands + always-on rules
-└── openclaw/           # OpenClaw projections + integration guidance
+├── codex/              # Skill wrappers + installer
+└── cursor/             # Slash commands + always-on rule
 
 docs/
-├── architecture/       # Framework analysis and roadmap notes
-└── openclaw/           # OpenClaw integration and boundary docs
+├── architecture/       # Framework analysis and service architecture notes
+├── reference/          # Capability map, surface map, decision tree, visual map
+└── operations/         # Operational runbooks and historical run archives
+
+scripts/
+└── *.mjs / *.sh        # Operational helpers and validators
 ```
 
 ## Patterns & Conventions
-- **Single source of truth**: Canonical behavior lives in `packs/vibermode/roles/*`; skills, Cursor commands, and agent indexes point back to those files.
-- **Artifact handoff model**: The product pipeline is designed around `docs/[project-name]/` artifacts rather than chat history.
-- **Two-tier system**: Product agents form a sequential delivery pipeline; iterate agents are standalone helpers.
-- **Thin integration wrappers**: Platform-specific layers intentionally stay small and mostly reference canonical role files.
-- **Legacy alias retention**: `ralph-converter` and `ralph-runner` remain for backward compatibility even though `task-planner` and `implementation-runner` are the canonical names.
-- **Prompt-contract orientation**: The repository optimizes for role definitions and output formats rather than executable code.
+- **Single source of truth**: Canonical behavior lives in `packs/vibermode/roles/*` and `packs/vibermode/workflows/*`; wrappers point back to those files.
+- **Artifact handoff model**: Product and change workflows use `docs/[project-name]/` artifacts instead of relying on chat history.
+- **Surface inventory**: `docs/reference/agent-surface-map.yaml` maps canonical paths to Codex, Cursor, and any-tool surfaces.
+- **Thin integration wrappers**: Codex and Cursor surfaces stay small and mostly defer to canonical pack files.
+- **Compatibility retention**: `ralph-converter` and `ralph-runner` remain as legacy aliases for `task-planner` and `implementation-runner`.
+- **Core boundary**: Domain-specific packs and external orchestration runtime material stay outside ViberMode core; see `docs/architecture/boundary-decisions.md`.
+- **Operational expansion**: The repo now includes real app-factory and TestFlight helper scripts, not only prompt contracts.
 
 ## Workflow & Agent Architecture
-- **Existing-project path**: `analyzer -> product-to-spec -> spec-to-code`
+- **Existing-project path**: `analyzer -> product-to-spec -> bootstrap -> spec-to-code`
 - **Spec path**: `brainstormer -> prd -> ux-designer -> user-stories`
-- **Implementation path**: `task-planner -> implementation-runner -> reviewer`
-- **Iterate toolkit**: `scout`, `planner`, `reviewer`, `ux-tweaker`, and newer investigation skills are intentionally usable outside the main pipeline.
+- **Implementation path**: `task-planner -> implementation-runner -> runtime-validator -> reviewer`
+- **Existing-repo change path**: `change-triager -> repo-change -> experience-hardening -> optional release adapter`
+- **Iterate toolkit**: `scout`, `planner`, `reviewer`, `ux-tweaker`, `ux-investigator`, `modularizer`, `tester`, `integration-auditor`, `surface-hardener`, and support gates.
 
-The strongest design choice is that downstream agents consume stable artifacts, especially each document's `## Summary (for downstream agents)` block and explicit handoff contract. That makes the system portable across tools and reduces dependence on conversation memory.
+The strongest design choice remains the stable handoff contract: downstream agents consume file artifacts with summaries, explicit acceptance checks, and named next steps. The main complexity is no longer basic structure; it is keeping the growing projection and operations surfaces synchronized.
 
 ## Current UI/UX State
-- **End-user UI**: None; this is a framework/documentation repository, not an application product
-- **Primary surfaces**: `README.md`, `AGENTS.md`, `packs/vibermode/roles/*`, `packs/vibermode/workflows/*`, and `adapters/cursor/commands/*`
-- **Framework UX quality**: Good discoverability and naming in the top-level docs and workflow files
-- **Usability constraint**: The framework is easy to read, but not yet easy to execute mechanically because bootstrapping and validation are still manual
+- **End-user UI**: None; this is a framework/documentation repository, not an app UI.
+- **Primary user surfaces**: `README.md`, `AGENTS.md`, `docs/reference/*`, `packs/vibermode/roles/*`, and `packs/vibermode/workflows/*`.
+- **Framework UX quality**: Discoverability is good for main paths, but some maps and quickstart material lag newer agents and workflows.
+- **Operational UX**: App-factory scripts have concrete runbooks, but some scripts are exposed only through documentation and long command examples.
 
 ## Technical Debt & Concerns
-- `npm run validate` is a placeholder, so drift between roles, wrappers, workflow docs, templates, and README can accumulate silently.
-- `task-planner` still defaults branch naming to `ralph/`, which conflicts with the repo's newer canonical terminology and suggests unfinished migration.
-- `adapters/codex/install/install-skills.sh` performs a destructive replace of target skill folders without a dry-run or verification step; acceptable for local setup, but not hardened.
-- The npm package currently publishes definition assets rather than a real runtime or orchestration layer.
+- `adapters/cursor/commands/kickoff.md` is intentionally kept as a Cursor-only helper outside the canonical surface map.
+- Legacy alias files are intentionally retained, but now act as thin compatibility pointers to canonical roles.
+- `task-planner` uses a generic `feature/` branch prefix by default; downstream tools can still override it.
+- Historical run/bootstrap artifacts are archived under `docs/operations/archive/`, but they still contain local absolute paths and should stay out of primary docs.
 
 ## Opportunities
-- Add a real validator that checks referenced paths, required sections, artifact names, and cross-file terminology consistency.
-- Add a small bootstrap/status CLI that can initialize `docs/[project-name]/`, show pipeline progress, and verify required upstream artifacts before each step.
-- Generate wrapper files from canonical role metadata so README, Cursor commands, skill wrappers, and AGENTS docs cannot diverge manually.
-- Add example projects under `docs/examples/` or fixtures so the workflow can be tested end to end.
+- Add validator checks for lingering `.gitkeep` files and tracked primary docs with local absolute paths.
+- Generate wrappers and reference inventory from one capability manifest so `README.md`, `AGENTS.md`, Codex skills, Cursor commands, and maps cannot drift manually.
+- Add a small `scripts/repo-health.mjs` or extend `validate-reference-map.mjs` to report cleanup candidates without changing files.
 
 ## Summary (for downstream agents)
 ```yaml
 project_type: ai-agent-framework
 key_stacks:
-  - markdown-role-specs
+  - markdown-role-and-workflow-specs
   - codex-skills
   - cursor-slash-commands
-  - shell-install-script
+  - node-operational-scripts
+  - npm-reference-validation
 reusable_patterns:
-  - canonical-role-files-under-packs/vibermode/roles
+  - canonical-role-and-workflow-files-under-packs/vibermode
   - docs-folder-artifact-handoffs
   - summary-plus-handoff-contract-per-artifact
   - thin-platform-wrapper-files
+  - machine-readable-agent-surface-map
 known_constraints:
-  - no runtime workflow engine
-  - no automated contract validation
-  - npm-package-publishes-definition-assets
+  - no full workflow runtime engine in this repo
+  - compatibility surfaces for ralph aliases are intentionally retained
+  - operational scripts depend on external GitHub, Apple, Xcode, Fastlane, and private state setup
+  - working tree currently contains user changes and untracked new capability files
+cleanup_targets: []
 relevant_system_areas:
   - packs/vibermode/roles/product
   - packs/vibermode/roles/iterate
   - packs/vibermode/workflows
   - adapters/codex/skills
   - adapters/cursor/commands
-  - README.md
+  - docs/reference
+  - scripts
 ```
 
-For downstream framework work, the most stable assumption is that `packs/vibermode/roles/*` and `packs/vibermode/workflows/*` are the authoritative sources. The highest-risk area is contract drift across aliases and wrappers rather than application logic.
+For downstream framework work, the stable assumption is that `packs/vibermode/roles/*`, `packs/vibermode/workflows/*`, and `docs/reference/agent-surface-map.yaml` are the authoritative surfaces. The highest-risk cleanup area is deleting compatibility or operational artifacts without first deciding whether they are public examples, historical run evidence, or active automation inputs.
 
 ## Handoff Contract
-- **Next Agent**: `planner` for framework improvements, or `brainstormer` if the next step is productizing the runtime/validator roadmap
+- **Next Agent**: `planner`
 - **Required Artifacts**: `docs/architecture/framework-analysis.md`
-- **Recommended Artifacts**: `packs/vibermode/workflows/product-to-code.md`, `packs/vibermode/workflows/product-to-spec.md`, `packs/vibermode/workflows/spec-to-code.md`, `README.md`
-- **Critical Inputs That Must Remain Stable**: canonical role paths under `packs/vibermode/roles/*`, artifact folder convention `docs/[project-name]/`, canonical product-agent order, and the `Summary (for downstream agents)` plus `Handoff Contract` requirement
-- **Sections That Must Remain Stable**: `Tech Stack`, `Patterns & Conventions`, `Workflow & Agent Architecture`, and the YAML block in `Summary (for downstream agents)`
-- **Suggested Next Prompt**: `Use the planner agent to propose how to add validation tooling in ViberMode. Read docs/architecture/framework-analysis.md and packs/vibermode/workflows/product-to-code.md first.`
+- **Recommended Artifacts**: `README.md`, `docs/reference/agent-surface-map.yaml`, `docs/reference/repo-visual-map.md`, `packs/vibermode/README.md`, `CONTRIBUTING.md`
+- **Critical Inputs That Must Remain Stable**: canonical role/workflow paths under `packs/vibermode/`, artifact folder convention `docs/[project-name]/`, `docs/reference/agent-surface-map.yaml`, and `npm run validate`
+- **Sections That Must Remain Stable**: `Tech Stack`, `Patterns & Conventions`, `Technical Debt & Concerns`, and the YAML block in `Summary (for downstream agents)`
+- **Suggested Next Prompt**: `Use the planner agent to create a safe cleanup plan for ViberMode. Read docs/architecture/framework-analysis.md, then classify each cleanup target as delete, archive, update, or keep.`

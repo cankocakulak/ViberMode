@@ -6,6 +6,14 @@ What user problem are we solving? Include evidence or reasoning.
 ## Solution
 High-level approach. What will the user experience?
 
+## Product Core
+
+- **First Value Moment**: What useful or satisfying thing should the user reach first?
+- **Core Loop**: What repeatable action makes the product worth returning to?
+- **Differentiator**: What makes this app feel specific rather than generic?
+- **Quality Anchors**: Surfaces that must feel polished enough to test, such as onboarding, main screen, empty state, upgrade/paywall shell, or core action flow.
+- **Defer List**: Important ideas intentionally not included in the first implementation pass.
+
 ## Requirements
 
 ### Must Have (P0)
@@ -45,6 +53,13 @@ source_artifacts:
   brainstorm: "docs/[project-name]/brainstorm.md"
 primary_user_problem: "One-sentence restatement of the problem"
 solution_shape: "One-sentence restatement of the solution"
+first_value_moment: "What the user reaches first that proves value"
+core_loop: "Repeatable action or habit loop"
+differentiator: "What should make this feel app-specific"
+quality_anchors:
+  - "Surface or flow that must not feel generic"
+defer_list:
+  - "Important idea intentionally deferred"
 p0_requirements:
   - id: "PR-001"
     summary: "Requirement summary"
@@ -73,12 +88,14 @@ Recommended Artifacts:
 Critical Inputs:
 - Problem
 - Solution
+- Product Core
 - P0 requirements
 - Tech stack constraints
 
 Sections That Must Not Change:
 - Problem
 - Solution
+- Product Core
 - P0 requirements
 - Out of Scope
 

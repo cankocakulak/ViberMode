@@ -2,6 +2,8 @@
 
 This guide helps a developer or tool choose the right ViberMode capability quickly.
 
+If you do not yet understand how the workflows combine into higher-level services, read `docs/architecture/service-map.md` first.
+
 ## Surface Rule
 
 - Prefer `primary` capabilities first.
@@ -21,12 +23,18 @@ This guide helps a developer or tool choose the right ViberMode capability quick
 ### 2. Are you working inside an existing repository?
 
 - Yes:
-  - Use `repo-change` for broad repo iteration work
+  - Use `change-to-release` when the requested changes should be validated and optionally released or deployed
+  - Use `repo-change` for broad repo iteration work without release orchestration
   - Or pick a narrower iterate agent below
 - No:
   - Use `bootstrap` or `product-to-spec` depending on whether you need repo prep or spec generation first
 
 ## Existing Repo Paths
+
+### I have several feedback notes, bugs, or release-facing requests
+
+- Use `change-triager`
+- If the user wants the whole path through validation and release, use `change-to-release`
 
 ### I need to understand what this code does
 
@@ -136,11 +144,16 @@ This guide helps a developer or tool choose the right ViberMode capability quick
 
 - `analyzer -> product-to-spec -> bootstrap -> spec-to-code`
 
+### Existing repo feedback to release
+
+- `change-triager -> repo-change -> experience-hardening -> release adapter`
+
 ## Support Capabilities
 
 These are usually not the first capability you reach for, but they matter inside larger flows:
 
 - `bootstrap`
+- `change-triager`
 - `task-planner`
 - `implementation-runner`
 - `runtime-validator`
@@ -163,7 +176,7 @@ Avoid these for new usage:
 If a narrow iterate agent starts uncovering a much larger product-definition problem:
 
 - stop treating it as a local tweak
-- move up to `product-to-spec` or `repo-change`
+- move up to `product-to-spec`, `repo-change`, or `change-to-release` when release is part of the ask
 
 If a product workflow is too heavy for the task:
 

@@ -31,6 +31,11 @@ One-line description of the overall feature.
 ### UX Flow Coverage
 - `[Flow Name]` → `FEATURE-001`
 
+### Experience Core Coverage
+- First Value Moment → `FEATURE-001`
+- Core Loop → `FEATURE-001`
+- Quality Anchor: `[Surface/State]` → `FEATURE-001`
+
 ## Summary (for downstream agents)
 
 ```yaml
@@ -46,6 +51,11 @@ coverage:
     PR-001: ["FEATURE-001"]
   ux_flows:
     "[Flow Name]": ["FEATURE-001"]
+  experience_core:
+    first_value_moment: ["FEATURE-001"]
+    core_loop: ["FEATURE-001"]
+    quality_anchors:
+      "[Surface/State]": ["FEATURE-001"]
 dependencies:
   FEATURE-001: []
 implementation_risks:

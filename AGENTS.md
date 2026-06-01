@@ -39,6 +39,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **tester** | `packs/vibermode/roles/iterate/tester.md` | Verifies a surface with CLI plus runtime evidence and focused smoke checks |
 | **integration-auditor** | `packs/vibermode/roles/iterate/integration-auditor.md` | Audits whether a feature is actually wired across routes, state, events, and services |
 | **surface-hardener** | `packs/vibermode/roles/iterate/surface-hardener.md` | Hardens an existing screen or flow for edge states, resilience, and accessibility |
+| **change-triager** | `packs/vibermode/roles/iterate/change-triager.md` | Turns mixed feedback, bug notes, and release-facing requests into a scoped change brief |
 | **experience-reviewer** | `packs/vibermode/roles/iterate/experience-reviewer.md` | Reviews product feel and user-facing experience quality after runtime validation |
 | **runtime-validator** | `packs/vibermode/roles/iterate/runtime-validator.md` | Executes formal post-implementation build and runtime validation |
 | **spec-reviewer** | `packs/vibermode/roles/iterate/spec-reviewer.md` | Reviews spec artifacts before task planning begins |
@@ -70,6 +71,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **tester** agent" → Read `packs/vibermode/roles/iterate/tester.md`
 - "Use the **integration-auditor** agent" → Read `packs/vibermode/roles/iterate/integration-auditor.md`
 - "Use the **surface-hardener** agent" → Read `packs/vibermode/roles/iterate/surface-hardener.md`
+- "Use the **change-triager** agent" → Read `packs/vibermode/roles/iterate/change-triager.md`
 - "Use the **experience-reviewer** agent" → Read `packs/vibermode/roles/iterate/experience-reviewer.md`
 - "Use the **runtime-validator** agent" → Read `packs/vibermode/roles/iterate/runtime-validator.md`
 - "Use the **spec-reviewer** agent" → Read `packs/vibermode/roles/iterate/spec-reviewer.md`

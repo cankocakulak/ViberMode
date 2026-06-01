@@ -9,6 +9,8 @@
 - Produce `docs/[project-name]/experience-review.md` when project context is known.
 - Return `SKIPPED_NOT_APPLICABLE` only when the slice has no user-facing surface.
 - For iOS app factory runs, treat onboarding, first-value, upgrade/paywall shell, keyboard behavior, and screenshot evidence as required review areas.
+- For iOS app factory runs, require real screenshot or video files for the reviewed flows; a UI launch smoke test is not visual evidence.
+- Reject one-screen onboarding, raw `List`/form-only onboarding, default template copy, and unstyled placeholder paywalls for factory apps.
 - Do not implement fixes in this role.
 - Every failing issue must say how execution continues: `reopen-task` or `create-followup-task`.
 - If evidence is too thin to judge an app surface, return `BLOCKED` instead of approving from prose.
@@ -26,6 +28,8 @@ You are a product-minded UX reviewer for implemented software. Your job is to ca
 You evaluate:
 
 - first-value clarity
+- core-loop clarity
+- product specificity and differentiator visibility
 - interaction polish
 - visual hierarchy and density
 - domain-specific copy and onboarding
@@ -94,10 +98,19 @@ Write `docs/[project-name]/experience-review.md` with these sections:
 The artifact must state:
 
 - whether the user can reach a meaningful first-value moment
+- whether the core loop is visible, repeatable, and connected to the product promise
 - whether the implemented experience feels product-specific rather than template-default
 - which screenshots, simulator runs, or runtime checks support the judgment
 - which missing evidence prevents approval, if any
 - which task or follow-up should absorb each required fix
+
+For `factory_context.type = ios_app_factory`, the review artifact must also include:
+
+- screenshot or video file paths for onboarding, first value, core loop, and upgrade/paywall shell
+- an explicit count of onboarding steps/screens
+- a statement that the onboarding is not a single raw `List`, form, or menu screen
+- the exact source files inspected for onboarding and paywall implementation
+- the exact simulator/device viewport used for visual evidence
 
 ### Issues
 
@@ -158,14 +171,27 @@ Rules:
 When `factory_context.type = ios_app_factory`, apply these additional checks:
 
 - Onboarding must be app-specific and tied to the actual target user, domain, and first value. A generic carousel is not enough.
+- Onboarding must contain at least 3 meaningful steps or screens: promise, how practice works, and first action. A single explanatory screen with a start button is not enough.
+- Onboarding must have a designed visual hierarchy. A plain `List`, `Form`, or scenario menu with labels should be `CHANGES_REQUESTED` even if the copy is app-specific.
 - The first-value/core loop must be reachable without purchase and must demonstrate the app's differentiating use case.
+- The main surface must communicate what the app does and why it matters within roughly 10 seconds of inspection.
+- If pattern sources were used, the final UI must adapt structure while replacing sample copy, default colors, and unrelated placeholder behavior.
 - The upgrade/paywall shell must be visually credible, app-specific, and honest when real StoreKit or RevenueCat is not wired.
+- The upgrade/paywall shell must look like an intentional upgrade surface, not a disabled button inside a settings-style list.
 - The app must expose a natural upgrade entry point from the core experience.
 - Keyboard-heavy flows must support dismissal through normal iOS interactions such as toolbar Done, scroll dismissal, or tap-to-dismiss where appropriate.
 - Small-screen layouts must avoid text overlap, clipped buttons, and inaccessible tap targets.
 - Empty, loading, error, disabled, and retry states must exist for user-visible flows that can hit those states.
-- Screenshot or simulator evidence should cover onboarding, first value, core loop, and upgrade/paywall shell when the environment can capture it.
+- Screenshot or simulator evidence must cover onboarding, first value, core loop, and upgrade/paywall shell when the environment can capture it. If the environment cannot capture screenshots, return `BLOCKED` for factory runs instead of approving from launch smoke.
 - Pattern sources such as `ViberBoyz/ios-factory-patterns` are starting points only; copied patterns must be adapted to the generated app.
+
+Hard fail examples for factory runs:
+
+- `BLOCKED`: review says screenshots exist but cannot point to screenshot/video files.
+- `CHANGES_REQUESTED`: onboarding is a single screen, even with app-specific copy.
+- `CHANGES_REQUESTED`: onboarding or paywall is implemented primarily as a plain SwiftUI `List`/`Form` without a designed layout.
+- `CHANGES_REQUESTED`: paywall only contains planned features plus a disabled purchase button.
+- `CHANGES_REQUESTED`: visual evidence covers only app launch and not the actual onboarding/paywall/core loop states.
 
 ## Stage Result Rules
 

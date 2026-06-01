@@ -55,6 +55,8 @@ Rules:
 - Always produce the artifact at `docs/[project-name]/ux.md`
 - Keep the template headings stable
 - The `## Primary Flows` section is required
+- The UX must preserve the PRD's first-value moment, core loop, differentiator, quality anchors, and defer list when present
+- When pattern sources are provided, include a pattern adaptation plan that names what to reuse and what must become app-specific
 - Every flow must use the same structure:
   - Flow Name
   - User Goal
@@ -82,6 +84,8 @@ Always produce the artifact. UX documents are reference material for story writi
 - Every primary flow must map back to one or more PRD requirement IDs.
 - Every P0 PRD requirement must be covered by at least one flow, screen, or interaction rule.
 - Every screen or component named in the UX spec should exist to support a flow step, not as decoration.
+- The main surface must make the product's value understandable within roughly 10 seconds without relying on explanatory prose alone.
+- Empty states, first-run states, and upgrade/paywall shells should be designed as product surfaces, not placeholder lists, when they are in scope.
 - If the UX spec exposes a missing requirement or contradiction, call it out in Analysis and Summary instead of inventing product behavior.
 - When `factory_context.type` is `ios_app_factory`, define these primary flows explicitly: first-launch onboarding, first value/core loop, and upgrade/paywall shell. Use any supplied `pattern_sources` as copy-and-adapt implementation references, but make copy, benefits, and screens domain-specific to the generated app.
 

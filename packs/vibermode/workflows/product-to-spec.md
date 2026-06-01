@@ -78,6 +78,7 @@ Outputs:
 Success Criteria:
 - P0 requirements are explicit and testable
 - requirement IDs are stable
+- first-value moment, core loop, differentiator, deferred scope, and quality anchors are explicit for user-facing products
 - out-of-scope is clear
 - artifact includes summary and handoff contract
 
@@ -106,6 +107,8 @@ Outputs:
 Success Criteria:
 - primary flows use the canonical UX flow structure
 - PRD requirement references are preserved
+- first-value, core loop, onboarding or first-run experience, empty states, and upgrade/paywall shell are designed when relevant
+- pattern sources are named with copy-and-adapt instructions when provided
 - copy and interaction rules are explicit
 - artifact includes summary and handoff contract
 
@@ -134,6 +137,7 @@ Outputs:
 Success Criteria:
 - every P0 requirement maps to at least one story
 - every primary UX flow maps to at least one story
+- stories preserve the foundation -> first-value/core-loop -> experience surfaces ordering when those slices exist
 - every story has ID, dependencies, implementation boundary, and Given/When/Then criteria
 - artifact includes coverage map, summary, and handoff contract
 
@@ -162,6 +166,7 @@ Outputs:
 Success Criteria:
 - verdict is explicit
 - findings cite artifacts and concrete weaknesses
+- user-facing specs are blocked when first-value, core loop, differentiator, quality anchors, or pattern adaptation are missing
 - rerun routing identifies which upstream stage must change when the verdict is not approved
 - weak or contradictory specs do not silently pass into bootstrap or task planning
 

@@ -59,7 +59,7 @@ Default command:
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-id.json
+  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-id.json
 ```
 
 Purpose:
@@ -70,6 +70,10 @@ Success Criteria:
 - run manifest exists
 - generated workspace exists
 - `product_to_code_result.status` is `complete`
+- `product_to_code_result.experience_review.status` is `approved` or equivalent structured evidence is present
+- `experience-review.md` exists and has the required Stage 3 sections
+- iOS factory runs include screenshot/video file evidence for onboarding, first value, core loop, and upgrade/paywall shell
+- iOS factory runs do not rely on UI launch smoke as visual evidence
 - Xcode project/workspace and scheme are discoverable
 - `xcodebuild` and `fastlane` are available
 - required Keychain entries exist
@@ -201,7 +205,7 @@ On failure, update the same run manifest:
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-id.json \
+  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-id.json \
   --submit \
   --commit-state \
   --app-name "Mood Dots by ViberBoyz"
@@ -239,6 +243,7 @@ The same object may be supplied with `--metadata-file`. For internal TestFlight,
 
 ## Failure Routing
 
+- Stage 3 quality blocker: rerun product-to-code remediation for the same generated repo; do not upload a new TestFlight build.
 - Missing credentials: fix Keychain and rerun preflight.
 - Fastlane `produce` authentication failure: refresh `viberboyz-fastlane-session` with `fastlane spaceauth`, or create the app manually, then rerun with `--skip-produce`.
 - App name unavailable: rerun with a unique `--app-name`, such as `[Name] by [Owner]`, and preserve the original display name inside the app.

@@ -25,27 +25,23 @@ flowchart TB
 
     subgraph packs_detail["Canonical Packs"]
         vibermode["packs/vibermode/"]
-        simmer["packs/simmer/paper-trading/"]
     end
     packs --> vibermode
-    packs --> simmer
 
     subgraph adapters_detail["Platform Projections"]
         codex["adapters/codex/"]
         cursor["adapters/cursor/"]
-        openclaw["adapters/openclaw/"]
     end
     adapters --> codex
     adapters --> cursor
-    adapters --> openclaw
 
     subgraph docs_detail["Public Docs"]
         arch["docs/architecture/"]
-        openclaw_docs["docs/openclaw/"]
+        ops["docs/operations/"]
         ref["docs/reference/"]
     end
     docs --> arch
-    docs --> openclaw_docs
+    docs --> ops
     docs --> ref
 ```
 
@@ -69,6 +65,7 @@ flowchart TB
 
     subgraph product_roles["Product Roles"]
         analyzer["analyzer"]
+        app_researcher["app-researcher"]
         brainstormer["brainstormer"]
         prd["prd"]
         ux_designer["ux-designer"]
@@ -76,8 +73,12 @@ flowchart TB
         bootstrap["bootstrap"]
         task_planner["task-planner"]
         implementation_runner["implementation-runner"]
+        ios_submitter["ios-submitter"]
+        ralph_converter["ralph-converter legacy"]
+        ralph_runner["ralph-runner legacy"]
     end
     product --> analyzer
+    product --> app_researcher
     product --> brainstormer
     product --> prd
     product --> ux_designer
@@ -85,14 +86,19 @@ flowchart TB
     product --> bootstrap
     product --> task_planner
     product --> implementation_runner
+    product --> ios_submitter
+    product --> ralph_converter
+    product --> ralph_runner
 
     subgraph iterate_roles["Iterate Roles"]
         scout["scout"]
         planner["planner"]
+        change_triager["change-triager"]
         ux_tweaker["ux-tweaker"]
         ux_investigator["ux-investigator"]
         modularizer["modularizer"]
         surface_hardener["surface-hardener"]
+        experience_reviewer["experience-reviewer"]
         integration_auditor["integration-auditor"]
         tester["tester"]
         reviewer["reviewer"]
@@ -103,10 +109,12 @@ flowchart TB
     end
     iterate --> scout
     iterate --> planner
+    iterate --> change_triager
     iterate --> ux_tweaker
     iterate --> ux_investigator
     iterate --> modularizer
     iterate --> surface_hardener
+    iterate --> experience_reviewer
     iterate --> integration_auditor
     iterate --> tester
     iterate --> reviewer
@@ -116,19 +124,31 @@ flowchart TB
     iterate --> change_task_planner
 
     subgraph workflow_detail["Workflows"]
+        app_opportunity_research["app-opportunity-research"]
+        idea_research_backlog["idea-research-backlog"]
+        daily_ios_app_pipeline["daily-ios-app-pipeline"]
         product_to_spec["product-to-spec"]
+        bootstrap_workflow["bootstrap"]
         spec_to_code["spec-to-code"]
         product_to_code["product-to-code"]
         repo_change["repo-change"]
-        bootstrap_workflow["bootstrap"]
+        experience_hardening["experience-hardening"]
+        change_to_release["change-to-release"]
         remediation_routing["remediation-routing"]
+        ios_submit_testflight["ios-submit-testflight"]
     end
+    workflows --> app_opportunity_research
+    workflows --> idea_research_backlog
+    workflows --> daily_ios_app_pipeline
     workflows --> product_to_spec
+    workflows --> bootstrap_workflow
     workflows --> spec_to_code
     workflows --> product_to_code
     workflows --> repo_change
-    workflows --> bootstrap_workflow
+    workflows --> experience_hardening
+    workflows --> change_to_release
     workflows --> remediation_routing
+    workflows --> ios_submit_testflight
 
     subgraph template_detail["Templates"]
         prd_template["prd-template.md"]
@@ -150,7 +170,6 @@ flowchart LR
     canonical --> cursor["Cursor Command\nadapters/cursor/commands/*.md"]
     canonical --> agents["Agent Index\nAGENTS.md"]
     canonical --> reference["Reference Layer\ndocs/reference/*"]
-    canonical --> openclaw["OpenClaw Notes\nadapters/openclaw + docs/openclaw"]
 
     reference --> capability["capability-map.md"]
     reference --> decision["decision-tree.md"]
@@ -169,8 +188,21 @@ flowchart LR
     bootstrap --> task_planner["task-planner"]
     task_planner --> implementation["implementation-runner"]
     implementation --> runtime["runtime-validator"]
-    runtime --> reviewer["reviewer"]
+    runtime --> experience["experience-hardening"]
+    experience --> reviewer["reviewer"]
     reviewer --> remediation["remediation-routing"]
+```
+
+## Existing Repo Change View
+
+```mermaid
+flowchart LR
+    notes["change notes"] --> triage["change-triager"]
+    triage --> repo_change["repo-change"]
+    repo_change --> validation["runtime-validator"]
+    validation --> experience["experience-hardening"]
+    experience --> review["reviewer"]
+    review --> release["optional release adapter"]
 ```
 
 ## Iterate Toolkit View
@@ -189,11 +221,19 @@ flowchart LR
         surface_hardener["surface-hardener"]
     end
 
+    subgraph translate["Translate"]
+        change_triager["change-triager"]
+        change_task_planner["change-task-planner"]
+    end
+
     subgraph verify["Verify"]
         integration_auditor["integration-auditor"]
         tester["tester"]
+        experience_reviewer["experience-reviewer"]
         reviewer["reviewer"]
         runtime_validator["runtime-validator"]
+        spec_reviewer["spec-reviewer"]
+        remediation_router["remediation-router"]
     end
 ```
 

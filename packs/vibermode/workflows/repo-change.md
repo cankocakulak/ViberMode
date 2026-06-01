@@ -6,6 +6,7 @@
 
 - Use this when the repo already exists and the request is a bounded change.
 - Do not use this for raw product ideation; escalate to `product-to-spec` if the change becomes a new product slice.
+- Use `change-to-release` instead when the user wants implementation plus TestFlight, deploy, release status, or another delivery adapter.
 - First confirm the repo root and the change request.
 - Start with `scout` for a narrow area or `analyzer` if repo context is weak.
 - Produce one approved `docs/[project-name]/plan.md` before task splitting.

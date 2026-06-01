@@ -4,7 +4,9 @@ This document answers one practical question:
 
 > Which ViberMode skill, agent, or workflow should I use for this job?
 
-It is written for both humans and tool-assisted workers such as Codex, Claude Code, Cursor, and OpenClaw operators.
+It is written for both humans and tool-assisted workers such as Codex, Claude Code, and Cursor.
+
+For the service-level view of how workflows combine into end-to-end outcomes, start with `docs/architecture/service-map.md`.
 
 ## Reading Guide
 
@@ -55,8 +57,10 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 | I already have specs and want implementation execution | `spec-to-code` |
 | I want the full idea-to-code path | `product-to-code` |
 | I want to work inside an existing repo without the full greenfield flow | `repo-change` |
+| I have mixed feedback, bug notes, or release-facing changes to organize | `change-triager` |
+| I want existing-repo changes validated and optionally released | `change-to-release` |
 | I need repo baseline and runnable setup clarified first | `bootstrap` |
-| I want to factory-create iOS repos and prepare App Store automation | `ios-app-store-factory` |
+| I want to run the iOS app factory | `daily-ios-app-pipeline` |
 | I want to upload a generated iOS app to internal TestFlight | `ios-submit-testflight` |
 
 ## Product Agents
@@ -247,6 +251,27 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
   - Cursor: `/planner`
   - Any tool: `planner`
 
+### Translate
+
+#### `change-triager`
+
+- Kind: `iterate-agent`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Normalize mixed user feedback, bug bullets, screenshots, and release-facing notes into a scoped change brief
+- Use when:
+  - the user gives several requested changes for an existing repo
+  - release blockers, must-fix items, and nice-to-have improvements need separation before planning
+- Avoid when:
+  - the request is one obvious small fix that can go directly to `repo-change`
+  - the request is raw product ideation with no existing implementation surface
+- Typical outputs:
+  - `docs/[project-name]/change-brief.md`
+- Surfaces:
+  - Codex: `viber-change-triager`
+  - Cursor: not currently projected
+  - Any tool: `change-triager`
+
 ### Improve
 
 #### `ux-tweaker`
@@ -415,7 +440,6 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 - Surfaces:
   - Codex: `viber-product-to-spec`
   - Cursor: not currently projected
-  - OpenClaw: documented target workflow
 
 #### `spec-to-code`
 
@@ -428,7 +452,6 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 - Surfaces:
   - Codex: `viber-spec-to-code`
   - Cursor: not currently projected
-  - OpenClaw: documented active workflow
 
 #### `product-to-code`
 
@@ -441,7 +464,6 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 - Surfaces:
   - Codex: `viber-product-to-code`
   - Cursor: not currently projected
-  - OpenClaw: documented composed workflow target
 
 #### `repo-change`
 
@@ -456,7 +478,26 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 - Surfaces:
   - Codex: `viber-repo-change`
   - Cursor: not currently projected
-  - OpenClaw: not currently projected
+
+#### `change-to-release`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Apply requested changes inside an existing repository, validate them, harden the user-facing experience, and optionally release
+- Stages:
+  - `change-triager -> repo-change -> experience-hardening -> optional release adapter`
+- Use when:
+  - the user gives feedback or bug notes for an existing repo and wants the result handled end to end
+  - the request may culminate in TestFlight, deployment, or another release step
+- Distinction:
+  - Use `repo-change` when code changes are enough.
+  - Use `change-to-release` when validation, polish gates, release state, or delivery is part of the ask.
+- Run model:
+  - One invocation targets one repo and writes artifacts under that repo's `docs/[project-name]/` folder.
+- Surfaces:
+  - Codex: `viber-change-to-release`
+  - Cursor: not currently projected
 
 ### Support workflows
 
@@ -473,7 +514,6 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
   - The underlying executor is the bootstrap role described above.
 - Surfaces:
   - Canonical workflow only
-  - OpenClaw: documented target workflow
 
 #### `experience-hardening`
 
@@ -486,7 +526,6 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 - Surfaces:
   - Codex: `viber-experience-hardening`
   - Cursor: not currently projected
-  - OpenClaw: not currently projected
 
 #### `remediation-routing`
 
@@ -497,7 +536,53 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 - Surfaces:
   - Codex: `viber-remediation-routing`
   - Cursor: not currently projected
-  - OpenClaw: documented workflow target
+
+#### `app-opportunity-research`
+
+- Kind: `workflow`
+- Callability: `artifact-aware`
+- Tier: `primary`
+- Purpose: Produce a focused app opportunity research pack from source evidence without creating a repo
+- Use when:
+  - the goal is market/category research or candidate discovery
+  - the output may feed the private idea backlog later
+- Surfaces:
+  - Canonical workflow only
+
+#### `idea-research-backlog`
+
+- Kind: `workflow`
+- Callability: `artifact-aware`
+- Tier: `support`
+- Purpose: Maintain the private ranked backlog of researched app ideas
+- Use when:
+  - a research candidate should be validated and upserted before factory consumption
+- Surfaces:
+  - Canonical workflow only
+
+#### `daily-ios-app-pipeline`
+
+- Kind: `workflow`
+- Callability: `artifact-aware`
+- Tier: `support`
+- Purpose: Consume the private idea backlog, create one generated iOS repo, and run product-to-code
+- Use when:
+  - the factory should turn one ready backlog item into a generated app repo
+  - Stage 2 and Stage 3 must share one run manifest
+- Surfaces:
+  - Canonical workflow only
+
+#### `ios-submit-testflight`
+
+- Kind: `workflow`
+- Callability: `artifact-required`
+- Tier: `support`
+- Purpose: Consume a completed generated-app run manifest and upload an internal TestFlight build
+- Use when:
+  - Stage 3 has completed with validation, review, and release metadata
+  - an existing generated app needs internal TestFlight delivery
+- Surfaces:
+  - Canonical workflow only
 
 ## Surface Notes
 
@@ -515,12 +600,6 @@ It is written for both humans and tool-assisted workers such as Codex, Claude Co
 
 - Use `AGENTS.md`
 - Canonical role names remain the stable surface
-
-### OpenClaw
-
-- Use the docs under `docs/openclaw/`
-- OpenClaw is treated as the orchestration/runtime shell rather than the canonical authoring surface
-- Some workflows are documented targets rather than fully projected first-class commands inside this repository
 
 ## Simplification Notes
 

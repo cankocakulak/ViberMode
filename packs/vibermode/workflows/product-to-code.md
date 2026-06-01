@@ -78,12 +78,15 @@ For existing-product work that requires codebase discovery, run `analyzer` first
 - Stage 0 must complete before `product-to-spec` whenever the input starts from `repo_url` instead of an existing `workspace_path`.
 - Stage 0 must set exactly one canonical local `workspace_path`; all later artifacts and code changes must resolve inside that path.
 - Stage 1 must write `spec-review.md` and reach `APPROVED` before bootstrap can start.
-- Stage 1 must preserve and apply `factory_context` when provided. For `factory_context.type = ios_app_factory`, PRD, UX, and stories must cover onboarding, first-value, and upgrade/paywall shell before spec review can approve.
+- Stage 1 must preserve and apply `factory_context` when provided. For user-facing apps, PRD, UX, and stories must name the first-value moment, core loop, product-specific differentiator, quality anchors, and deferred scope before spec review can approve.
+- For `factory_context.type = ios_app_factory`, PRD, UX, and stories must cover onboarding, first-value, core loop, upgrade/paywall shell, and pattern adaptation before spec review can approve.
 - If Stage 1 reaches `CHANGES_REQUESTED`, rerun only the specification stages named in `spec-review.md`, preserving stable requirement IDs, UX flow names, and story IDs wherever possible. Stay in Stage 1 until `spec-review.md` reaches `APPROVED` or `BLOCKED`.
 - If Stage 1 reaches `BLOCKED`, the composed workflow is blocked and later stages must not run.
 - Stage 2 must write `bootstrap.md` and establish one canonical workspace path plus a reusable runnable baseline before implementation begins. In `product-to-code`, bootstrap is required even when it only records that an existing baseline is already trusted.
 - If Stage 2 reaches `BLOCKED`, Stage 3 must not run.
-- Stage 3 must run experience hardening after runtime validation for user-facing slices. For `factory_context.type = ios_app_factory`, this gate must check onboarding, first-value/core loop, upgrade/paywall shell, keyboard behavior, small-screen fit, and screenshot evidence before final review can approve.
+- Stage 3 must run experience hardening after runtime validation for user-facing slices. For `factory_context.type = ios_app_factory`, this gate must check onboarding, first-value/core loop, upgrade/paywall shell, keyboard behavior, small-screen fit, and screenshot/video evidence before final review can approve.
+- For `factory_context.type = ios_app_factory`, Stage 3 must not complete when onboarding is one screen, onboarding is a raw `List`/form-style explanation, paywall is a disabled placeholder list, copied pattern code remains sample-like, the app's value is not understandable within 10 seconds of the main surface, or visual evidence is only a UI launch smoke test.
+- For factory automation, Stage 3 quality failures should automatically re-enter remediation for up to 3 passes before the workflow reports `BLOCKED`.
 - All stages must resolve artifacts relative to the same canonical target repo or workspace root.
 - The composed workflow should pass forward only stable artifact paths and explicit stage results, not informal chat summaries.
 
@@ -147,6 +150,7 @@ Status rules:
 - Use stage artifacts as the source of truth; do not mark a stage complete from prose alone.
 - If an artifact exists but lacks an explicit verdict, treat the stage as blocked until the artifact is corrected.
 - `COMPLETE` is allowed only after runtime evidence exists, experience review is approved or explicitly not applicable, and final review approves the implemented slice.
+- For factory runs, the run manifest should record structured Stage 3 evidence under `product_to_code_result.experience_review`, including `status`, `onboarding_steps`, and screenshot or video file paths. Stage 4 preflight may block without this structure.
 
 ## Artifact Folder Convention
 

@@ -238,13 +238,27 @@ function buildFactoryContext(selection, args) {
     stage3_quality_gate: {
       workflow: "packs/vibermode/workflows/experience-hardening.md",
       required_artifact: "docs/[project-name]/experience-review.md",
+      min_onboarding_steps: 3,
+      required_visual_evidence: {
+        type: "screenshot_or_video_files",
+        flows: [
+          "onboarding",
+          "first_value_moment",
+          "core_loop",
+          "upgrade_paywall_shell",
+        ],
+        note: "UI launch smoke is not visual evidence. Store screenshot or video file paths in the experience review and product_to_code_result.",
+      },
       required_checks: [
         "onboarding_is_app_specific",
+        "onboarding_has_at_least_3_steps",
+        "onboarding_is_not_plain_list_or_form",
         "first_value_reachable_without_purchase",
         "paywall_shell_is_app_specific_and_honest",
+        "paywall_shell_is_not_disabled_placeholder_list",
         "keyboard_dismissal_for_text_entry",
         "small_screen_layout_has_no_clipping_or_overlap",
-        "screenshot_or_simulator_evidence_covers_key_flows",
+        "screenshot_or_video_files_cover_key_flows",
       ],
     },
     pattern_sources: [
@@ -272,6 +286,7 @@ function buildFactoryContext(selection, args) {
       "Keep generated app code self-contained after copying the relevant pattern files.",
       "Do not block TestFlight evaluation on real IAP. Keep paywall purchase actions honest when purchase infrastructure is not wired.",
       "After runtime validation, run the experience-hardening gate before final review.",
+      "Do not mark Stage 3 complete without actual screenshot/video artifacts for onboarding, first value, core loop, and upgrade/paywall shell.",
     ],
   };
 }

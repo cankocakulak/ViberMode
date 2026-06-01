@@ -10,9 +10,6 @@ surface_notes:
   any_tool:
     status: canonical-agent-names-via-agents-md
     source_root: AGENTS.md
-  openclaw:
-    status: documented-orchestration-surface
-    source_root: docs/openclaw
 
 capabilities:
   - id: analyzer
@@ -328,6 +325,18 @@ capabilities:
       any_tool_agent: change-task-planner
       canonical_role: packs/vibermode/roles/iterate/change-task-planner.md
 
+  - id: change-triager
+    kind: iterate-agent
+    callability: always-callable
+    tier: support
+    family: translate
+    purpose: normalize mixed user feedback, bug notes, screenshots, and release-facing requests into a scoped change brief
+    surfaces:
+      codex_skill: viber-change-triager
+      cursor_command: null
+      any_tool_agent: change-triager
+      canonical_role: packs/vibermode/roles/iterate/change-triager.md
+
   - id: product-to-spec
     kind: workflow
     callability: artifact-aware
@@ -339,7 +348,6 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/product-to-spec.md
-      openclaw_status: documented-target
 
   - id: spec-to-code
     kind: workflow
@@ -352,7 +360,6 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/spec-to-code.md
-      openclaw_status: documented-active
 
   - id: experience-hardening
     kind: workflow
@@ -377,7 +384,6 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/product-to-code.md
-      openclaw_status: documented-target
 
   - id: repo-change
     kind: workflow
@@ -391,17 +397,17 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/repo-change.md
 
-  - id: ios-app-store-factory
+  - id: change-to-release
     kind: workflow
-    callability: artifact-aware
-    tier: support
+    callability: always-callable
+    tier: primary
     family: workflow
-    purpose: generate an iOS app repo from a template and prepare the App Store Connect/TestFlight automation path
+    purpose: apply existing-repo changes with validation, experience hardening, and optional release delivery
     surfaces:
-      codex_skill: null
+      codex_skill: viber-change-to-release
       cursor_command: null
       any_tool_agent: null
-      canonical_workflow: packs/vibermode/workflows/ios-app-store-factory.md
+      canonical_workflow: packs/vibermode/workflows/change-to-release.md
 
   - id: idea-research-backlog
     kind: workflow
@@ -463,7 +469,6 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/bootstrap.md
-      openclaw_status: documented-target
 
   - id: remediation-routing
     kind: workflow
@@ -476,4 +481,3 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/remediation-routing.md
-      openclaw_status: documented-target

@@ -1,6 +1,6 @@
 # App Factory Automation Overview
 
-This document is the handoff map for the ViberMode iOS app factory. It summarizes the intended stages, state boundaries, current automations, and the open Stage 4 submission work.
+This document is the handoff map for the ViberMode iOS app factory. It summarizes the intended stages, state boundaries, current automations, and the Stage 4 internal TestFlight submission path.
 
 ## Repositories
 
@@ -38,17 +38,17 @@ Template repository used by the repo factory.
 
 ```text
 /Users/mcan/ViberMode
-/Users/mcan/Documents/Codex/vibermode-state/app-factory-state
-/Users/mcan/Documents/Codex/generated-ios-apps
+/Users/mcan/ViberMode/.vibermode-state/app-factory-state
+/Users/mcan/ViberMode/.vibermode-generated-ios-apps
 ```
 
 GitHub token lookup:
 
 ```bash
-security find-generic-password -a "$USER" -s "viberboyz-gh-token" -w
+security find-generic-password -s "viberboyz-gh-token" -w
 ```
 
-The token may be loaded into `GH_TOKEN` for one process. It must not be written to prompts, files, remotes, or logs.
+The token may be loaded into `GH_TOKEN` for one process. Automation prompts first source `/Users/mcan/ViberMode/.vibermode-automation.env` when present, then fall back to Keychain. Secrets must not be written to prompts, files, remotes, or logs.
 
 ## Stage Map
 
@@ -121,10 +121,13 @@ Public ViberMode surfaces:
 Command shape:
 
 ```bash
-GH_TOKEN="$(security find-generic-password -a "$USER" -s "viberboyz-gh-token" -w)" \
+set -a
+[ -f /Users/mcan/ViberMode/.vibermode-automation.env ] && . /Users/mcan/ViberMode/.vibermode-automation.env
+set +a
+GH_TOKEN="${GH_TOKEN:-$(security find-generic-password -s "viberboyz-gh-token" -w 2>/dev/null || true)}" \
 node scripts/ios-app-factory-prepare.mjs \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
-  --workspace-parent /Users/mcan/Documents/Codex/generated-ios-apps \
+  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state \
+  --workspace-parent /Users/mcan/ViberMode/.vibermode-generated-ios-apps \
   --template-owner KantAkademi2 \
   --template-repo ios-boilerplate \
   --destination-owner ViberBoyz \
@@ -158,7 +161,17 @@ For iOS ideas, `product_to_code_input` also includes `factory_context`:
   ],
   "stage3_quality_gate": {
     "workflow": "packs/vibermode/workflows/experience-hardening.md",
-    "required_artifact": "docs/[project-name]/experience-review.md"
+    "required_artifact": "docs/[project-name]/experience-review.md",
+    "min_onboarding_steps": 3,
+    "required_visual_evidence": {
+      "type": "screenshot_or_video_files",
+      "flows": [
+        "onboarding",
+        "first_value_moment",
+        "core_loop",
+        "upgrade_paywall_shell"
+      ]
+    }
   }
 }
 ```
@@ -190,6 +203,7 @@ Expected outputs:
 - implementation commit pushed to the generated iOS repo
 - validation evidence recorded in the generated repo
 - experience review evidence recorded in the generated repo
+- structured experience evidence recorded in `factory/runs/[run-id].json` under `product_to_code_result.experience_review`
 - `factory/runs/[run-id].json` updated with build, validation, and commit details
 - `ideas/backlog.json` updated to reflect progress
 - iOS factory apps include onboarding, a testable first-value/core loop, and a paywall shell using `ViberBoyz/ios-factory-patterns` when useful
@@ -200,10 +214,10 @@ Internal Stage 3 shape:
 3A functional build -> 3B runtime validation -> 3C experience review -> 3D polish remediation loop -> 3E final review
 ```
 
-The experience review is a Stage 3 quality gate. It should catch default-looking onboarding, shallow paywall shells, missing keyboard dismissal, weak first-value flow, small-screen layout problems, and missing screenshot/simulator evidence before the generated repo is considered complete.
+The experience review is a Stage 3 quality gate. It should catch default-looking onboarding, shallow paywall shells, missing keyboard dismissal, weak first-value flow, small-screen layout problems, and missing screenshot/video evidence before the generated repo is considered complete. UI launch smoke is not enough visual evidence for iOS factory completion.
 
 Current status:
-This stage has been tested manually through generated repos. The active factory automation is intended to run through this stage only.
+This stage has been tested manually through generated repos. The manual factory automation is configured to continue to Stage 4 only after Stage 3 runtime validation, experience review, and final review gates pass.
 
 ### Stage 4 - App Store Connect / TestFlight
 
@@ -211,9 +225,9 @@ Purpose:
 Archive the generated iOS app, handle signing, create or update the App Store Connect app record, upload a build, and produce a TestFlight-ready result.
 
 Current status:
-First runnable slice is now defined as internal TestFlight submission. The factory automation still explicitly stops before this stage until live submission is enabled.
+Internal TestFlight submission is implemented as the Stage 4 delivery target. The manual factory automation runs Stage 4 after Stage 3 succeeds, with preflight before live upload.
 
-Expected public ViberMode surfaces to add:
+Public ViberMode surfaces:
 
 - `packs/vibermode/roles/product/ios-submitter.md`
 - `packs/vibermode/workflows/ios-submit-testflight.md`
@@ -252,7 +266,7 @@ The first version is preflight-by-default. A plain run validates credentials, Xc
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/[run-id].json \
+  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/[run-id].json \
   --submit \
   --commit-state
 ```
@@ -276,58 +290,76 @@ Stage 4 should also carry `submission_metadata` in the run manifest. Internal Te
 
 ## Active Codex Automations
 
+Current automation inventory is also recorded in `docs/operations/codex-automations.md`.
+
 ### `viber-idea-research`
 
 Name:
-`Viber Idea Research`
+`Manual - Viber Idea Research`
 
 Schedule:
-`FREQ=HOURLY;INTERVAL=24`
+`FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=10;BYMINUTE=0;BYSECOND=0`
 
 Status:
-`ACTIVE`
+`PAUSED`
 
 Current purpose:
-Run idea research and update private state.
+Manual Stage 1 runner. It runs one focused opportunity research pack, validates the backlog, and commits/pushes private state when candidates are upserted.
 
 Important note:
-The current saved automation prompt predates the new Stage 1 research-pack structure. It should be refreshed after the local ViberMode Stage 1 diff is accepted, so it follows `app-opportunity-research.md`, writes `research-runs/YYYY-MM-DD/[category-or-theme]/`, then upserts only reviewed `ready` candidates into `ideas/backlog.json`.
+The prompt uses `/Users/mcan/ViberMode/.vibermode-state/app-factory-state` as canonical private state and explicitly ignores the historical `/Users/mcan/Documents/Codex/vibermode-state/app-factory-state` path.
 
-### `viber-ios-app-factory`
+### `viber-ios-app-factory-manual-runner`
 
 Name:
-`Viber iOS App Factory`
+`Manual - Viber iOS App Factory`
 
 Schedule:
-`FREQ=HOURLY;INTERVAL=24`
+`FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=10;BYMINUTE=30;BYSECOND=0`
 
 Status:
-`ACTIVE`
+`PAUSED`
 
 Current purpose:
-Run Stage 2 and Stage 3 sequentially. It creates the generated repo, clones it, runs product-to-code, pushes the generated app repo, and syncs private state.
+Manual Stage 2, Stage 3, and Stage 4 runner. It reserves one ready idea, creates the generated repo, runs product-to-code with Stage 3 quality gates, then runs internal TestFlight submission after Stage 4 preflight passes.
 
 Important note:
-This automation explicitly does not run Stage 4 yet.
+Stage 4 is part of this runner. It should not create a second repo or a second manifest.
+
+### `manual-plant-routine-change-to-testflight`
+
+Name:
+`Manual - Plant Routine Change To TestFlight`
+
+Schedule:
+`FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=10;BYMINUTE=45;BYSECOND=0`
+
+Status:
+`PAUSED`
+
+Current purpose:
+Manual existing-repo change-to-release runner for the generated Plant Routine app. It reads `Docs/vibermode/change-request.md`, triages actionable notes, implements scoped changes, validates, reviews, bumps build number, and uploads internal TestFlight when release gates pass.
 
 ## Recommended Automation Split
 
-Use two automations for now:
+Use three manual automations for now:
 
 ```text
 viber-idea-research
   Stage 1 only
   research -> candidate review/upsert -> private backlog
 
-viber-ios-app-factory
-  Stage 2 + Stage 3, later optionally Stage 4
-  backlog item -> repo -> implementation -> later TestFlight
+viber-ios-app-factory-manual-runner
+  Stage 2 + Stage 3 + Stage 4
+  backlog item -> repo -> implementation -> internal TestFlight
+
+manual-plant-routine-change-to-testflight
+  existing generated repo only
+  change notes -> implementation -> validation -> internal TestFlight
 ```
 
 Reasoning:
-Stage 1 can run independently and continuously improve the idea list. Stage 2, Stage 3, and Stage 4 are tied to one selected idea and one generated repo, so they should share a run manifest and be coordinated sequentially.
-
-When Stage 4 is added, the safer first version is a continuation of `viber-ios-app-factory` after Stage 3 succeeds, guarded by an explicit flag or status check. A later split into a third automation is reasonable only if submission needs separate review, retries, or manual approval.
+Stage 1 can run independently and improve the idea list. Stage 2, Stage 3, and Stage 4 are tied to one selected idea and one generated repo, so they share one run manifest. Repo-specific change-to-release runs are separate because they target an already-created app and should not touch the factory backlog.
 
 ## State Handoff Rules
 
@@ -339,10 +371,9 @@ When Stage 4 is added, the safer first version is a continuation of `viber-ios-a
 - Failed stages should mark the run `blocked`, not create a duplicate repo.
 - Secrets stay in Keychain or automation runtime only.
 
-## Stage 4 Handoff Prompt
+## Manual Triggering Notes
 
-Use this context when starting Stage 4 in a separate chat:
-
-```text
-We are extending the ViberMode iOS app factory. Read /Users/mcan/ViberMode/docs/operations/app-factory-automation-overview.md first. Stage 1 research writes private state under ViberBoyz/app-factory-state research-runs and ideas/backlog.json. Stage 2 creates/clones a generated iOS repo and writes factory/runs/[run-id].json. Stage 3 runs product-to-code in that generated repo and updates the same run manifest. Add Stage 4 for App Store Connect/TestFlight submission. Do not store Apple or GitHub secrets in ViberMode or generated repos. Stage 4 must consume an existing generated repo plus factory run manifest, handle signing/App Store Connect metadata safely, upload to TestFlight, and update the run manifest with submission evidence.
-```
+- The automations are intentionally paused so they do not run on wall-clock schedule.
+- When manually fired from Codex, the heartbeat prompt treats that firing as the explicit user request to run.
+- If GitHub DNS fails but credentials exist, the prompts instruct the run to use the local fallback IP settings supported by the app-factory scripts.
+- If credentials or network access are unavailable, the runner should stop before the next mutation boundary and report exactly what did and did not run.

@@ -106,7 +106,7 @@ Command shape:
 
 ```bash
 GH_TOKEN="$GH_TOKEN" node scripts/ios-app-factory-prepare.mjs \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
+  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state \
   --workspace-parent /Users/mcan/Documents/Codex/generated-ios-apps \
   --template-owner KantAkademi2 \
   --template-repo ios-boilerplate \
@@ -168,7 +168,17 @@ Required input from run manifest:
     ],
     "stage3_quality_gate": {
       "workflow": "packs/vibermode/workflows/experience-hardening.md",
-      "required_artifact": "docs/[project-name]/experience-review.md"
+      "required_artifact": "docs/[project-name]/experience-review.md",
+      "min_onboarding_steps": 3,
+      "required_visual_evidence": {
+        "type": "screenshot_or_video_files",
+        "flows": [
+          "onboarding",
+          "first_value_moment",
+          "core_loop",
+          "upgrade_paywall_shell"
+        ]
+      }
     }
   }
 }
@@ -184,10 +194,15 @@ For iOS factory runs, Stage 3 must treat `factory_context` as part of the produc
 Stage 3 uses `product-to-code`, whose implementation stage includes a subloop:
 
 ```text
-functional build -> runtime validation -> experience review -> polish remediation -> final review
+functional build -> runtime validation -> experience review -> polish remediation -> revalidation -> repeated experience review -> final review
 ```
 
 The experience review is still part of product-to-code. It is not the App Store/TestFlight stage.
+
+Automation rule:
+- If Stage 3 quality checks fail, the factory automation should re-enter Stage 3 remediation in the same run instead of moving to Stage 4.
+- Retry the experience-hardening loop up to 3 times.
+- Only stop for human review when the same quality gate still fails after 3 passes or the blocker is not implementable inside the generated repo.
 
 Success Criteria:
 
@@ -196,8 +211,11 @@ Success Criteria:
 - `experience-review.md` approves the user-facing app experience or explicitly explains why it is not applicable
 - implementation commit is pushed to the generated repo
 - run manifest is updated with validation and commit details
+- run manifest records structured experience evidence under `product_to_code_result.experience_review`
 - onboarding, first-value, and paywall shell coverage is visible in PRD, UX, stories, and tasks for iOS factory runs
 - onboarding, first-value/core loop, upgrade/paywall shell, keyboard behavior, and small-screen fit are checked before completion for iOS factory runs
+- actual screenshot or video files cover onboarding, first value, core loop, and upgrade/paywall shell; UI launch smoke alone is not enough
+- onboarding is at least three meaningful steps/screens and not a single plain `List` or form-style explanation
 
 ## Stage 4 - App Store/TestFlight
 
