@@ -204,7 +204,7 @@ Source page:
 Export command:
 
 ```bash
-npm run export:idea-to-testflight
+npm run export:idea-to-testflight:all
 ```
 
 ## Existing Repo Change View

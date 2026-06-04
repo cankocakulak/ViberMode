@@ -10,6 +10,10 @@ This repository keeps its public documentation under `docs/`.
   - `boundary-decisions.md` explains removed or externalized surfaces such as Simmer, OpenClaw, and the old iOS App Store factory workflow
 - `docs/use-cases/`
   - Concrete operating manifests for service-level outcomes such as app opportunity research, iOS app factory, product-to-code, and generated app changes to TestFlight
+- `docs/visuals/`
+  - Code-authored, deployable visual sources; `idea-to-testflight/` generates the iOS factory diagrams
+- `docs/assets/`
+  - Exported SVG/PNG assets referenced by docs; edit source under `docs/visuals/` when available
 - `docs/operations/`
   - Operational runbooks for safely wiring local or private automation runtimes
   - `archive/` holds historical run, validation, and bootstrap artifacts that should not sit at the public docs root
@@ -38,6 +42,8 @@ If you are new to the repo:
 1. `docs/architecture/service-map.md` - what ViberMode provides as services
 2. `docs/architecture/boundary-decisions.md` - what is intentionally outside this repo
 3. `docs/use-cases/README.md` - concrete operating paths and automation mappings
-4. `docs/reference/decision-tree.md` - which service or capability to use
-5. `docs/reference/capability-map.md` - exact role and workflow descriptions
-6. `docs/operations/` - only when running private automation or release operations
+4. `docs/use-cases/ios-app-factory.md` - idea-to-TestFlight path, visuals, and automation handoff
+5. `docs/reference/decision-tree.md` - which service or capability to use
+6. `docs/reference/capability-map.md` - exact role and workflow descriptions
+7. `docs/visuals/README.md` - only when editing exported diagrams
+8. `docs/operations/` - only when running private automation or release operations

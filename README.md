@@ -79,6 +79,9 @@ Canonical content lives under `packs/`. Platform integrations live under `adapte
 
 Visual reference:
 - `docs/reference/repo-visual-map.md` — Mermaid diagrams for repo topology, pack structure, projections, and workflow shape
+- `docs/use-cases/ios-app-factory.md` — top-down idea-to-TestFlight operating path and generated visuals
+- `docs/visuals/idea-to-testflight/` — deployable source for the iOS factory diagrams
+- `docs/assets/idea-to-testflight-flow.svg` and `.png` — exported primary figure
 
 ## What ViberMode Provides
 
@@ -94,6 +97,8 @@ ViberMode is easier to read as a set of services, not as a flat list of agents.
 
 Read `docs/architecture/service-map.md` for the full service-level map.
 Read `docs/use-cases/` for concrete operating paths and automation mappings.
+For the idea-to-TestFlight flow, start at `docs/use-cases/ios-app-factory.md`; editable visual source lives under `docs/visuals/idea-to-testflight/` and exports to `docs/assets/`.
+Regenerate its SVG/PNG assets with `npm run export:idea-to-testflight:all`.
 
 Repository boundary decisions, including why OpenClaw projection docs, the Simmer domain pack, and the old monolithic `ios-app-store-factory` workflow are not part of ViberMode core, are recorded in `docs/architecture/boundary-decisions.md`.
 
@@ -310,6 +315,9 @@ All agents referenced via `viber-mode/packs/vibermode/roles/` paths — works ou
 - `docs/architecture/service-map.md` - service-level map showing which workflows combine into larger outcomes
 - `docs/architecture/boundary-decisions.md` - what is intentionally outside ViberMode core
 - `docs/use-cases/` - concrete operating paths and automation mappings
+- `docs/use-cases/ios-app-factory.md` - top-down idea-to-TestFlight flow and factory visuals
+- `docs/visuals/` - code-authored visual sources
+- `docs/assets/` - exported SVG/PNG visual assets
 - `docs/architecture/` - framework analysis and service-level architecture notes
 - `docs/reference/capability-map.md` - what each agent, skill, and workflow is for
 - `docs/reference/decision-tree.md` - how to choose the right capability quickly

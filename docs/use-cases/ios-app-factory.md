@@ -24,7 +24,7 @@ ready private backlog idea
 
 ## Visuals
 
-Primary horizontal figure:
+Primary top-down figure:
 
 ![Idea to TestFlight flow](../assets/idea-to-testflight-flow.svg)
 
@@ -32,12 +32,23 @@ Compact stage figure:
 
 ![Idea to TestFlight compact flow](../assets/idea-to-testflight-compact.svg)
 
+PNG exports:
+
+- `docs/assets/idea-to-testflight-flow.png`
+- `docs/assets/idea-to-testflight-compact.png`
+
 The deployable visual source lives in `docs/visuals/idea-to-testflight/`.
 
 To regenerate exported SVG assets:
 
 ```bash
 npm run export:idea-to-testflight
+```
+
+To regenerate exported SVG and PNG assets on macOS:
+
+```bash
+npm run export:idea-to-testflight:all
 ```
 
 ## Repo Surfaces
