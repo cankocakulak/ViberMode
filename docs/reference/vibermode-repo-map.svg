@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">ViberMode repository visual map</title>
+  <desc id="desc">A polished mind map of the ViberMode repository with the canonical ViberMode pack in the center and surrounding groups for docs, scripts, roles, templates, workflows, and adapters.</desc>
+  <defs>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#e6e1d6" stroke-width="1"/>
+    </pattern>
+    <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1f2937" flood-opacity="0.10"/>
+    </filter>
+    <filter id="cloud-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#111827" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      text {
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0;
+      }
+      .bg { fill: #fbfaf5; }
+      .grid { fill: url(#grid); opacity: 0.72; }
+      .title { font-size: 42px; font-weight: 800; fill: #111827; }
+      .subtitle { font-size: 18px; font-weight: 500; fill: #5f6f85; }
+      .connector { fill: none; stroke: #243142; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; opacity: 0.86; }
+      .card { fill: #ffffff; stroke-width: 2.5; rx: 8; filter: url(#card-shadow); }
+      .card-title { font-size: 28px; font-weight: 800; fill: #111827; }
+      .card-path { font-size: 14px; font-weight: 700; fill: #64748b; }
+      .group-title { font-size: 15px; font-weight: 800; fill: #334155; }
+      .item { font-size: 16px; font-weight: 600; fill: #1f2937; }
+      .item-muted { font-size: 15px; font-weight: 500; fill: #52657a; }
+      .cloud-title { font-size: 58px; font-weight: 850; fill: #111827; }
+      .cloud-sub { font-size: 18px; font-weight: 650; fill: #52657a; }
+      .badge { font-size: 14px; font-weight: 800; fill: #334155; }
+      .blue { stroke: #2563eb; }
+      .teal { stroke: #0f766e; }
+      .purple { stroke: #7c3aed; }
+      .amber { stroke: #b45309; }
+      .rose { stroke: #be123c; }
+      .slate { stroke: #475569; }
+      .blue-fill { fill: #eff6ff; }
+      .teal-fill { fill: #ecfdf5; }
+      .purple-fill { fill: #f5f0ff; }
+      .amber-fill { fill: #fff7ed; }
+      .rose-fill { fill: #fff1f2; }
+      .slate-fill { fill: #f1f5f9; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1600" height="1000"/>
+  <rect class="grid" width="1600" height="1000"/>
+
+  <text x="72" y="78" class="title">ViberMode Repo Map</text>
+  <text x="72" y="110" class="subtitle">A visual inventory of the canonical framework pack and the surfaces that project it.</text>
+
+  <!-- Connectors sit behind cards and cloud. -->
+  <path class="connector" d="M608 430 C540 374 498 326 470 292"/>
+  <path class="connector" d="M610 552 C548 610 500 661 468 706"/>
+  <path class="connector" d="M806 363 C798 306 782 266 760 238"/>
+  <path class="connector" d="M980 430 C1026 382 1076 340 1120 300"/>
+  <path class="connector" d="M982 552 C1030 603 1078 648 1120 704"/>
+  <path class="connector" d="M810 623 C820 670 838 711 862 750"/>
+
+  <!-- Center cloud. -->
+  <path d="M616 538
+           C577 536 546 510 546 473
+           C546 437 578 413 616 416
+           C631 378 674 354 720 362
+           C751 331 804 327 839 352
+           C876 328 928 336 954 370
+           C996 370 1034 402 1038 443
+           C1072 451 1096 480 1092 514
+           C1088 553 1054 577 1014 574
+           C991 605 946 613 914 591
+           C876 620 816 619 779 591
+           C743 614 687 603 661 568
+           C638 575 622 568 616 538 Z"
+        fill="#ffffff" stroke="#111827" stroke-width="5" filter="url(#cloud-shadow)"/>
+  <text x="806" y="514" text-anchor="middle" class="cloud-title">ViberMode</text>
+
+  <!-- Docs. -->
+  <g transform="translate(70 165)">
+    <rect class="card blue" x="0" y="0" width="405" height="290" rx="8"/>
+    <rect class="blue-fill" x="0" y="0" width="405" height="68" rx="8"/>
+    <path d="M0 60H405" stroke="#bfdbfe" stroke-width="1.5"/>
+    <text x="26" y="44" class="card-title">docs/</text>
+    <text x="26" y="92" class="card-path">Reference and explanation layer</text>
+    <text x="26" y="132" class="group-title">architecture</text>
+    <text x="44" y="162" class="item">framework-analysis</text>
+    <text x="44" y="188" class="item">service-map</text>
+    <text x="44" y="214" class="item">boundary-decisions</text>
+    <text x="220" y="132" class="group-title">reference</text>
+    <text x="238" y="162" class="item">capability-map</text>
+    <text x="238" y="188" class="item">decision-tree</text>
+    <text x="238" y="214" class="item">repo-visual-map</text>
+    <text x="26" y="262" class="item-muted">Also: operations and use-cases docs</text>
+  </g>
+
+  <!-- Adapters. -->
+  <g transform="translate(575 145)">
+    <rect class="card slate" x="0" y="0" width="410" height="150" rx="8"/>
+    <rect class="slate-fill" x="0" y="0" width="410" height="58" rx="8"/>
+    <path d="M0 52H410" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="24" y="40" class="card-title">adapters/</text>
+    <text x="24" y="82" class="card-path">Platform-specific projections</text>
+    <text x="34" y="118" class="item">Codex skills</text>
+    <text x="220" y="118" class="item">Cursor commands</text>
+    <text x="34" y="140" class="item-muted">AGENTS.md indexes both</text>
+  </g>
+
+  <!-- Roles / skills. -->
+  <g transform="translate(1120 165)">
+    <rect class="card purple" x="0" y="0" width="410" height="390" rx="8"/>
+    <rect class="purple-fill" x="0" y="0" width="410" height="66" rx="8"/>
+    <path d="M0 58H410" stroke="#ddd6fe" stroke-width="1.5"/>
+    <text x="28" y="45" class="card-title">roles / skills</text>
+    <text x="28" y="90" class="card-path">packs/vibermode/roles</text>
+
+    <text x="28" y="126" class="group-title">Product pipeline</text>
+    <text x="46" y="154" class="item">analyzer · app-researcher</text>
+    <text x="46" y="180" class="item">brainstormer · prd · ux-designer</text>
+    <text x="46" y="206" class="item">user-stories · bootstrap</text>
+    <text x="46" y="232" class="item">task-planner · implementation-runner</text>
+    <text x="46" y="258" class="item">ios-submitter · ralph aliases</text>
+
+    <text x="28" y="300" class="group-title">Iterate toolkit</text>
+    <text x="46" y="328" class="item">scout · planner · reviewer · tester</text>
+    <text x="46" y="354" class="item">ux-tweaker · modularizer · validator</text>
+  </g>
+
+  <!-- Scripts. -->
+  <g transform="translate(70 625)">
+    <rect class="card teal" x="0" y="0" width="405" height="230" rx="8"/>
+    <rect class="teal-fill" x="0" y="0" width="405" height="66" rx="8"/>
+    <path d="M0 58H405" stroke="#99f6e4" stroke-width="1.5"/>
+    <text x="26" y="43" class="card-title">scripts/</text>
+    <text x="26" y="92" class="card-path">Executable automation and validation</text>
+    <text x="26" y="132" class="item">ios-app-factory-prepare</text>
+    <text x="26" y="160" class="item">ios-submit-testflight · idea-backlog</text>
+    <text x="26" y="188" class="item">github-network · validate-reference-map</text>
+  </g>
+
+  <!-- Workflows. -->
+  <g transform="translate(555 745)">
+    <rect class="card rose" x="0" y="0" width="490" height="185" rx="8"/>
+    <rect class="rose-fill" x="0" y="0" width="490" height="66" rx="8"/>
+    <path d="M0 58H490" stroke="#fecdd3" stroke-width="1.5"/>
+    <text x="26" y="43" class="card-title">workflows/</text>
+    <text x="26" y="92" class="card-path">Reusable paths that sequence the agents</text>
+    <text x="26" y="130" class="item">product-to-spec · spec-to-code · product-to-code</text>
+    <text x="26" y="158" class="item">repo-change · change-to-release · remediation</text>
+    <text x="26" y="180" class="item-muted">Also: app research, iOS pipeline, TestFlight submission</text>
+  </g>
+
+  <!-- Templates. -->
+  <g transform="translate(1120 625)">
+    <rect class="card amber" x="0" y="0" width="410" height="230" rx="8"/>
+    <rect class="amber-fill" x="0" y="0" width="410" height="66" rx="8"/>
+    <path d="M0 58H410" stroke="#fed7aa" stroke-width="1.5"/>
+    <text x="26" y="43" class="card-title">templates/</text>
+    <text x="26" y="92" class="card-path">Starter documents for product artifacts</text>
+    <text x="26" y="132" class="group-title">Product spec</text>
+    <text x="46" y="162" class="item">prd-template</text>
+    <text x="46" y="188" class="item">stories-template</text>
+    <text x="242" y="132" class="group-title">Experience</text>
+    <text x="262" y="162" class="item">ux-spec-template</text>
+  </g>
+
+</svg>

@@ -11,6 +11,7 @@
 - Run `experience-hardening` for user-facing changes before release.
 - Run a release adapter only when `release_target` is explicitly requested.
 - Never release when validation, experience review, or final review is blocked.
+- Never treat user intent to release as permission to override failed or incomplete quality gates.
 
 ## Pipeline
 
@@ -171,6 +172,28 @@ Loop rule:
 Purpose:
 Deliver the validated change only after implementation quality gates pass.
 
+### Hard Release Gate
+
+Before any release adapter performs live provider work, run the gate checker from the ViberMode repo:
+
+```bash
+npm run change-release:gate -- \
+  --status /absolute/path/to/docs/[project-name]/change-release-status.json \
+  --artifact-root /absolute/path/to/docs/[project-name] \
+  --release-target ios-testflight
+```
+
+Gate rules:
+
+- `repo-change` must be `COMPLETE`.
+- `experience-hardening` must be `COMPLETE` with verdict `APPROVED` or `SKIPPED_NOT_APPLICABLE` for user-facing changes.
+- `experience-review.md` must not rely on launch-only evidence when changed visual surfaces exist.
+- final review must be approved; `RELEASED_WITH_KNOWN_GAPS`, `KNOWN_GAPS`, `INCOMPLETE`, `BLOCKED`, `CHANGES_REQUESTED`, or equivalent wording blocks release.
+- `status.blockers` must be empty.
+- Scope guard checks must run before release. If the batch is iOS-only or backend-free, dirty forbidden worktrees such as `studybud-backend` must be passed with `--forbid-dirty`.
+
+If this gate fails, set the workflow status to `INCOMPLETE_RELEASE_BLOCKED` or the more specific incomplete status and stop before archive/export/upload. Do not write a release artifact that says upload succeeded, and do not continue because the user generally wanted a release.
+
 Supported release targets:
 
 - `none` - stop after final review
@@ -188,6 +211,7 @@ Rules:
 - require validation, experience review when user-facing, and final review before upload
 - bump build number for every upload; bump marketing version only when requested or release policy requires it
 - run preflight before live Apple-side work
+- run the hard release gate before archive/export/upload
 - never pass `--allow-incomplete` for quality failures
 - update the same release/run manifest when one exists
 
@@ -240,6 +264,11 @@ Minimum shape:
       "artifact": "docs/[project-name]/experience-review.md",
       "verdict": null
     },
+    "final-review": {
+      "status": "PENDING",
+      "artifact": "docs/[project-name]/review.md",
+      "verdict": null
+    },
     "release": {
       "status": "PENDING",
       "artifact": null,
@@ -267,8 +296,10 @@ Allowed top-level statuses:
 - `INCOMPLETE_TASKS_PENDING`
 - `INCOMPLETE_VALIDATION_FAILED`
 - `INCOMPLETE_EXPERIENCE_CHANGES_REQUESTED`
+- `INCOMPLETE_EXPERIENCE_BLOCKED`
 - `INCOMPLETE_REMEDIATION_PENDING`
 - `INCOMPLETE_RELEASE_BLOCKED`
+- `INCOMPLETE_SCOPE_VIOLATION`
 - `BLOCKED`
 
 ## Artifact Set
@@ -292,8 +323,10 @@ docs/[project-name]/
 ## Completion Rules
 
 - `COMPLETE_NO_RELEASE` when final review approves and `release_target=none`
-- `COMPLETE` when final review approves and the requested release adapter succeeds
+- `COMPLETE` when final review approves, the hard release gate passes, and the requested release adapter succeeds
 - `INCOMPLETE_RELEASE_BLOCKED` when code is ready but release credentials, signing, provider state, or deployment infrastructure blocks delivery
+- `INCOMPLETE_EXPERIENCE_BLOCKED` when changed user-facing surfaces could not be reviewed with real evidence
+- `INCOMPLETE_SCOPE_VIOLATION` when files, platforms, schemas, services, or repos outside the selected batch were changed
 - `BLOCKED` when planning, validation, experience review, or implementation cannot progress safely
 
 ## Design Intent

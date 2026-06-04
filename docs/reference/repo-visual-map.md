@@ -193,6 +193,20 @@ flowchart LR
     reviewer --> remediation["remediation-routing"]
 ```
 
+## Idea To TestFlight View
+
+![Idea to TestFlight flow](../assets/idea-to-testflight-flow.svg)
+
+Source page:
+
+- `docs/visuals/idea-to-testflight/index.html`
+
+Export command:
+
+```bash
+npm run export:idea-to-testflight
+```
+
 ## Existing Repo Change View
 
 ```mermaid
@@ -242,4 +256,5 @@ flowchart LR
 - Use the top-level map when introducing the repo to contributors.
 - Use the pack map when explaining where to add or edit a capability.
 - Use the projection model when explaining how one canonical contract appears in Codex, Cursor, and other tools.
+- Use the idea-to-TestFlight view when explaining the generated iOS app factory from research intake to internal release.
 - Use the pipeline and iterate views when discussing routing or orchestration.

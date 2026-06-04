@@ -22,6 +22,24 @@ ready private backlog idea
   -> private state + generated repo commit/push
 ```
 
+## Visuals
+
+Primary horizontal figure:
+
+![Idea to TestFlight flow](../assets/idea-to-testflight-flow.svg)
+
+Compact stage figure:
+
+![Idea to TestFlight compact flow](../assets/idea-to-testflight-compact.svg)
+
+The deployable visual source lives in `docs/visuals/idea-to-testflight/`.
+
+To regenerate exported SVG assets:
+
+```bash
+npm run export:idea-to-testflight
+```
+
 ## Repo Surfaces
 
 Workflows:

@@ -16,5 +16,6 @@ Run model:
 4. Default artifacts to `<target_repo>/docs/[project-name]/`.
 5. Implement only the recommended batch from the triage brief; keep vague, high-risk, or low-confidence notes on hold.
 6. Do not batch multiple repositories into one run state.
+7. Before any live release step, run the workflow hard gate (`npm run change-release:gate -- --status ...`) and stop if validation, experience review, final review, scope guard, or blockers are incomplete.
 
 Primary artifacts: `docs/[project-name]/change-brief.md`, `plan.md`, `tasks.json`, `validation-report.md`, `experience-review.md`, `review.md`, and `change-release-status.json`.

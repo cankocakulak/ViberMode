@@ -17,6 +17,8 @@
   ],
   "scripts": {
     "install:codex": "bash adapters/codex/install/install-skills.sh",
+    "change-release:gate": "node scripts/change-release-gate-check.mjs",
+    "export:idea-to-testflight": "node scripts/export-idea-to-testflight-visual.mjs",
     "validate:references": "node scripts/validate-reference-map.mjs",
     "validate": "npm run validate:references"
   },

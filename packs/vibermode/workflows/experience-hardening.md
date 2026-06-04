@@ -11,6 +11,7 @@
 - Only continue to final `reviewer` after experience review returns `APPROVED` or `SKIPPED_NOT_APPLICABLE`.
 - Orchestrators should treat this as a bounded self-iteration loop, not a single report. Re-enter remediation automatically for up to 3 experience passes before stopping for human review.
 - For iOS factory runs, onboarding, first-value, upgrade/paywall shell, keyboard behavior, and screenshot evidence are part of the gate.
+- For existing-app release runs, launch-only evidence is never enough when the changed surface is behind auth, onboarding, a tab, modal, or another in-app route.
 
 ## Pipeline
 
@@ -65,12 +66,14 @@ Success Criteria:
 - every issue has a task resolution mode
 - iOS factory runs include actual screenshot or video file paths for onboarding, first value, core loop, and upgrade/paywall shell
 - iOS factory runs fail if onboarding is one screen or a raw `List`/form-style explanation
+- existing-app release runs fail if changed visual surfaces are not reached in screenshot, video, simulator, or manual evidence
 
 Stage result rules:
 
 - `APPROVED` → continue to final `reviewer`
 - `SKIPPED_NOT_APPLICABLE` → continue to final `reviewer`
 - `CHANGES_REQUESTED` → run `remediation-routing`
+- `INCOMPLETE_AUTHENTICATED_SURFACES` or `INCOMPLETE_UNREACHED_SURFACE` → stop before final review/release unless the blocker can be routed into tasks or setup
 - `BLOCKED` → stop unless the blocker can be routed into tasks safely
 
 ## Step 2 - Remediation Routing
@@ -134,6 +137,7 @@ Automation rule:
 - Do not stop after the first `CHANGES_REQUESTED` result.
 - Convert the findings into tasks, implement them, refresh screenshots/runtime evidence, and rerun this workflow.
 - Stop with `BLOCKED` only after 3 failed experience passes, a non-routable environment blocker, or a missing dependency that cannot be fixed inside the generated repo.
+- If the changed surfaces could not be reached, write an explicit incomplete verdict and do not downgrade it to a non-blocking note.
 
 ## iOS Factory Gate
 

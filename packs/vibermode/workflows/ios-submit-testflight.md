@@ -10,6 +10,8 @@ factory run manifest -> metadata/readiness preflight -> asset preparation -> App
 
 This workflow does not create a new app repo. It consumes the Stage 2/3 run manifest and appends submission evidence to that same file.
 
+When called from `change-to-release`, it also consumes `docs/[project-name]/change-release-status.json` and must pass the change-release hard gate before archive/export/upload.
+
 Operator setup guidance:
 
 ```text
@@ -79,6 +81,17 @@ Success Criteria:
 - required Keychain entries exist
 - App Store submission assets are ready or can be prepared automatically
 - metadata gaps are reported before live upload
+
+For `change-to-release` runs, run this additional gate before any live Apple-side work:
+
+```bash
+npm run change-release:gate -- \
+  --status /absolute/path/to/docs/[project-name]/change-release-status.json \
+  --artifact-root /absolute/path/to/docs/[project-name] \
+  --release-target ios-testflight
+```
+
+Pass `--forbid-dirty /absolute/path/to/forbidden/worktree` for any platform or service that the selected batch was not allowed to mutate. A failed gate blocks archive, export, and upload.
 
 ## Stage 1.5 - Submission Asset Preparation
 
@@ -212,6 +225,14 @@ node scripts/ios-submit-testflight.mjs \
 ```
 
 Use `--state-sync api` by default when syncing private state. The script can read `GH_TOKEN` from the environment or the `viberboyz-gh-token` Keychain service.
+
+## Quality Gate Failures
+
+- If `experience-review.md` is incomplete, launch-only, or missing changed-surface screenshots, stop before archive/export/upload.
+- If `review.md` is not approved, stop before archive/export/upload.
+- If forbidden worktrees are dirty, stop before archive/export/upload and route the scope violation back through remediation.
+- Do not use a user request, a manual automation trigger, or a previous successful build as an override for incomplete quality gates.
+- Record the blocked status in the same run artifact instead of producing a successful release artifact with known gaps.
 
 ## Metadata Handoff
 

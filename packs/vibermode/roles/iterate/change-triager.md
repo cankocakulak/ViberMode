@@ -77,6 +77,7 @@ Write `docs/[project-name]/change-brief.md` with these sections:
 - `## Must Fix`
 - `## Should Improve`
 - `## Release Blockers`
+- `## Scope Guard`
 - `## Out of Scope`
 - `## Assumptions`
 - `## Acceptance Checks`
@@ -94,11 +95,13 @@ Write `docs/[project-name]/change-brief.md` with these sections:
 - `Out of Scope`: unrelated ideas, new product directions, or changes that need their own pass.
 - `Assumptions`: decisions made without asking the user because the repo context made them safe.
 - `Acceptance Checks`: concrete checks that `planner`, `runtime-validator`, `experience-reviewer`, and release adapters can enforce.
+- `Scope Guard`: files, platforms, schemas, services, or repos that must not be changed in this run unless later evidence moves them into `Recommended Batch`.
 
 Default hold rules:
 - Put high-risk or low-confidence items in `needs_user_decision` unless the repo already contains an obvious implementation pattern.
 - Put cross-cutting notification, messaging, ranking, privacy, schema, entitlement, or platform-level changes in a later batch when they are not required for the current release.
 - Do not silently merge unrelated items just because they were written in the same note list.
+- For release-bound runs, identify forbidden mutation areas explicitly. Examples: backend schema/routes when the batch is UI-only, notification services when notifications are on hold, Android when policy is release-only, or app-store metadata when only a build-number bump is allowed.
 
 ### Handoff
 
