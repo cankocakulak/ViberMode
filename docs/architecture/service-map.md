@@ -20,9 +20,10 @@ Roles are the workers. Workflows are the operating procedures. Services are the 
 | Existing Repo Change to Release | Turn feedback or requested changes into validated changes, optionally released | `change-to-release` | `change-triager`, `repo-change`, `experience-hardening`, `ios-submit-testflight` or `android-submit-play-internal` when applicable |
 | iOS App Factory | Research app ideas, create an iOS repo, implement it, and prepare TestFlight delivery | `daily-ios-app-pipeline` | `app-opportunity-research`, `idea-research-backlog`, `product-to-code`, `ios-submit-testflight` |
 | Mobile Store Submission | Upload completed generated mobile apps to internal tester distribution | platform release adapter | `ios-submit-testflight`, `android-submit-play-internal` |
-| Codex Operational Capabilities | Use Codex as a local operator for connected services, credentials, store metadata, reporting, and evidence capture | operations runbooks | RevenueCat, iOS, Android, store-downloads, GitHub setup docs |
 | App Opportunity Research | Produce a market/opportunity research pack without creating a repo | `app-opportunity-research` | `idea-research-backlog` when candidates should enter the private backlog |
 | Standalone Repo Toolkit | Investigate, plan, refactor, test, review, or harden a local surface | narrow iterate agents | `scout`, `planner`, `ux-tweaker`, `tester`, `reviewer`, and related iterate roles |
+
+Operational guides are not service workflows, but they explain how Codex operates connected services from this workspace. Start with `docs/operations/codex-operational-capabilities.md` for RevenueCat, iOS, Android, store metadata, reporting, credential boundaries, and evidence capture.
 
 Use-case manifests:
 
@@ -192,7 +193,7 @@ Operational docs:
 Platform rule:
 iOS can create or ensure more App Store Connect identity through Fastlane when account state allows it. Android requires Play Console bootstrap for app creation, declarations, Play App Signing, and service account access before the API-controlled internal testing upload.
 
-## Codex Operational Capabilities
+## Operational Capability Guide
 
 Use this when the question is less "which agent should plan this feature?" and more "what can Codex operate for me from this workspace?"
 

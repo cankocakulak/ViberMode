@@ -95,12 +95,12 @@ ViberMode is easier to read as a set of services, not as a flat list of agents.
 | Existing Repo Change to Release | Turns feedback or requested changes into validated repo changes, optionally released | `docs/use-cases/existing-repo-change-to-release.md` |
 | iOS App Factory | Researches app ideas, creates iOS repos, runs implementation, and prepares TestFlight delivery | `docs/use-cases/ios-app-factory.md` |
 | Mobile Store Submission | Uploads completed generated mobile apps to internal tester channels | `docs/use-cases/mobile-internal-release.md` |
-| Codex Operational Capabilities | Explains how Codex reads and mutates connected services such as RevenueCat, App Store Connect, Google Play, and reporting APIs | `docs/operations/codex-operational-capabilities.md` |
 | App Opportunity Research | Produces research packs and optional backlog candidates without creating repos | `docs/use-cases/app-opportunity-research.md` |
 | Standalone Repo Toolkit | Gives focused help for investigation, planning, UX, testing, refactor, and review work | iterate agents |
 
 Read `docs/architecture/service-map.md` for the full service-level map.
 Read `docs/use-cases/` for concrete operating paths and automation mappings.
+Read `docs/operations/codex-operational-capabilities.md` when you want to understand how Codex can operate connected services such as RevenueCat, App Store Connect, Google Play, store metadata, and reporting APIs.
 For the idea-to-TestFlight flow, start at `docs/use-cases/ios-app-factory.md`; editable visual source lives under `docs/visuals/idea-to-testflight/` and exports to `docs/assets/`.
 Regenerate its SVG/PNG assets with `npm run export:idea-to-testflight:all`.
 
