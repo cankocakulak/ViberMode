@@ -18,6 +18,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **task-planner** | `packs/vibermode/roles/product/task-planner.md` | Converts user stories into `tasks.json` for the implementation pipeline |
 | **implementation-runner** | `packs/vibermode/roles/product/implementation-runner.md` | Implements one task per session from `tasks.json` |
 | **ios-submitter** | `packs/vibermode/roles/product/ios-submitter.md` | Uploads completed generated iOS apps to internal TestFlight |
+| **android-submitter** | `packs/vibermode/roles/product/android-submitter.md` | Uploads completed generated Android apps to Google Play internal testing |
 
 ### Legacy Product Aliases
 
@@ -60,6 +61,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **task-planner** agent" → Read `packs/vibermode/roles/product/task-planner.md`
 - "Use the **implementation-runner** agent" → Read `packs/vibermode/roles/product/implementation-runner.md`
 - "Use the **ios-submitter** agent" → Read `packs/vibermode/roles/product/ios-submitter.md`
+- "Use the **android-submitter** agent" → Read `packs/vibermode/roles/product/android-submitter.md`
 - "Use the **ralph-converter** agent" → Read `packs/vibermode/roles/product/ralph-converter.md`
 - "Use the **ralph-runner** agent" → Read `packs/vibermode/roles/product/ralph-runner.md`
 - "Use the **scout** agent" → Read `packs/vibermode/roles/iterate/scout.md`

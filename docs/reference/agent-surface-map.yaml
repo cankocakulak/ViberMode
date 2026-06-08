@@ -132,6 +132,18 @@ capabilities:
       any_tool_agent: ios-submitter
       canonical_role: packs/vibermode/roles/product/ios-submitter.md
 
+  - id: android-submitter
+    kind: product-agent
+    callability: artifact-required
+    tier: support
+    family: product
+    purpose: submit completed generated Android app builds to Google Play internal testing
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: android-submitter
+      canonical_role: packs/vibermode/roles/product/android-submitter.md
+
   - id: ralph-converter
     kind: legacy-alias
     tier: legacy
@@ -456,6 +468,18 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/ios-submit-testflight.md
+
+  - id: android-submit-play-internal
+    kind: workflow
+    callability: artifact-required
+    tier: support
+    family: workflow
+    purpose: consume a completed Android factory run manifest and upload a Google Play internal testing build
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/android-submit-play-internal.md
 
   - id: bootstrap-workflow
     kind: workflow

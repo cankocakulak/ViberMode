@@ -198,6 +198,7 @@ Supported release targets:
 
 - `none` - stop after final review
 - `ios-testflight` - bump version/build as needed, run TestFlight preflight, archive/export/upload
+- `android-play-internal` - bump versionCode/versionName as needed, run Google Play preflight, build/upload AAB to internal testing
 - `web-deploy` - reserved for Vercel or another web deployment adapter
 - `custom` - caller must provide the release command and acceptance criteria
 
@@ -212,6 +213,21 @@ Rules:
 - bump build number for every upload; bump marketing version only when requested or release policy requires it
 - run preflight before live Apple-side work
 - run the hard release gate before archive/export/upload
+- never pass `--allow-incomplete` for quality failures
+- update the same release/run manifest when one exists
+
+### Android Play Internal Adapter
+
+Use:
+`packs/vibermode/workflows/android-submit-play-internal.md`
+
+Rules:
+
+- require validation, experience review when user-facing, and final review before upload
+- bump `versionCode` for every upload; bump `versionName` only when requested or release policy requires it
+- confirm Play Console bootstrap before live Google-side work
+- run preflight before live upload
+- run the hard release gate before build/upload
 - never pass `--allow-incomplete` for quality failures
 - update the same release/run manifest when one exists
 

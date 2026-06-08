@@ -9,7 +9,7 @@ This repository keeps its public documentation under `docs/`.
   - `service-map.md` is the best first read for understanding which workflows combine into higher-level services
   - `boundary-decisions.md` explains removed or externalized surfaces such as Simmer, OpenClaw, and the old iOS App Store factory workflow
 - `docs/use-cases/`
-  - Concrete operating manifests for service-level outcomes such as app opportunity research, iOS app factory, product-to-code, and generated app changes to TestFlight
+  - Concrete operating manifests for service-level outcomes such as app opportunity research, iOS app factory, product-to-code, mobile internal release, and generated app changes to TestFlight
 - `docs/visuals/`
   - Code-authored, deployable visual sources; `idea-to-testflight/` generates the iOS factory diagrams
 - `docs/assets/`
@@ -17,13 +17,17 @@ This repository keeps its public documentation under `docs/`.
 - `docs/operations/`
   - Operational runbooks for safely wiring local or private automation runtimes
   - `archive/` holds historical run, validation, and bootstrap artifacts that should not sit at the public docs root
+  - `codex-operational-capabilities.md` is the best first read for understanding what Codex can read/write across RevenueCat, iOS, Android, store metadata, and reporting APIs
   - `app-factory-automation-overview.md` summarizes the app factory stages, automations, state handoffs, and Stage 4 submission path
   - `codex-automations.md` lists the currently configured manual Codex automations and their targets
   - Stage 3 product-to-code now includes experience hardening before final review for user-facing apps
   - `app-factory-state.md` documents the private app idea backlog and factory state repo
   - App opportunity research outputs are stored in the private state repo under `research-runs/`
   - `ios-repo-factory-token.md` documents local GitHub token setup for repo generation
+  - `mobile-store-submission-model.md` explains the shared iOS/Android Stage 4 release adapter model
   - `ios-testflight-submission-guidance.md` documents local Apple/Fastlane setup and the internal TestFlight Stage 4 runbook
+  - `android-play-submission-guidance.md` documents local Google Play/Fastlane setup and the internal testing Stage 4 runbook
+  - `revenuecat-access.md` documents local RevenueCat REST API access through the repo-owned CLI wrapper
 - `docs/reference/`
   - Capability map, decision tree, visual map, and machine-readable surface inventory
 
@@ -43,7 +47,9 @@ If you are new to the repo:
 2. `docs/architecture/boundary-decisions.md` - what is intentionally outside this repo
 3. `docs/use-cases/README.md` - concrete operating paths and automation mappings
 4. `docs/use-cases/ios-app-factory.md` - idea-to-TestFlight path, visuals, and automation handoff
-5. `docs/reference/decision-tree.md` - which service or capability to use
-6. `docs/reference/capability-map.md` - exact role and workflow descriptions
-7. `docs/visuals/README.md` - only when editing exported diagrams
-8. `docs/operations/` - only when running private automation or release operations
+5. `docs/use-cases/mobile-internal-release.md` - platform release adapter path for internal tester distribution
+6. `docs/operations/codex-operational-capabilities.md` - how Codex operates connected services safely
+7. `docs/reference/decision-tree.md` - which service or capability to use
+8. `docs/reference/capability-map.md` - exact role and workflow descriptions
+9. `docs/visuals/README.md` - only when editing exported diagrams
+10. `docs/operations/` - only when running private automation or release operations

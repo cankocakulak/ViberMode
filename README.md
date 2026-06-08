@@ -82,6 +82,8 @@ Visual reference:
 - `docs/use-cases/ios-app-factory.md` — top-down idea-to-TestFlight operating path and generated visuals
 - `docs/visuals/idea-to-testflight/` — deployable source for the iOS factory diagrams
 - `docs/assets/idea-to-testflight-flow.svg` and `.png` — exported primary figure
+- `docs/operations/mobile-store-submission-model.md` — shared iOS/Android Stage 4 release adapter model
+- `docs/operations/codex-operational-capabilities.md` — practical Codex operator guide for RevenueCat, iOS, Android, store metadata, and reporting workflows
 
 ## What ViberMode Provides
 
@@ -92,6 +94,8 @@ ViberMode is easier to read as a set of services, not as a flat list of agents.
 | Product to Code | Turns a raw idea or product slice into specs, tasks, implementation, validation, and review | `docs/use-cases/product-to-code.md` |
 | Existing Repo Change to Release | Turns feedback or requested changes into validated repo changes, optionally released | `docs/use-cases/existing-repo-change-to-release.md` |
 | iOS App Factory | Researches app ideas, creates iOS repos, runs implementation, and prepares TestFlight delivery | `docs/use-cases/ios-app-factory.md` |
+| Mobile Store Submission | Uploads completed generated mobile apps to internal tester channels | `docs/use-cases/mobile-internal-release.md` |
+| Codex Operational Capabilities | Explains how Codex reads and mutates connected services such as RevenueCat, App Store Connect, Google Play, and reporting APIs | `docs/operations/codex-operational-capabilities.md` |
 | App Opportunity Research | Produces research packs and optional backlog candidates without creating repos | `docs/use-cases/app-opportunity-research.md` |
 | Standalone Repo Toolkit | Gives focused help for investigation, planning, UX, testing, refactor, and review work | iterate agents |
 
@@ -117,6 +121,8 @@ Repository boundary decisions, including why OpenClaw projection docs, the Simme
 | `bootstrap` | Prepare repo, branch, scaffold, and runnable baseline | User Stories / Analyzer | `bootstrap.md` |
 | `task-planner` | Convert stories into an implementation task list | User Stories + Bootstrap | `tasks.json` |
 | `implementation-runner` | Implement one task per session from `tasks.json` | Task Planner | Code changes + `run-state.json` |
+| `ios-submitter` | Upload completed generated iOS apps to internal TestFlight | Completed run manifest | Submission evidence |
+| `android-submitter` | Upload completed generated Android apps to Google Play internal testing | Completed run manifest | Submission evidence |
 
 Legacy aliases:
 - `ralph-converter` → `task-planner`
@@ -316,6 +322,9 @@ All agents referenced via `viber-mode/packs/vibermode/roles/` paths — works ou
 - `docs/architecture/boundary-decisions.md` - what is intentionally outside ViberMode core
 - `docs/use-cases/` - concrete operating paths and automation mappings
 - `docs/use-cases/ios-app-factory.md` - top-down idea-to-TestFlight flow and factory visuals
+- `docs/use-cases/mobile-internal-release.md` - TestFlight and Google Play internal testing release path
+- `docs/operations/mobile-store-submission-model.md` - shared iOS/Android Stage 4 release adapter model
+- `docs/operations/android-play-submission-guidance.md` - Google Play internal testing setup and runbook
 - `docs/visuals/` - code-authored visual sources
 - `docs/assets/` - exported SVG/PNG visual assets
 - `docs/architecture/` - framework analysis and service-level architecture notes

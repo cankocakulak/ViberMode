@@ -232,6 +232,7 @@ Public ViberMode surfaces:
 - `packs/vibermode/roles/product/ios-submitter.md`
 - `packs/vibermode/workflows/ios-submit-testflight.md`
 - `scripts/ios-submit-testflight.mjs`
+- `docs/operations/mobile-store-submission-model.md`
 - `docs/operations/ios-testflight-submission-guidance.md`
 
 Expected inputs:
@@ -287,6 +288,68 @@ The live path uses Fastlane `produce` to create or ensure the App Store Connect 
 Operator setup and run guidance lives in `docs/operations/ios-testflight-submission-guidance.md`.
 
 Stage 4 should also carry `submission_metadata` in the run manifest. Internal TestFlight can proceed with only app name, bundle ID, icon readiness, signing, and "what to test" notes, but App Store review later needs description, subtitle, keywords, support URL, privacy policy URL, storefronts, price posture, screenshots, privacy answers, and compliance answers.
+
+### Android Stage 4 Extension - Google Play Internal Testing
+
+Purpose:
+Upload a completed generated Android app to Google Play internal testing after Play Console bootstrap is complete.
+
+Current status:
+The Android release adapter exists as a preflight-first and `--submit`-guarded path. It is ready for controlled use after a generated Android template, signing configuration, and Play Console bootstrap are available.
+
+Public ViberMode surfaces:
+
+- `packs/vibermode/roles/product/android-submitter.md`
+- `packs/vibermode/workflows/android-submit-play-internal.md`
+- `scripts/android-submit-play-internal.mjs`
+- `docs/operations/android-play-submission-guidance.md`
+- `docs/operations/mobile-store-submission-model.md`
+
+Expected inputs:
+
+- generated Android repo workspace path
+- run manifest path
+- app name and Android package name
+- approved Stage 3 validation, experience review, and final review evidence
+- confirmed Play Console app record, declarations, Play App Signing, and service account access
+- Google Play service account JSON from secure runtime storage
+- signed release AAB or enough Gradle project structure to build one
+
+Expected private state updates:
+
+```json
+{
+  "submission": {
+    "status": "play_internal_uploaded",
+    "distribution": "google_play_internal",
+    "package_name": "...",
+    "track": "internal",
+    "aab_path": "...",
+    "uploaded_at": "..."
+  }
+}
+```
+
+Important boundary:
+Google Play app creation is not treated as a fully automated Publishing API step. The repo/template side can be automated, but Play Console app creation, required declarations, Play App Signing, and API readiness must be completed and recorded before live upload.
+
+Preflight:
+
+```bash
+node scripts/android-submit-play-internal.mjs \
+  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/[run-id].json
+```
+
+Live internal testing upload:
+
+```bash
+node scripts/android-submit-play-internal.mjs \
+  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/[run-id].json \
+  --build \
+  --submit \
+  --confirm-play-console-bootstrap \
+  --commit-state
+```
 
 ## Active Codex Automations
 

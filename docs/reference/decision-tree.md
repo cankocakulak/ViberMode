@@ -75,7 +75,7 @@ If you do not yet understand how the workflows combine into higher-level service
 
 - Use `experience-reviewer` after `runtime-validator`
 - Note:
-  - this is a Stage 3 gate for user-facing slices, especially generated iOS apps
+  - this is a Stage 3 gate for user-facing slices, especially generated mobile apps
 
 ## Spec-Driven Paths
 
@@ -148,6 +148,26 @@ If you do not yet understand how the workflows combine into higher-level service
 
 - `change-triager -> repo-change -> experience-hardening -> release adapter`
 
+### Completed generated mobile app to internal testers
+
+- Use `ios-submit-testflight` for iOS internal TestFlight
+- Use `android-submit-play-internal` for Android Google Play internal testing
+- Note:
+  - Android requires Play Console bootstrap before API-controlled upload
+
+### I need Codex to read or operate a connected service
+
+- Start with `docs/operations/codex-operational-capabilities.md`
+- Then choose the specific runbook:
+  - RevenueCat: `docs/operations/revenuecat-access.md`
+  - iOS/TestFlight: `docs/operations/ios-testflight-submission-guidance.md`
+  - Android/Google Play: `docs/operations/android-play-submission-guidance.md`
+  - Store downloads/Notion: `docs/operations/store-downloads-notion-automation.md`
+- Note:
+  - prefer read/preflight first
+  - keep credentials outside git
+  - require owner confirmation for legal, privacy, rating, data-safety, and production rollout declarations
+
 ## Support Capabilities
 
 These are usually not the first capability you reach for, but they matter inside larger flows:
@@ -163,6 +183,9 @@ These are usually not the first capability you reach for, but they matter inside
 - `remediation-router`
 - `remediation-routing`
 - `change-task-planner`
+- `ios-submit-testflight`
+- `android-submit-play-internal`
+- `docs/operations/codex-operational-capabilities.md`
 
 ## Legacy Capabilities
 

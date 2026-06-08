@@ -4,6 +4,12 @@ Operational guidance for wiring ViberMode Stage 4 into a local or private automa
 
 This guidance covers internal TestFlight upload only. It does not cover external TestFlight review, App Store review submission, price tiers, privacy nutrition labels, screenshots for store listing, or phased release.
 
+For the shared iOS/Android release model, read:
+
+```text
+docs/operations/mobile-store-submission-model.md
+```
+
 ## Scope
 
 Stage 4 consumes a completed factory run:
@@ -21,6 +27,8 @@ It then:
 ```text
 preflight -> asset preparation -> Fastlane produce -> xcodebuild archive -> IPA export -> Fastlane pilot upload -> run manifest update
 ```
+
+The iOS path can create or ensure more store-side identity than Android because Fastlane `produce` can create or ensure the App Store Connect app and Developer Portal app identifier when Apple account state allows it. It still depends on accepted agreements, correct team selection, signing permission, and a valid Apple/Fastlane session.
 
 The runnable workflow is:
 

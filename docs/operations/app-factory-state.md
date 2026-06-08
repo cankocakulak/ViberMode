@@ -188,6 +188,28 @@ node scripts/ios-submit-testflight.mjs \
 
 Setup guidance is documented in `docs/operations/ios-testflight-submission-guidance.md`.
 
+## Google Play Internal Testing Submission
+
+After product-to-code completes for a generated Android app, Stage 4 may upload a release AAB to Google Play internal testing:
+
+```bash
+node scripts/android-submit-play-internal.mjs \
+  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json
+```
+
+The plain command runs preflight only. Live Google Play submission requires Play Console bootstrap plus explicit `--submit`:
+
+```bash
+node scripts/android-submit-play-internal.mjs \
+  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
+  --build \
+  --submit \
+  --confirm-play-console-bootstrap \
+  --commit-state
+```
+
+Setup guidance is documented in `docs/operations/android-play-submission-guidance.md`.
+
 ## Failure Handling
 
 - Missing `GH_TOKEN`: stop and fix Keychain or environment setup.
@@ -196,3 +218,4 @@ Setup guidance is documented in `docs/operations/ios-testflight-submission-guida
 - Clone failure: verify token has contents read access to the generated repo.
 - Product-to-code failure: keep the generated repo and run manifest; remediate rather than creating a duplicate repo.
 - TestFlight submission failure: keep the generated repo and same run manifest; resolve the `submission.status: blocked` reason and rerun Stage 4.
+- Google Play submission failure: keep the generated repo and same run manifest; resolve the `submission.status: blocked` reason and rerun Stage 4.

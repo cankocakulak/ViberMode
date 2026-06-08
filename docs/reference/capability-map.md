@@ -62,6 +62,8 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I need repo baseline and runnable setup clarified first | `bootstrap` |
 | I want to run the iOS app factory | `daily-ios-app-pipeline` |
 | I want to upload a generated iOS app to internal TestFlight | `ios-submit-testflight` |
+| I want to upload a generated Android app to Google Play internal testing | `android-submit-play-internal` |
+| I want to know what Codex can read/write across RevenueCat, iOS, Android, store metadata, or reporting APIs | `docs/operations/codex-operational-capabilities.md` |
 
 ## Product Agents
 
@@ -209,6 +211,37 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - Codex: `viber-implementation-runner`
   - Cursor: `/implementation-runner`
   - Any tool: `implementation-runner`
+
+#### `ios-submitter`
+
+- Kind: `product-agent`
+- Callability: `artifact-required`
+- Tier: `support`
+- Purpose: Operate the completed generated iOS app submission path to internal TestFlight
+- Requires:
+  - completed factory run manifest
+  - approved Stage 3 evidence
+  - Apple signing and App Store Connect credentials in secure runtime storage
+- Surfaces:
+  - Codex: not currently projected as a skill wrapper
+  - Cursor: not currently projected
+  - Any tool: `ios-submitter`
+
+#### `android-submitter`
+
+- Kind: `product-agent`
+- Callability: `artifact-required`
+- Tier: `support`
+- Purpose: Operate the completed generated Android app submission path to Google Play internal testing
+- Requires:
+  - completed factory run manifest
+  - approved Stage 3 evidence
+  - confirmed Play Console bootstrap
+  - Google Play service account credential in secure runtime storage
+- Surfaces:
+  - Codex: not currently projected as a skill wrapper
+  - Cursor: not currently projected
+  - Any tool: `android-submitter`
 
 ### Legacy aliases
 
@@ -581,6 +614,19 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 - Use when:
   - Stage 3 has completed with validation, review, and release metadata
   - an existing generated app needs internal TestFlight delivery
+- Surfaces:
+  - Canonical workflow only
+
+#### `android-submit-play-internal`
+
+- Kind: `workflow`
+- Callability: `artifact-required`
+- Tier: `support`
+- Purpose: Consume a completed Android generated-app run manifest and upload a Google Play internal testing build
+- Use when:
+  - Stage 3 has completed with validation, review, and release metadata
+  - Play Console bootstrap is confirmed for the package
+  - an existing generated Android app needs internal testing delivery
 - Surfaces:
   - Canonical workflow only
 

@@ -21,6 +21,10 @@
     "export:idea-to-testflight": "node scripts/export-idea-to-testflight-visual.mjs",
     "export:idea-to-testflight:png": "node scripts/export-idea-to-testflight-png.mjs",
     "export:idea-to-testflight:all": "npm run export:idea-to-testflight && npm run export:idea-to-testflight:png",
+    "revenuecat": "node scripts/revenuecat-api.mjs",
+    "revenuecat:status": "node scripts/revenuecat-api.mjs status",
+    "revenuecat:projects": "node scripts/revenuecat-api.mjs projects",
+    "store-downloads:notion": "node scripts/store-downloads-to-notion.mjs",
     "validate:references": "node scripts/validate-reference-map.mjs",
     "validate": "npm run validate:references"
   },

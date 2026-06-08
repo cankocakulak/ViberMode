@@ -74,6 +74,7 @@ flowchart TB
         task_planner["task-planner"]
         implementation_runner["implementation-runner"]
         ios_submitter["ios-submitter"]
+        android_submitter["android-submitter"]
         ralph_converter["ralph-converter legacy"]
         ralph_runner["ralph-runner legacy"]
     end
@@ -87,6 +88,7 @@ flowchart TB
     product --> task_planner
     product --> implementation_runner
     product --> ios_submitter
+    product --> android_submitter
     product --> ralph_converter
     product --> ralph_runner
 
@@ -136,6 +138,7 @@ flowchart TB
         change_to_release["change-to-release"]
         remediation_routing["remediation-routing"]
         ios_submit_testflight["ios-submit-testflight"]
+        android_submit_play_internal["android-submit-play-internal"]
     end
     workflows --> app_opportunity_research
     workflows --> idea_research_backlog
@@ -149,6 +152,7 @@ flowchart TB
     workflows --> change_to_release
     workflows --> remediation_routing
     workflows --> ios_submit_testflight
+    workflows --> android_submit_play_internal
 
     subgraph template_detail["Templates"]
         prd_template["prd-template.md"]

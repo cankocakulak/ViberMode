@@ -19,6 +19,7 @@ Current canonical workflow set includes:
 - `experience-hardening`
 - `change-to-release`
 - `ios-submit-testflight`
+- `android-submit-play-internal`
 - `product-to-code` as the composed top-level flow
 
 Platform-specific projections belong under `adapters/`, not here.

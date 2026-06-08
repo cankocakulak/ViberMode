@@ -18,6 +18,8 @@ Sequential pipeline from idea to implementation. Each agent produces artifacts t
 - **user-stories** — Generates prioritized user stories with acceptance criteria
 - **task-planner** — Converts user stories into `tasks.json` for the implementation pipeline
 - **implementation-runner** — Implements one task per session from `tasks.json` (repeat until done)
+- **ios-submitter** — Uploads completed generated iOS apps to internal TestFlight
+- **android-submitter** — Uploads completed generated Android apps to Google Play internal testing
 - **ralph-converter** — Legacy alias for `task-planner`
 - **ralph-runner** — Legacy alias for `implementation-runner`
 
@@ -63,6 +65,8 @@ Reference agents by name:
 - "Use the user-stories agent to break down..."
 - "Use the task-planner agent to create tasks.json from stories"
 - "Use the implementation-runner agent to implement the next task"
+- "Use the ios-submitter agent to upload a completed generated iOS app"
+- "Use the android-submitter agent to upload a completed generated Android app"
 - "Use the ralph-converter agent to create tasks.json from stories"
 - "Use the ralph-runner agent to implement the next task"
 - "Use the scout agent to understand this module"

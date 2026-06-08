@@ -46,6 +46,10 @@ Release workflow when iOS/TestFlight applies:
 
 - `packs/vibermode/workflows/ios-submit-testflight.md`
 
+Release workflow when Android/Google Play internal testing applies:
+
+- `packs/vibermode/workflows/android-submit-play-internal.md`
+
 ## Automation
 
 Generic callable surface:

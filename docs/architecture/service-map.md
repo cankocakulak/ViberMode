@@ -17,8 +17,10 @@ Roles are the workers. Workflows are the operating procedures. Services are the 
 | Service | Outcome | Main Entry Workflow | Supporting Workflows |
 |---------|---------|---------------------|----------------------|
 | Product to Code | Turn a raw idea or product slice into reviewed code in a repo | `product-to-code` | `product-to-spec`, `bootstrap`, `spec-to-code`, `experience-hardening`, `remediation-routing` |
-| Existing Repo Change to Release | Turn feedback or requested changes into validated changes, optionally released | `change-to-release` | `change-triager`, `repo-change`, `experience-hardening`, `ios-submit-testflight` when applicable |
+| Existing Repo Change to Release | Turn feedback or requested changes into validated changes, optionally released | `change-to-release` | `change-triager`, `repo-change`, `experience-hardening`, `ios-submit-testflight` or `android-submit-play-internal` when applicable |
 | iOS App Factory | Research app ideas, create an iOS repo, implement it, and prepare TestFlight delivery | `daily-ios-app-pipeline` | `app-opportunity-research`, `idea-research-backlog`, `product-to-code`, `ios-submit-testflight` |
+| Mobile Store Submission | Upload completed generated mobile apps to internal tester distribution | platform release adapter | `ios-submit-testflight`, `android-submit-play-internal` |
+| Codex Operational Capabilities | Use Codex as a local operator for connected services, credentials, store metadata, reporting, and evidence capture | operations runbooks | RevenueCat, iOS, Android, store-downloads, GitHub setup docs |
 | App Opportunity Research | Produce a market/opportunity research pack without creating a repo | `app-opportunity-research` | `idea-research-backlog` when candidates should enter the private backlog |
 | Standalone Repo Toolkit | Investigate, plan, refactor, test, review, or harden a local surface | narrow iterate agents | `scout`, `planner`, `ux-tweaker`, `tester`, `reviewer`, and related iterate roles |
 
@@ -27,6 +29,7 @@ Use-case manifests:
 - `docs/use-cases/product-to-code.md`
 - `docs/use-cases/existing-repo-change-to-release.md`
 - `docs/use-cases/ios-app-factory.md`
+- `docs/use-cases/mobile-internal-release.md`
 - `docs/use-cases/app-opportunity-research.md`
 - `docs/use-cases/generated-app-change-to-testflight.md`
 
@@ -145,8 +148,10 @@ Operational docs:
 - `docs/operations/app-factory-automation-overview.md`
 - `docs/operations/codex-automations.md`
 - `docs/operations/app-factory-state.md`
+- `docs/operations/mobile-store-submission-model.md`
 - `docs/operations/ios-repo-factory-token.md`
 - `docs/operations/ios-testflight-submission-guidance.md`
+- `docs/operations/android-play-submission-guidance.md`
 
 Note:
 The old monolithic `ios-app-store-factory` workflow has been removed. Its responsibilities are now split across `daily-ios-app-pipeline`, `product-to-code`, `experience-hardening`, and `ios-submit-testflight`.
@@ -154,6 +159,69 @@ The old monolithic `ios-app-store-factory` workflow has been removed. Its respon
 Boundary decisions:
 
 - `docs/architecture/boundary-decisions.md`
+
+## Mobile Store Submission Service
+
+Use this when a generated mobile app already passed implementation, validation, experience review, and final review, and the remaining job is internal tester distribution.
+
+```text
+completed generated app run manifest
+  -> platform preflight
+  -> platform build/export
+  -> internal tester upload
+  -> same run manifest updated
+```
+
+Public surface:
+
+```text
+packs/vibermode/roles/product/ios-submitter.md
+packs/vibermode/roles/product/android-submitter.md
+packs/vibermode/workflows/ios-submit-testflight.md
+packs/vibermode/workflows/android-submit-play-internal.md
+scripts/ios-submit-testflight.mjs
+scripts/android-submit-play-internal.mjs
+```
+
+Operational docs:
+
+- `docs/operations/mobile-store-submission-model.md`
+- `docs/operations/ios-testflight-submission-guidance.md`
+- `docs/operations/android-play-submission-guidance.md`
+
+Platform rule:
+iOS can create or ensure more App Store Connect identity through Fastlane when account state allows it. Android requires Play Console bootstrap for app creation, declarations, Play App Signing, and service account access before the API-controlled internal testing upload.
+
+## Codex Operational Capabilities
+
+Use this when the question is less "which agent should plan this feature?" and more "what can Codex operate for me from this workspace?"
+
+```text
+connected service question
+  -> read operational capability guide
+  -> choose specific runbook
+  -> run read/preflight command
+  -> prepare local artifacts
+  -> mutate external state only when requested and credentialed
+  -> record evidence
+```
+
+Public surface:
+
+```text
+docs/operations/codex-operational-capabilities.md
+docs/operations/revenuecat-access.md
+docs/operations/ios-testflight-submission-guidance.md
+docs/operations/android-play-submission-guidance.md
+docs/operations/store-downloads-notion-automation.md
+scripts/revenuecat-api.mjs
+scripts/ios-submit-testflight.mjs
+scripts/android-submit-play-internal.mjs
+scripts/store-downloads-to-notion.mjs
+```
+
+Boundary rule:
+Codex can inspect, prepare, and operate API-backed workflows when credentials exist outside git. It should not silently submit truth-sensitive legal, privacy, age-rating, data-safety, tax, or production rollout declarations.
 
 ## Standalone Toolkit
 
@@ -179,5 +247,6 @@ These agents are not subordinate to the app factory. They can be used directly i
 - Use `docs/use-cases/` when you want the operating path for a concrete outcome.
 - Use `docs/reference/decision-tree.md` when you know the situation but not the capability.
 - Use `docs/reference/capability-map.md` when you need exact role/workflow descriptions.
-- Use `docs/operations/` only when running private automation, iOS factory, GitHub repo creation, or TestFlight delivery.
+- Use `docs/operations/codex-operational-capabilities.md` when you need to understand what Codex can do with connected services and credentials.
+- Use `docs/operations/` only when running private automation, app factory, GitHub repo creation, or internal mobile release delivery.
 - Use `docs/operations/archive/` only for historical run evidence.

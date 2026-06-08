@@ -15,8 +15,13 @@ build/
 .env.local
 .env.*.local
 .vibermode-automation.env
+.store-downloads-apps*.json
 .vibermode-state/
 .vibermode-generated-ios-apps/
+
+# Store credentials
+*-play-publisher-*.json
+*service-account*.json
 
 # IDE
 .idea/
