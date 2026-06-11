@@ -38,7 +38,65 @@ adapters/codex/skills/meta-ads-operator/
 
 ## 2. Configure Local Secrets
 
-Do not commit secrets. Configure these in the shell, Codex local environment, or another local secrets manager:
+Do not commit secrets. Preferred local storage is macOS Keychain with this service-name convention:
+
+| Env var | Keychain service |
+| --- | --- |
+| `META_ACCESS_TOKEN` | `viberboyz-meta-access-token` |
+| `META_AD_ACCOUNT_ID` | `viberboyz-meta-ad-account-id` |
+| `META_APP_ID` | `viberboyz-meta-app-id` |
+| `META_APP_SECRET` | `viberboyz-meta-app-secret` |
+
+If the values already exist in Keychain under different service names, either re-save them with the standard names above or point the automation at the existing entries:
+
+```bash
+META_KEYCHAIN_ACCOUNT=mcan
+META_ACCESS_TOKEN_KEYCHAIN_SERVICE=existing-access-token-service
+META_AD_ACCOUNT_ID_KEYCHAIN_SERVICE=existing-ad-account-service
+META_APP_ID_KEYCHAIN_SERVICE=existing-app-id-service
+META_APP_SECRET_KEYCHAIN_SERVICE=existing-app-secret-service
+```
+
+Store values without printing them:
+
+```bash
+read -rsp "META_ACCESS_TOKEN: " META_ACCESS_TOKEN; echo
+security add-generic-password -U -a "$USER" -s "viberboyz-meta-access-token" -w "$META_ACCESS_TOKEN"
+unset META_ACCESS_TOKEN
+
+read -rp "META_AD_ACCOUNT_ID (act_...): " META_AD_ACCOUNT_ID
+security add-generic-password -U -a "$USER" -s "viberboyz-meta-ad-account-id" -w "$META_AD_ACCOUNT_ID"
+unset META_AD_ACCOUNT_ID
+
+read -rp "META_APP_ID (optional): " META_APP_ID
+[ -n "$META_APP_ID" ] && security add-generic-password -U -a "$USER" -s "viberboyz-meta-app-id" -w "$META_APP_ID"
+unset META_APP_ID
+
+read -rsp "META_APP_SECRET (optional): " META_APP_SECRET; echo
+[ -n "$META_APP_SECRET" ] && security add-generic-password -U -a "$USER" -s "viberboyz-meta-app-secret" -w "$META_APP_SECRET"
+unset META_APP_SECRET
+```
+
+For one terminal session, values can also be loaded from Keychain into env:
+
+```bash
+export META_ACCESS_TOKEN="$(security find-generic-password -a "$USER" -s "viberboyz-meta-access-token" -w)"
+export META_AD_ACCOUNT_ID="$(security find-generic-password -a "$USER" -s "viberboyz-meta-ad-account-id" -w)"
+export META_API_VERSION="v21.0"
+export META_APP_ID="$(security find-generic-password -a "$USER" -s "viberboyz-meta-app-id" -w 2>/dev/null || true)"
+export META_APP_SECRET="$(security find-generic-password -a "$USER" -s "viberboyz-meta-app-secret" -w 2>/dev/null || true)"
+```
+
+The report script automatically falls back to these Keychain services when env vars are not set. To configure automation without storing Meta secrets in `.vibermode-automation.env`, add only non-secret defaults:
+
+```bash
+META_API_VERSION=v21.0
+META_KEYCHAIN_PREFIX=viberboyz-meta
+```
+
+For non-standard existing Keychain entries, put the `META_*_KEYCHAIN_SERVICE` overrides in `.vibermode-automation.env` instead of the live token values.
+
+Direct env variables are still supported:
 
 ```bash
 export META_ACCESS_TOKEN="..."
@@ -67,6 +125,7 @@ META_APP_SECRET
 ```bash
 printf 'TOKEN_LEN=%s\nACCOUNT=%s\nAPI=%s\n' "${#META_ACCESS_TOKEN}" "$META_AD_ACCOUNT_ID" "${META_API_VERSION:-v21.0}"
 node --check ~/.codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs
+node ~/.codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs --check-keychain
 ```
 
 Read ad accounts:
@@ -85,6 +144,8 @@ node ~/.codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs \
   --min-spend 100 \
   --format markdown
 ```
+
+This works with either direct env vars or the standard Keychain services above.
 
 ## 4. Codex Bootstrap Prompt
 

@@ -1,8 +1,44 @@
 #!/usr/bin/env node
 
+import fs from "node:fs";
+import { execFileSync } from "node:child_process";
+import os from "node:os";
+
 const args = parseArgs(process.argv.slice(2));
-const token = process.env.META_ACCESS_TOKEN;
-const accountId = args.account || process.env.META_AD_ACCOUNT_ID;
+const envInfo = loadEnvFile(args.envFile || process.env.META_ENV_FILE || ".vibermode-automation.env");
+const keychainPrefix = args.keychainPrefix || process.env.META_KEYCHAIN_PREFIX || "viberboyz-meta";
+const keychainAccount = args.keychainAccount || process.env.META_KEYCHAIN_ACCOUNT || process.env.USER || os.userInfo().username;
+const keychainServices = {
+  accessToken: args.accessTokenService || process.env.META_ACCESS_TOKEN_KEYCHAIN_SERVICE || keychainService("access-token"),
+  adAccountId: args.adAccountIdService || process.env.META_AD_ACCOUNT_ID_KEYCHAIN_SERVICE || keychainService("ad-account-id"),
+  appId: args.appIdService || process.env.META_APP_ID_KEYCHAIN_SERVICE || keychainService("app-id"),
+  appSecret: args.appSecretService || process.env.META_APP_SECRET_KEYCHAIN_SERVICE || keychainService("app-secret"),
+};
+
+if (args.checkKeychain) {
+  console.log(JSON.stringify({
+    env_file: envInfo,
+    keychain_account: keychainAccount,
+    keychain_prefix: keychainPrefix,
+    env: {
+      META_ACCESS_TOKEN: Boolean(process.env.META_ACCESS_TOKEN),
+      META_AD_ACCOUNT_ID: Boolean(process.env.META_AD_ACCOUNT_ID),
+      META_API_VERSION: Boolean(process.env.META_API_VERSION),
+      META_APP_ID: Boolean(process.env.META_APP_ID),
+      META_APP_SECRET: Boolean(process.env.META_APP_SECRET),
+    },
+    keychain: {
+      META_ACCESS_TOKEN: { service: keychainServices.accessToken, present: hasKeychainValue(keychainServices.accessToken) },
+      META_AD_ACCOUNT_ID: { service: keychainServices.adAccountId, present: hasKeychainValue(keychainServices.adAccountId) },
+      META_APP_ID: { service: keychainServices.appId, present: hasKeychainValue(keychainServices.appId) },
+      META_APP_SECRET: { service: keychainServices.appSecret, present: hasKeychainValue(keychainServices.appSecret) },
+    },
+  }, null, 2));
+  process.exit(0);
+}
+
+const token = process.env.META_ACCESS_TOKEN || keychainRead(keychainServices.accessToken);
+const accountId = args.account || process.env.META_AD_ACCOUNT_ID || keychainRead(keychainServices.adAccountId);
 const apiVersion = args.apiVersion || process.env.META_API_VERSION || "v21.0";
 const minSpend = Number(args.minSpend ?? 100);
 const outputFormat = args.format || "json";
@@ -33,6 +69,57 @@ function parseArgs(argv) {
 function fail(message) {
   console.error(JSON.stringify({ error: message }, null, 2));
   process.exit(1);
+}
+
+function stripQuotes(value) {
+  const trimmed = value.trim();
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+function loadEnvFile(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return { loaded: false, path: filePath || null };
+  const text = fs.readFileSync(filePath, "utf8");
+  let loadedKeys = 0;
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const match = trimmed.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+    if (!match) continue;
+    const [, key, rawValue] = match;
+    if (process.env[key]) continue;
+    process.env[key] = stripQuotes(rawValue.replace(/\s+#.*$/, ""));
+    loadedKeys++;
+  }
+  return { loaded: true, path: filePath, loaded_keys: loadedKeys };
+}
+
+function keychainService(name) {
+  return `${keychainPrefix}-${name}`;
+}
+
+function keychainRead(service) {
+  try {
+    return execFileSync("security", [
+      "find-generic-password",
+      "-a",
+      keychainAccount,
+      "-s",
+      service,
+      "-w",
+    ], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "";
+  }
+}
+
+function hasKeychainValue(service) {
+  return Boolean(keychainRead(service));
 }
 
 function num(value) {
