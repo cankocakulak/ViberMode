@@ -1,0 +1,7 @@
+interface:
+  display_name: "Meta Ads Operator"
+  short_description: "Safe Meta Ads analysis and actions"
+  default_prompt: "Use $meta-ads-operator to analyze my Meta Ads account and recommend safe next actions."
+
+policy:
+  allow_implicit_invocation: true

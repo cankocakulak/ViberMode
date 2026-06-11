@@ -64,6 +64,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I want to upload a generated iOS app to internal TestFlight | `ios-submit-testflight` |
 | I want to upload a generated Android app to Google Play internal testing | `android-submit-play-internal` |
 | I want to know what Codex can read/write across RevenueCat, iOS, Android, store metadata, or reporting APIs | `docs/operations/codex-operational-capabilities.md` |
+| I want to analyze or safely manage Meta/Facebook/Instagram ads | `meta-ads-operator` |
 
 ## Product Agents
 
@@ -629,6 +630,24 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - an existing generated Android app needs internal testing delivery
 - Surfaces:
   - Canonical workflow only
+
+#### `meta-ads-operator`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Analyze Meta/Facebook/Instagram Ads performance and safely plan or perform Marketing API actions
+- Use when:
+  - the request mentions Meta Ads, Facebook Ads, Instagram Ads, campaigns, ad sets, ads, creatives, CTR, CPC, CPM, leads, purchases, ROAS, placements, budgets, pausing, duplication, or creative testing
+  - the user wants weekly ad performance tables or recurring Meta Ads reporting
+  - the user wants campaign/ad/creative write plans with paused-by-default draft creation
+- Avoid when:
+  - the user wants generic marketing advice with no account/API context
+  - the requested write lacks approval and can affect live spend
+- Surfaces:
+  - Codex: `meta-ads-operator`
+  - Cursor: not currently projected
+  - Any tool: `meta-ads-operator` via `AGENTS.md`
 
 ## Surface Notes
 

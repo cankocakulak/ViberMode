@@ -58,6 +58,7 @@ Default posture:
 | Android internal testing | Preflight Play bootstrap, build signed AAB, upload to Google Play internal testing, update run manifest | `docs/operations/android-play-submission-guidance.md` | `scripts/android-submit-play-internal.mjs` |
 | Mobile store model | Understand the shared iOS/Android release adapter boundary | `docs/operations/mobile-store-submission-model.md` | platform-specific scripts |
 | Store downloads to Notion | Read App Store Connect and Google Play download/install reports and optionally upsert Notion weekly rows | `docs/operations/store-downloads-notion-automation.md` | `scripts/store-downloads-to-notion.mjs` |
+| Meta Ads reporting and draft operations | Read Meta/Facebook/Instagram Ads performance; produce weekly campaign/ad/creative reports; plan paused draft campaign actions after approval | `docs/operations/meta-ads-codex-setup.md` | `adapters/codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs` |
 | App factory state | Understand private backlog and run-state boundaries | `docs/operations/app-factory-state.md` | state-specific scripts |
 | GitHub repo creation | Create generated app repos from factory selections when token setup is complete | `docs/operations/ios-repo-factory-token.md` | `scripts/github-create-template-repo.mjs` |
 
@@ -117,6 +118,10 @@ Prepare Google Play store listing metadata and screenshots, push what can be pus
 
 ```text
 Run the weekly store downloads report for last week and write the Notion rows only if values are missing.
+```
+
+```text
+Use $meta-ads-operator to run a read-only last_7d Meta Ads report and recommend next actions.
 ```
 
 ```text

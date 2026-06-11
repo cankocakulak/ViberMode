@@ -481,6 +481,18 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/android-submit-play-internal.md
 
+  - id: meta-ads-operator
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: analyze Meta/Facebook/Instagram Ads performance and safely plan or perform Marketing API actions
+    surfaces:
+      codex_skill: meta-ads-operator
+      cursor_command: null
+      any_tool_agent: meta-ads-operator
+      canonical_workflow: docs/operations/meta-ads-codex-setup.md
+
   - id: bootstrap-workflow
     kind: workflow
     callability: artifact-aware

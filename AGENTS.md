@@ -47,6 +47,12 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **remediation-router** | `packs/vibermode/roles/iterate/remediation-router.md` | Routes failed validation, experience, or review findings back into execution state |
 | **change-task-planner** | `packs/vibermode/roles/iterate/change-task-planner.md` | Converts an existing-repo change plan into `tasks.json` |
 
+### Operations Workflows — Connected service operators
+
+| Workflow | Surface | Description |
+|----------|---------|-------------|
+| **meta-ads-operator** | `adapters/codex/skills/meta-ads-operator/SKILL.md` | Analyzes Meta/Facebook/Instagram Ads performance and safely plans or performs Marketing API actions with paused-by-default write workflows |
+
 ## How to Use
 
 When the user says any of the following, read the agent file and follow it:
@@ -79,10 +85,12 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **spec-reviewer** agent" → Read `packs/vibermode/roles/iterate/spec-reviewer.md`
 - "Use the **remediation-router** agent" → Read `packs/vibermode/roles/iterate/remediation-router.md`
 - "Use the **change-task-planner** agent" → Read `packs/vibermode/roles/iterate/change-task-planner.md`
+- "Use the **meta-ads-operator** workflow" → Read `adapters/codex/skills/meta-ads-operator/SKILL.md`
 
 ## Rules
 
 - Always read the full agent file before acting
+- For operations workflows, always read the full skill or runbook before acting
 - Follow the agent's output contract exactly
 - Check `docs/[project-name]/` for prior pipeline artifacts before starting
 - Product agents produce artifacts in `docs/`
