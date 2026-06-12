@@ -1,6 +1,6 @@
 ---
 name: "viber-ux-designer"
-description: "Use when the user asks to design UX flows, create interaction patterns, define visual direction, choose branding, find reference apps, or plan the user experience for a feature."
+description: "Use when the user asks to design a website, app, landing page, dashboard, screen, onboarding, product surface, UX flow, visual direction, information architecture, layout system, branding feel, reference apps, or product experience strategy."
 ---
 
 # UX Designer

@@ -1,347 +1,383 @@
 # ViberMode
 
-A vendor-agnostic AI agent development framework.
+ViberMode is a vendor-agnostic AI agent and workflow framework for moving from product intent to validated code, app-factory runs, and internal mobile release handoff.
 
-## Philosophy
+It is not just a list of agents. The useful unit is a **service**:
 
-**Agents are the source of truth.**
+- research app opportunities
+- turn a product idea into reviewed code
+- change an existing repo and validate the result
+- generate an iOS app from a ready idea and push it toward TestFlight
+- upload completed generated mobile apps to internal tester channels
+- give Codex, Cursor, or another AI tool the same reusable role contracts
 
-ViberMode treats AI agents as portable, tool-agnostic definitions. Write once, run anywhere—whether that's Cursor, Codex, or any future AI development environment.
+The canonical definitions live in `packs/`. Tool-specific wrappers live in `adapters/`. The practical maps, runbooks, visuals, and automation notes live in `docs/`.
 
-**Fast over ceremonial.** No 12-step processes. Each agent does one thing, does it well, and gets out of the way. Use what you need, skip what you don't.
+## Start Here
 
-## Architecture
+| I want to... | Open first | Main path |
+|--------------|------------|-----------|
+| Understand the whole repo | `docs/architecture/service-map.md` | services -> workflows -> roles |
+| Pick the right agent or workflow | `docs/reference/decision-tree.md` | situation -> capability |
+| See every role/workflow surface | `docs/reference/capability-map.md` | capability -> Codex/Cursor/AGENTS surface |
+| Research app ideas without creating repos | `docs/use-cases/app-opportunity-research.md` | app research -> ranked candidates |
+| Run idea-to-TestFlight factory flow | `docs/use-cases/ios-app-factory.md` | ready idea -> repo -> code -> TestFlight |
+| Change an existing repo and maybe release | `docs/use-cases/existing-repo-change-to-release.md` | change notes -> validation -> release adapter |
+| Change a generated app and send it back to TestFlight | `docs/use-cases/generated-app-change-to-testflight.md` | app feedback -> validated update -> TestFlight |
+| Turn a product idea into code | `docs/use-cases/product-to-code.md` | specs -> bootstrap -> tasks -> implementation |
+| Submit a completed mobile app internally | `docs/use-cases/mobile-internal-release.md` | preflight -> build/upload -> evidence |
+| Understand Codex-operated services | `docs/operations/codex-operational-capabilities.md` | RevenueCat, App Store, Play, store metadata, reporting |
+| Edit the idea-to-TestFlight visual | `docs/visuals/README.md` | source HTML/SVG -> exported assets |
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Product Pipeline                              │
-│              (Sequential: idea → implementation)                 │
-│                                                                 │
-│  ┌──────────┐ ┌────────────┐ ┌─────┐ ┌────────┐ ┌──────────┐ │
-│  │ Analyzer │→│Brainstormer│→│ PRD │→│UX Design│→│ Stories  │ │
-│  └──────────┘ └────────────┘ └─────┘ └────────┘ └────┬─────┘ │
-│                                                       ↓        │
-│                           ┌───────────┐ ┌──────────────┐      │
-│                           │ Bootstrap │→│ Task Planner │      │
-│                           └───────────┘ └──────┬───────┘      │
-│                                                ↓              │
-│                                      ┌──────────────────────┐ │
-│                                      │Implementation Runner│↺│
-│                                      └──────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
+## Mental Model
 
-┌─────────────────────────────────────────────────────────────────┐
-│                    Iterate Toolkit                               │
-│              (Standalone: use anytime, any order)                │
-│                                                                 │
-│  ┌───────┐  ┌─────────┐  ┌──────────┐  ┌──────────┐          │
-│  │ Scout │  │ Planner │  │ Reviewer │  │UX Tweaker│          │
-│  │       │  │         │  │          │  │          │          │
-│  │"What  │  │"How to  │  │"Is this  │  │"How it   │          │
-│  │is it?"│  │fix/add?"│  │good?"    │  │should    │          │
-│  │       │  │         │  │          │  │look?"    │          │
-│  └───────┘  └─────────┘  └──────────┘  └──────────┘          │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Core Principles
-
-1. **Tool-Agnostic** — Agents contain no assumptions about the execution environment
-2. **Contract-Driven** — Two clear output contracts: code and product
-3. **Composable** — Agents chain naturally, each feeding the next
-4. **Fast** — No ceremony. Each agent does one thing well
-5. **Exportable** — Agents can be converted to platform-specific formats (Codex Skills, etc.)
-
-## Directory Structure
-
-```
-packs/                          # Canonical authoring roots
-└── vibermode/
-    ├── roles/                  # Generic agent role contracts
-    ├── workflows/              # Generic workflow contracts
-    └── templates/              # Generic templates
-
-adapters/                       # Platform-specific projections
-├── codex/
-│   ├── skills/                 # Codex skill wrappers
-│   └── install/                # Codex install/publish scripts
-└── cursor/
-    ├── commands/               # Cursor slash commands
-    └── rules/                  # Cursor always-on context
-
-scripts/                        # Compatibility wrappers for moved scripts
-
-AGENTS.md                       # Agent index for Codex App, Claude Code, etc.
-docs/                           # Public architecture and integration notes
-```
-
-Canonical content lives under `packs/`. Platform integrations live under `adapters/`. Public architecture and integration notes live under `docs/`.
-
-Visual reference:
-- `docs/reference/repo-visual-map.md` — Mermaid diagrams for repo topology, pack structure, projections, and workflow shape
-- `docs/use-cases/ios-app-factory.md` — top-down idea-to-TestFlight operating path and generated visuals
-- `docs/visuals/idea-to-testflight/` — deployable source for the iOS factory diagrams
-- `docs/assets/idea-to-testflight-flow.svg` and `.png` — exported primary figure
-- `docs/operations/mobile-store-submission-model.md` — shared iOS/Android Stage 4 release adapter model
-- `docs/operations/codex-operational-capabilities.md` — practical Codex operator guide for RevenueCat, iOS, Android, store metadata, and reporting workflows
-
-## What ViberMode Provides
-
-ViberMode is easier to read as a set of services, not as a flat list of agents.
-
-| Service | What it does | Start here |
-|---------|--------------|------------|
-| Product to Code | Turns a raw idea or product slice into specs, tasks, implementation, validation, and review | `docs/use-cases/product-to-code.md` |
-| Existing Repo Change to Release | Turns feedback or requested changes into validated repo changes, optionally released | `docs/use-cases/existing-repo-change-to-release.md` |
-| iOS App Factory | Researches app ideas, creates iOS repos, runs implementation, and prepares TestFlight delivery | `docs/use-cases/ios-app-factory.md` |
-| Mobile Store Submission | Uploads completed generated mobile apps to internal tester channels | `docs/use-cases/mobile-internal-release.md` |
-| App Opportunity Research | Produces research packs and optional backlog candidates without creating repos | `docs/use-cases/app-opportunity-research.md` |
-| Standalone Repo Toolkit | Gives focused help for investigation, planning, UX, testing, refactor, and review work | iterate agents |
-
-Read `docs/architecture/service-map.md` for the full service-level map.
-Read `docs/use-cases/` for concrete operating paths and automation mappings.
-Read `docs/operations/codex-operational-capabilities.md` when you want to understand how Codex can operate connected services such as RevenueCat, App Store Connect, Google Play, store metadata, and reporting APIs.
-For the idea-to-TestFlight flow, start at `docs/use-cases/ios-app-factory.md`; editable visual source lives under `docs/visuals/idea-to-testflight/` and exports to `docs/assets/`.
-Regenerate its SVG/PNG assets with `npm run export:idea-to-testflight:all`.
-
-Repository boundary decisions, including why OpenClaw projection docs, the Simmer domain pack, and the old monolithic `ios-app-store-factory` workflow are not part of ViberMode core, are recorded in `docs/architecture/boundary-decisions.md`.
-
-## Agents
-
-### Product Agents
-
-| Agent | Purpose | Input From | Produces |
-|-------|---------|------------|----------|
-| `analyzer` | Discover existing project structure and patterns | — | Project snapshot |
-| `app-researcher` | Research mobile app/category opportunities before backlog handoff | Category + sources | Research pack + candidate ideas |
-| `brainstormer` | Rapid ideation, tech direction | Analyzer | Ideas + recommendation |
-| `prd` | Lean product requirements + tech stack | Brainstormer | PRD document |
-| `ux-designer` | Flows, visual direction, branding, references | PRD | UX specification |
-| `user-stories` | Sprint-ready, UX-aware stories | PRD + UX | Story backlog |
-| `bootstrap` | Prepare repo, branch, scaffold, and runnable baseline | User Stories / Analyzer | `bootstrap.md` |
-| `task-planner` | Convert stories into an implementation task list | User Stories + Bootstrap | `tasks.json` |
-| `implementation-runner` | Implement one task per session from `tasks.json` | Task Planner | Code changes + `run-state.json` |
-| `ios-submitter` | Upload completed generated iOS apps to internal TestFlight | Completed run manifest | Submission evidence |
-| `android-submitter` | Upload completed generated Android apps to Google Play internal testing | Completed run manifest | Submission evidence |
-
-Legacy aliases:
-- `ralph-converter` → `task-planner`
-- `ralph-runner` → `implementation-runner`
-
-Compatibility note:
-- treat the `ralph-*` names as legacy only; prefer the canonical names above for new usage
-
-**Output contract:** `Analysis → Document → Next Step Handoff → Artifacts`
-
-### Iterate Agents (Standalone Toolkit)
-
-| Family | Agent | Produces |
-|-------|-------|----------|
-| Understand | `scout` | Context summary |
-| Understand | `planner` | Strategy + changes required |
-| Improve | `ux-tweaker` | UX improvements + accessibility |
-| Improve | `ux-investigator` | UX findings, recommended direction, focused improvements |
-| Improve | `modularizer` | Structural findings, cut lines, safe refactor plan |
-| Improve | `surface-hardener` | Edge-state, resilience, and accessibility improvements |
-| Translate | `change-triager` | Scoped change brief from feedback, bug notes, and release requests |
-| Verify | `integration-auditor` | End-to-end connection audit across routes, state, events, and services |
-| Verify | `tester` | Ad-hoc verification evidence from CLI plus runtime checks |
-| Verify | `experience-reviewer` | Product-experience verdict after runtime validation |
-| Verify | `reviewer` | Quality verdict + improvements |
-
-Use any independently, or compose them inside a larger workflow.
-
-Verification distinctions:
-- `integration-auditor` asks "is the path connected?"
-- `tester` asks "does this behavior actually work?"
-- `runtime-validator` is the formal pipeline gate used by implementation workflows
-- `experience-reviewer` asks "does the validated surface feel specific and worth testing?"
-
-## Workflow
-
-Workflows are the operating procedures that combine roles into services. For a service-level view, start with `docs/architecture/service-map.md`.
-
-Canonical composed pipeline:
-
-```
-product-to-spec → bootstrap → spec-to-code
-```
-
-Primary workflow docs:
-- `app-opportunity-research` — standalone category/source analysis for mobile app opportunities
-- `idea-research-backlog` — independent research loop that maintains a private ranked app idea backlog
-- `daily-ios-app-pipeline` — consumes the private backlog, creates an iOS repo, and runs implementation
-- `product-to-spec` — idea to completed specification artifacts
-- `spec-to-code` — completed specs to tasks, implementation loop, and review
-- `product-to-code` — composed workflow that runs all three stages
-- `repo-change` — change planning and execution inside an existing repository
-- `change-to-release` — existing-repo changes with validation, experience hardening, and optional release
-
-Support workflow docs:
-- `bootstrap` — repo/runtime preparation before implementation
-- `experience-hardening` — user-facing quality gate after runtime validation and before final review
-- `remediation-routing` — route failed validation, experience, or review findings back into execution
-
-**Common shortcuts:**
-- New project: `product-to-spec → bootstrap → spec-to-code`
-- Existing codebase feature: `Analyzer → product-to-spec → bootstrap → spec-to-code`
-- Spec-only work: `product-to-spec`
-- Repo/runtime prep only: `bootstrap`
-- Implementation-only work: `spec-to-code`
-- Bug fix: `Planner → implement`
-- UX improvement: `UX Tweaker → implement`
-- UI diagnosis plus refinement: `UX Investigator → UX Tweaker → Tester`
-- Safe refactor: `Modularizer → implement → Tester`
-- Wiring check: `Integration Auditor → Tester`
-- Release-surface hardening: `Surface Hardener → Tester`
-- Generated app polish gate: `Runtime Validator → Experience Reviewer → Remediation Router → Reviewer`
-- Existing repo change to release: `Change Triager → Repo Change → Experience Hardening → Release adapter`
-- Small addition: `Planner → implement`
-- Exploration: `Brainstormer → PRD`
-- Design-first: `UX Designer → User Stories`
-
-## Platform Integration
-
-### Cursor — Slash Commands
-
-Type `/` in chat to invoke any agent:
-
-```
-/analyzer        — Discover project structure
-/brainstormer    — Rapid ideation
-/prd             — Product requirements + tech stack
-/ux-designer     — UX flows, visual direction, references
-/user-stories    — UX-aware, sprint-ready stories
-/task-planner    — Convert stories to tasks.json
-/implementation-runner — Implement next task from tasks.json
-/scout           — Quick module context summary
-/planner         — Investigate bugs or plan features
-/reviewer        — Code review and quality check
-/ux-tweaker      — UI/UX refinements
-/ux-investigator — Investigate UX friction, clarify direction, refine the surface
-/modularizer     — Find safe refactor seams and modularization cuts
-/tester          — Verify a surface with evidence from CLI and runtime behavior
-/integration-auditor — Audit whether a feature is actually wired end to end
-/surface-hardener — Harden empty/loading/error/a11y/edge states
-```
-
-Compatibility aliases still supported:
+ViberMode has four layers.
 
 ```text
-/ralph-converter — Legacy alias for task-planner
-/ralph-runner    — Legacy alias for implementation-runner
+Service
+  A practical outcome, such as "Product to Code" or "iOS App Factory".
+
+Workflow
+  The operating procedure that combines roles into stages.
+
+Role
+  A reusable agent contract, such as prd, reviewer, tester, or ios-submitter.
+
+Adapter
+  A thin projection for Codex Skills, Cursor commands, AGENTS.md, or scripts.
 ```
 
-Integration files: `adapters/cursor/commands/` (slash commands) + `adapters/cursor/rules/viber-mode.mdc` (always-on context)
+That gives this repo its shape:
 
-### Codex App — Skills
+```text
+packs/vibermode/
+  roles/        canonical agent contracts
+  workflows/    canonical operating procedures
+  templates/    reusable product/spec templates
 
-Install ViberMode agents as Codex Skills:
+adapters/
+  codex/        Codex skill wrappers and installer
+  cursor/       Cursor slash commands and rules
+
+scripts/        CLI helpers for validation, app factory, release, and reporting
+
+docs/
+  use-cases/    outcome-specific operating paths
+  architecture/ service map and boundary decisions
+  operations/   private-run and connected-service runbooks
+  reference/    decision tree, capability map, visual repo map
+  visuals/      code-authored visual sources
+  assets/       exported SVG/PNG assets
+```
+
+## Main Operating Paths
+
+### 1. App Opportunity Research
+
+Use this when you want better mobile app ideas before any repo exists.
+
+```text
+category or market question
+  -> app-opportunity-research
+  -> research pack
+  -> optional idea-research-backlog update
+  -> private ranked candidate list
+```
+
+Start:
+
+- `docs/use-cases/app-opportunity-research.md`
+- `packs/vibermode/workflows/app-opportunity-research.md`
+- `packs/vibermode/workflows/idea-research-backlog.md`
+
+Automation:
+
+- `viber-idea-research` in `docs/operations/codex-automations.md`
+
+### 2. iOS App Factory: Idea To TestFlight
+
+Use this when a private backlog idea is already ready and the goal is to produce a generated iOS app repo, implement it, harden the experience, and upload an internal TestFlight build.
+
+```text
+ready private idea
+  -> daily-ios-app-pipeline
+  -> ios-app-factory-prepare
+  -> product-to-code inside generated repo
+  -> runtime validation
+  -> experience-hardening
+  -> final review
+  -> ios-submit-testflight
+  -> private run manifest + generated repo commit/push
+```
+
+Start:
+
+- `docs/use-cases/ios-app-factory.md`
+- `docs/operations/app-factory-automation-overview.md`
+- `docs/operations/app-factory-state.md`
+- `docs/operations/ios-testflight-submission-guidance.md`
+
+Automation:
+
+- `viber-ios-app-factory-manual-runner` in `docs/operations/codex-automations.md`
+
+Visual:
+
+![Idea to TestFlight flow](docs/assets/idea-to-testflight-flow.svg)
+
+Editable source:
+
+- `docs/visuals/idea-to-testflight/`
+- exported assets: `docs/assets/idea-to-testflight-flow.svg`, `docs/assets/idea-to-testflight-flow.png`
+
+Regenerate:
+
+```bash
+npm run export:idea-to-testflight:all
+```
+
+### 3. Product To Code
+
+Use this when the starting point is a raw idea or product slice, not a fully specified implementation task.
+
+```text
+idea or product slice
+  -> product-to-spec
+     -> brainstormer
+     -> prd
+     -> ux-designer
+     -> user-stories
+     -> spec-reviewer
+  -> bootstrap
+  -> spec-to-code
+     -> task-planner
+     -> implementation-runner
+     -> runtime-validator
+     -> reviewer
+  -> reviewed code
+```
+
+Start:
+
+- `docs/use-cases/product-to-code.md`
+- `packs/vibermode/workflows/product-to-code.md`
+- `packs/vibermode/workflows/product-to-spec.md`
+- `packs/vibermode/workflows/spec-to-code.md`
+
+Typical artifacts:
+
+```text
+docs/[project-name]/
+  brainstorm.md
+  prd.md
+  ux.md
+  stories.md
+  spec-review.md
+  bootstrap.md
+  tasks.json
+  run-state.json
+  validation-report.md
+  review.md
+```
+
+### 4. Existing Repo Change To Release
+
+Use this when the repo already exists and the input is feedback, bug notes, polish requests, or release-facing changes.
+
+```text
+change notes + target repo
+  -> change-triager
+  -> repo-change
+  -> change-task-planner when needed
+  -> implementation-runner
+  -> runtime-validator
+  -> experience-hardening when user-facing
+  -> reviewer
+  -> optional ios-submit-testflight or android-submit-play-internal
+```
+
+Start:
+
+- `docs/use-cases/existing-repo-change-to-release.md`
+- `packs/vibermode/workflows/change-to-release.md`
+- `packs/vibermode/workflows/repo-change.md`
+- `packs/vibermode/workflows/experience-hardening.md`
+
+Generated app variant:
+
+- `docs/use-cases/generated-app-change-to-testflight.md`
+
+Automation:
+
+- `manual-plant-routine-change-to-testflight` in `docs/operations/codex-automations.md`
+
+### 5. Mobile Internal Release
+
+Use this after implementation, runtime validation, experience review, and final review have passed. It is not the place to fix product quality; it is the release adapter stage.
+
+```text
+completed generated app manifest
+  -> platform preflight
+  -> build/sign/export
+  -> internal tester upload
+  -> evidence recorded in the run manifest
+```
+
+Start:
+
+- `docs/use-cases/mobile-internal-release.md`
+- `docs/operations/mobile-store-submission-model.md`
+- `docs/operations/ios-testflight-submission-guidance.md`
+- `docs/operations/android-play-submission-guidance.md`
+
+Surfaces:
+
+- `packs/vibermode/workflows/ios-submit-testflight.md`
+- `packs/vibermode/workflows/android-submit-play-internal.md`
+- `packs/vibermode/roles/product/ios-submitter.md`
+- `packs/vibermode/roles/product/android-submitter.md`
+
+### 6. Standalone Repo Toolkit
+
+Use these when a full product pipeline is too heavy.
+
+| Situation | Use |
+|----------|-----|
+| I need to understand a module | `scout` |
+| I need to plan a bug fix or feature | `planner` |
+| I need to diagnose UX friction | `ux-investigator` |
+| I need to polish UI/UX | `ux-tweaker` |
+| I need craft-level motion/component polish | `design-engineer` |
+| I need to split or refactor safely | `modularizer` |
+| I need to check wiring | `integration-auditor` |
+| I need proof that behavior works | `tester` |
+| I need edge-state hardening | `surface-hardener` |
+| I need product-experience review | `experience-reviewer` |
+| I need code review | `reviewer` |
+
+Start:
+
+- `docs/reference/decision-tree.md`
+- `docs/reference/capability-map.md`
+
+## How To Use It In Tools
+
+### Codex App
+
+Install the Codex skill projection:
 
 ```bash
 npm run install:codex
-# or directly:
-./adapters/codex/install/install-skills.sh
 ```
 
-The installer also provisions a shared `viber-mode` support bundle under `~/.codex/skills/` so each skill can resolve the canonical pack files it references.
-
-Then use agents naturally in Codex App:
-
-```
-"Analyze this project"           → viber-analyzer
-"Write a PRD for..."             → viber-prd
-"Design the UX for..."           → viber-ux-designer
-"Create user stories"            → viber-user-stories
-"Convert stories to tasks.json"  → viber-task-planner
-"Implement the next task"        → viber-implementation-runner
-"Understand this module"          → viber-scout
-"Why is this broken?"            → viber-planner
-"Review this code"               → viber-reviewer
-"Improve the UX of..."           → viber-ux-tweaker
-"Investigate why this UI feels off" → viber-ux-investigator
-"Modularize this area safely"    → viber-modularizer
-"Test whether this feature is really working" → viber-tester
-"Audit whether this is actually wired up" → viber-integration-auditor
-"Harden this flow for edge cases" → viber-surface-hardener
-"Triage these change notes"       → viber-change-triager
-"Apply these changes and prepare release" → viber-change-to-release
-"Review whether this app feels ready to test" → viber-experience-reviewer
-"Run the Stage 3 polish gate"    → viber-experience-hardening
-```
-
-Legacy compatibility:
+Then ask naturally:
 
 ```text
-"Convert stories to tasks.json"  → viber-ralph-converter
-"Implement the next task"        → viber-ralph-runner
+"Use product-to-code for this idea..."
+"Use ux-designer to design this website/app surface..."
+"Use repo-change for these feedback notes..."
+"Use design-engineer to polish this component motion..."
+"Use tester to verify this flow..."
+"Use ios-submitter to preflight this completed generated app..."
 ```
 
-Skills are installed to `~/.codex/skills/` and auto-trigger based on intent.
+Codex skill wrappers live in:
 
-### Any Other Tool — AGENTS.md
+- `adapters/codex/skills/`
+- `adapters/codex/README.md`
 
-`AGENTS.md` at the repo root tells any AI tool (Claude Code, Amp, etc.) about available agents:
+### Cursor
 
+Cursor slash commands live in:
+
+- `adapters/cursor/commands/`
+- `adapters/cursor/rules/viber-mode.mdc`
+
+Examples:
+
+```text
+/planner
+/prd
+/ux-designer
+/task-planner
+/implementation-runner
+/design-engineer
+/tester
+/reviewer
 ```
-"Use the implementation-runner agent to implement the next task"
+
+### Any AI Tool
+
+Use `AGENTS.md` at the repo root. It maps agent names to canonical role files.
+
+Example:
+
+```text
+Use the planner agent.
+Use the implementation-runner agent.
+Use the ios-submitter agent.
 ```
 
-### How It Connects
-
-```
-packs/vibermode/roles/iterate/planner.md        ← Source of truth (portable)
-         ↕ referenced by
-adapters/cursor/commands/planner.md             ← Cursor: slash command
-adapters/codex/skills/planner/SKILL.md         ← Codex: auto-trigger skill
-AGENTS.md                                ← Others: agent index
-```
-
-No duplication. All integrations are thin wrappers pointing to `packs/vibermode/`.
-
-## Using in Your Own Projects
-
-Add as a git submodule:
+## Useful Commands
 
 ```bash
-git submodule add <repo-url> viber-mode
+# Validate reference metadata and capability mapping.
+npm run validate
+
+# Install Codex skills into ~/.codex/skills.
+npm run install:codex
+
+# Regenerate idea-to-TestFlight SVG and PNG visuals.
+npm run export:idea-to-testflight:all
+
+# Run the change-to-release evidence gate checker.
+npm run change-release:gate
+
+# Inspect configured RevenueCat access if credentials exist.
+npm run revenuecat:status
 ```
 
-Then copy the Cursor integration files:
+## What Is Canonical
 
-```bash
-cp -r viber-mode/adapters/cursor/ .cursor/
-```
+Use these rules when editing the repo:
 
-All agents referenced via `viber-mode/packs/vibermode/roles/` paths — works out of the box.
+- Change agent behavior in `packs/vibermode/roles/`.
+- Change multi-step operating procedures in `packs/vibermode/workflows/`.
+- Change Codex or Cursor wording only in `adapters/`.
+- Put concrete service explanations in `docs/use-cases/`.
+- Put private automation, credentials, release, and connected-service guidance in `docs/operations/`.
+- Put generated visual outputs in `docs/assets/` and editable visual source in `docs/visuals/`.
 
-## Documentation
+## Boundary Notes
 
-- `docs/README.md` - documentation map
-- `docs/architecture/service-map.md` - service-level map showing which workflows combine into larger outcomes
-- `docs/architecture/boundary-decisions.md` - what is intentionally outside ViberMode core
-- `docs/use-cases/` - concrete operating paths and automation mappings
-- `docs/use-cases/ios-app-factory.md` - top-down idea-to-TestFlight flow and factory visuals
-- `docs/use-cases/mobile-internal-release.md` - TestFlight and Google Play internal testing release path
-- `docs/operations/mobile-store-submission-model.md` - shared iOS/Android Stage 4 release adapter model
-- `docs/operations/android-play-submission-guidance.md` - Google Play internal testing setup and runbook
-- `docs/visuals/` - code-authored visual sources
-- `docs/assets/` - exported SVG/PNG visual assets
-- `docs/architecture/` - framework analysis and service-level architecture notes
-- `docs/reference/capability-map.md` - what each agent, skill, and workflow is for
-- `docs/reference/decision-tree.md` - how to choose the right capability quickly
-- `docs/reference/agent-surface-map.yaml` - machine-readable capability and surface index
+ViberMode core intentionally avoids domain-specific private state and old monolithic factory flow names.
 
-## Roadmap
+Important decisions:
 
-- [x] Iterate agent definitions (scout, planner, reviewer, ux-tweaker)
-- [x] Product agent definitions (analyzer, brainstormer, prd, ux-designer, user-stories, task-planner, implementation-runner)
-- [x] Cursor slash commands + rules integration
-- [x] Full product-to-code pipeline with agent chaining
-- [x] Codex Skills export + install script
-- [ ] Agent validation tooling
-- [ ] Workflow orchestration
-- [ ] npm package distribution
+- The old monolithic `ios-app-store-factory` workflow was replaced by smaller owners: `daily-ios-app-pipeline`, `product-to-code`, `experience-hardening`, and `ios-submit-testflight`.
+- OpenClaw projection docs are not part of the current core surface.
+- Simmer-specific domain material is not part of the active public framework surface.
+- App-factory state, credentials, run manifests, and generated private repos stay outside public docs unless a public-safe summary is intentional.
+
+Read:
+
+- `docs/architecture/boundary-decisions.md`
+- `docs/operations/app-factory-state.md`
+
+## Documentation Map
+
+| Area | Purpose |
+|------|---------|
+| `docs/README.md` | Documentation index and recommended reading order |
+| `docs/architecture/service-map.md` | High-level service model |
+| `docs/architecture/boundary-decisions.md` | What is in/out of ViberMode core |
+| `docs/use-cases/` | Concrete operating paths and automation mappings |
+| `docs/operations/` | App factory, release, credentials, connected-service runbooks |
+| `docs/reference/decision-tree.md` | Fast capability selection |
+| `docs/reference/capability-map.md` | Full role/workflow/surface map |
+| `docs/reference/repo-visual-map.md` | Mermaid repo topology diagrams |
+| `docs/visuals/` | Code-authored visual source |
+| `docs/assets/` | Exported SVG/PNG assets |
 
 ## License
 

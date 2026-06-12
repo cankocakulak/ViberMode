@@ -46,8 +46,10 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I need to understand unfamiliar code | `scout` |
 | I need to plan a bug fix or feature approach | `planner` |
 | I want to review code quality or regressions | `reviewer` |
+| I want to design a website, app, dashboard, landing page, or product surface | `ux-designer` |
 | I want to improve the feel of an existing UI | `ux-tweaker` |
 | I want to diagnose UX friction before changing it | `ux-investigator` |
+| I want craft-level motion, component polish, or animation review | `design-engineer` |
 | I want to split a large or messy file safely | `modularizer` |
 | I need proof that a feature really works | `tester` |
 | I need to check whether a feature is actually wired end to end | `integration-auditor` |
@@ -130,11 +132,16 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 - Kind: `product-agent`
 - Callability: `artifact-aware`
 - Tier: `primary`
-- Purpose: Define flows, interaction shape, visual direction, and references
+- Purpose: Define product experience strategy, information architecture, first-screen hierarchy, visual direction, layout system, interaction language, and UX flows
 - Use when:
-  - a feature or product needs UX structure before implementation
+  - a feature, website, app, dashboard, landing page, onboarding, or product surface needs design direction before implementation
+  - first impression, page/screen hierarchy, layout system, visual style, or reference adaptation needs to be decided
 - Avoid when:
   - you only need local polish on an existing screen
+  - requirements are too unclear for PRD-level direction
+- Distinction:
+  - Use `ux-designer` for strategy, structure, visual direction, and implementation-ready UX artifacts.
+  - Use `design-engineer` after direction exists when the main need is motion, tactile component feel, gestures, or craft polish.
 - Typical outputs:
   - `docs/[project-name]/ux.md`
 - Surfaces:
@@ -224,7 +231,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - approved Stage 3 evidence
   - Apple signing and App Store Connect credentials in secure runtime storage
 - Surfaces:
-  - Codex: not currently projected as a skill wrapper
+  - Codex: `viber-ios-submitter`
   - Cursor: not currently projected
   - Any tool: `ios-submitter`
 
@@ -240,7 +247,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - confirmed Play Console bootstrap
   - Google Play service account credential in secure runtime storage
 - Surfaces:
-  - Codex: not currently projected as a skill wrapper
+  - Codex: `viber-android-submitter`
   - Cursor: not currently projected
   - Any tool: `android-submitter`
 
@@ -338,6 +345,27 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - Codex: `viber-ux-investigator`
   - Cursor: `/ux-investigator`
   - Any tool: `ux-investigator`
+
+#### `design-engineer`
+
+- Kind: `iterate-agent`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Apply craft-level UI polish for motion, component states, gestures, animation timing, and interaction feel
+- Use when:
+  - the UI works but feels abrupt, generic, sluggish, or under-polished
+  - animation, transition, gesture, popover, modal, tooltip, tab, toast, hover, focus, or active-state behavior needs design-engineering attention
+  - UI code needs a Before/After/Why review of craft details
+- Avoid when:
+  - product flows or requirements are undefined
+  - the UX problem needs broad diagnosis before polish
+- Distinction:
+  - Use `ux-tweaker` for general UI improvement.
+  - Use `design-engineer` when motion, tactile feedback, gesture behavior, or component craft is the main quality bar.
+- Surfaces:
+  - Codex: `viber-design-engineer`
+  - Cursor: `/design-engineer`
+  - Any tool: `design-engineer`
 
 #### `modularizer`
 
@@ -616,7 +644,8 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - Stage 3 has completed with validation, review, and release metadata
   - an existing generated app needs internal TestFlight delivery
 - Surfaces:
-  - Canonical workflow only
+  - Codex: `viber-ios-submitter`
+  - Cursor: not currently projected
 
 #### `android-submit-play-internal`
 
@@ -629,7 +658,44 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - Play Console bootstrap is confirmed for the package
   - an existing generated Android app needs internal testing delivery
 - Surfaces:
-  - Canonical workflow only
+  - Codex: `viber-android-submitter`
+  - Cursor: not currently projected
+
+#### `mobile-storefront`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Prepare, audit, or update App Store and Google Play storefront listing metadata and assets
+- Use when:
+  - the request mentions App Store or Google Play listing copy, screenshots, release notes, privacy/support URLs, feature graphics, or storefront presence
+- Surfaces:
+  - Codex: `viber-mobile-storefront`
+  - Cursor: not currently projected
+
+#### `revenuecat-operator`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Inspect or configure RevenueCat projects, apps, offerings, entitlements, customers, metrics, and credentials
+- Use when:
+  - the request mentions RevenueCat state, API access, offerings, packages, entitlements, subscriber/customer reads, SDK keys, or metrics
+- Surfaces:
+  - Codex: `viber-revenuecat-operator`
+  - Cursor: not currently projected
+
+#### `mobile-monetization-operator`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Coordinate store products, RevenueCat configuration, and app paywall or purchase wiring
+- Use when:
+  - the request spans in-app products, subscription packages, RevenueCat offerings, and app-side paywall/purchase behavior
+- Surfaces:
+  - Codex: `viber-mobile-monetization-operator`
+  - Cursor: not currently projected
 
 #### `meta-ads-operator`
 

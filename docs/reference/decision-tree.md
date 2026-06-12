@@ -50,10 +50,14 @@ If you do not yet understand how the workflows combine into higher-level service
 
 ### I need to improve an existing UI
 
+- If you need a new website, app, dashboard, landing page, onboarding, or product surface designed from requirements:
+  - Use `ux-designer`
 - If the UX direction is already clear:
   - Use `ux-tweaker`
 - If the UX problem needs diagnosis first:
   - Use `ux-investigator`
+- If the UI works but needs craft-level motion, component-state, gesture, or animation polish:
+  - Use `design-engineer`
 
 ### I need to refactor or split a messy area
 
@@ -123,6 +127,10 @@ If you do not yet understand how the workflows combine into higher-level service
 ### UX diagnosis and improvement
 
 - `ux-investigator -> ux-tweaker -> tester`
+
+### Craft UI polish
+
+- `ux-investigator when direction is unclear -> design-engineer -> tester`
 
 ### Safe refactor
 

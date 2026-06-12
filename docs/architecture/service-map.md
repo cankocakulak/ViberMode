@@ -21,7 +21,7 @@ Roles are the workers. Workflows are the operating procedures. Services are the 
 | iOS App Factory | Research app ideas, create an iOS repo, implement it, and prepare TestFlight delivery | `daily-ios-app-pipeline` | `app-opportunity-research`, `idea-research-backlog`, `product-to-code`, `ios-submit-testflight` |
 | Mobile Store Submission | Upload completed generated mobile apps to internal tester distribution | platform release adapter | `ios-submit-testflight`, `android-submit-play-internal` |
 | App Opportunity Research | Produce a market/opportunity research pack without creating a repo | `app-opportunity-research` | `idea-research-backlog` when candidates should enter the private backlog |
-| Standalone Repo Toolkit | Investigate, plan, refactor, test, review, or harden a local surface | narrow iterate agents | `scout`, `planner`, `ux-tweaker`, `tester`, `reviewer`, and related iterate roles |
+| Standalone Repo Toolkit | Investigate, plan, refactor, test, review, or harden a local surface | narrow iterate agents | `scout`, `planner`, `ux-tweaker`, `design-engineer`, `tester`, `reviewer`, and related iterate roles |
 
 Operational guides are not service workflows, but they explain how Codex operates connected services from this workspace. Start with `docs/operations/codex-operational-capabilities.md` for RevenueCat, iOS, Android, store metadata, reporting, credential boundaries, and evidence capture.
 
@@ -236,6 +236,7 @@ These agents are not subordinate to the app factory. They can be used directly i
 | Plan a bounded change | `planner` |
 | Diagnose UX friction | `ux-investigator` |
 | Polish a UI | `ux-tweaker` |
+| Craft motion/component interaction polish | `design-engineer` |
 | Split or refactor safely | `modularizer` |
 | Check wiring | `integration-auditor` |
 | Prove behavior works | `tester` |

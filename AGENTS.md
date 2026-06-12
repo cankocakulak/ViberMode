@@ -12,7 +12,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **app-researcher** | `packs/vibermode/roles/product/app-researcher.md` | Researches mobile app opportunities before backlog/factory handoff |
 | **brainstormer** | `packs/vibermode/roles/product/brainstormer.md` | Rapid ideation, generates structured creative options |
 | **prd** | `packs/vibermode/roles/product/prd.md` | Produces lean, developer-ready PRDs |
-| **ux-designer** | `packs/vibermode/roles/product/ux-designer.md` | UX flows, interaction patterns, visual direction |
+| **ux-designer** | `packs/vibermode/roles/product/ux-designer.md` | Product experience strategy, information architecture, visual direction, and UX flows |
 | **user-stories** | `packs/vibermode/roles/product/user-stories.md` | Generates prioritized user stories with acceptance criteria |
 | **bootstrap** | `packs/vibermode/roles/product/bootstrap.md` | Prepares repo, branch, and runnable validation baseline |
 | **task-planner** | `packs/vibermode/roles/product/task-planner.md` | Converts user stories into `tasks.json` for the implementation pipeline |
@@ -36,6 +36,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **reviewer** | `packs/vibermode/roles/iterate/reviewer.md` | Validates code quality, identifies issues |
 | **ux-tweaker** | `packs/vibermode/roles/iterate/ux-tweaker.md` | UI/UX perspective: design patterns, accessibility |
 | **ux-investigator** | `packs/vibermode/roles/iterate/ux-investigator.md` | Investigates an existing interface, clarifies UX friction, and improves the surface |
+| **design-engineer** | `packs/vibermode/roles/iterate/design-engineer.md` | Craft-level UI polish for motion, component states, gestures, and interaction feel |
 | **modularizer** | `packs/vibermode/roles/iterate/modularizer.md` | Finds safe modularization seams and plans or applies incremental refactors |
 | **tester** | `packs/vibermode/roles/iterate/tester.md` | Verifies a surface with CLI plus runtime evidence and focused smoke checks |
 | **integration-auditor** | `packs/vibermode/roles/iterate/integration-auditor.md` | Audits whether a feature is actually wired across routes, state, events, and services |
@@ -75,6 +76,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **reviewer** agent" → Read `packs/vibermode/roles/iterate/reviewer.md`
 - "Use the **ux-tweaker** agent" → Read `packs/vibermode/roles/iterate/ux-tweaker.md`
 - "Use the **ux-investigator** agent" → Read `packs/vibermode/roles/iterate/ux-investigator.md`
+- "Use the **design-engineer** agent" → Read `packs/vibermode/roles/iterate/design-engineer.md`
 - "Use the **modularizer** agent" → Read `packs/vibermode/roles/iterate/modularizer.md`
 - "Use the **tester** agent" → Read `packs/vibermode/roles/iterate/tester.md`
 - "Use the **integration-auditor** agent" → Read `packs/vibermode/roles/iterate/integration-auditor.md`

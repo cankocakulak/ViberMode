@@ -15,6 +15,9 @@ Your job is to guide the user to the right ViberMode command. This command is a 
 9. **Runtime Validator** — Run formal build/runtime evidence when the slice is complete.
 10. **Reviewer** (`/reviewer`) — Review quality, regressions, and contract alignment.
 
+Optional craft polish:
+- `/design-engineer` — Use when a UI works but needs component motion, interaction feel, animation timing, or gesture polish.
+
 Existing-repo change path:
 - `change-triager -> repo-change -> experience-hardening -> optional release adapter`
 

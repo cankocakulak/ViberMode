@@ -65,7 +65,7 @@ capabilities:
     callability: artifact-aware
     tier: primary
     family: product
-    purpose: define UX flows, interaction shape, and visual direction
+    purpose: define product experience strategy, information architecture, visual direction, layout system, and UX flows
     surfaces:
       codex_skill: viber-ux-designer
       cursor_command: /ux-designer
@@ -127,7 +127,7 @@ capabilities:
     family: product
     purpose: submit completed generated iOS app builds to internal TestFlight
     surfaces:
-      codex_skill: null
+      codex_skill: viber-ios-submitter
       cursor_command: null
       any_tool_agent: ios-submitter
       canonical_role: packs/vibermode/roles/product/ios-submitter.md
@@ -139,7 +139,7 @@ capabilities:
     family: product
     purpose: submit completed generated Android app builds to Google Play internal testing
     surfaces:
-      codex_skill: null
+      codex_skill: viber-android-submitter
       cursor_command: null
       any_tool_agent: android-submitter
       canonical_role: packs/vibermode/roles/product/android-submitter.md
@@ -211,6 +211,18 @@ capabilities:
       cursor_command: /ux-investigator
       any_tool_agent: ux-investigator
       canonical_role: packs/vibermode/roles/iterate/ux-investigator.md
+
+  - id: design-engineer
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: improve
+    purpose: apply craft-level UI polish for component motion, interaction feel, gestures, and animation performance
+    surfaces:
+      codex_skill: viber-design-engineer
+      cursor_command: /design-engineer
+      any_tool_agent: design-engineer
+      canonical_role: packs/vibermode/roles/iterate/design-engineer.md
 
   - id: modularizer
     kind: iterate-agent
@@ -464,7 +476,7 @@ capabilities:
     family: workflow
     purpose: consume a completed factory run manifest and upload an internal TestFlight build
     surfaces:
-      codex_skill: null
+      codex_skill: viber-ios-submitter
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/ios-submit-testflight.md
@@ -476,10 +488,46 @@ capabilities:
     family: workflow
     purpose: consume a completed Android factory run manifest and upload a Google Play internal testing build
     surfaces:
-      codex_skill: null
+      codex_skill: viber-android-submitter
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/android-submit-play-internal.md
+
+  - id: mobile-storefront
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: prepare, audit, or update App Store and Google Play storefront listing metadata and assets
+    surfaces:
+      codex_skill: viber-mobile-storefront
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: docs/operations/codex-operational-capabilities.md
+
+  - id: revenuecat-operator
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: inspect or configure RevenueCat projects, apps, offerings, entitlements, customers, metrics, and credentials
+    surfaces:
+      codex_skill: viber-revenuecat-operator
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: docs/operations/revenuecat-access.md
+
+  - id: mobile-monetization-operator
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: coordinate store products, RevenueCat configuration, and app paywall or purchase wiring
+    surfaces:
+      codex_skill: viber-mobile-monetization-operator
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: docs/operations/codex-operational-capabilities.md
 
   - id: meta-ads-operator
     kind: workflow

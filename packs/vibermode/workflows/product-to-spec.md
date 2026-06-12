@@ -91,7 +91,7 @@ Role:
 `packs/vibermode/roles/product/ux-designer.md`
 
 Purpose:
-Define flows, screens, interactions, copy, and accessibility from the PRD.
+Define experience strategy, information architecture, first-screen hierarchy, visual direction, layout system, flows, interactions, copy, and accessibility from the PRD.
 
 Inputs:
 - `docs/[project-name]/prd.md`
@@ -105,11 +105,15 @@ Outputs:
 - `docs/[project-name]/ux.md`
 
 Success Criteria:
+- experience thesis, first impression, and primary user decision are explicit
+- information architecture and first screen/viewport hierarchy are defined for user-facing products
+- visual direction includes layout system, component language, and asset/media strategy when relevant
 - primary flows use the canonical UX flow structure
 - PRD requirement references are preserved
 - first-value, core loop, onboarding or first-run experience, empty states, and upgrade/paywall shell are designed when relevant
 - pattern sources are named with copy-and-adapt instructions when provided
-- copy and interaction rules are explicit
+- copy, interaction, and motion/craft rules are explicit
+- design-engineer handoff is included when motion, tactile interaction, gesture behavior, or premium polish matters
 - artifact includes summary and handoff contract
 
 Next Step:

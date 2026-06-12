@@ -107,6 +107,9 @@ Routing rules:
 Role:
 `packs/vibermode/roles/product/implementation-runner.md`
 
+Helper role:
+Use `packs/vibermode/roles/iterate/design-engineer.md` before or during implementation when routed findings are primarily about animation timing, component state feel, gesture behavior, motion performance, or craft-level visual polish.
+
 Purpose:
 Implement the routed experience fixes using the same one-task-per-run execution model as the main implementation loop.
 

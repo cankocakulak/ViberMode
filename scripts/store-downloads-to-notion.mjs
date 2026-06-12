@@ -43,6 +43,15 @@ function boolValue(value, fallback = false) {
   return ["1", "true", "yes", "y", "on"].includes(String(value).toLowerCase());
 }
 
+function positiveInteger(value, fallback, label) {
+  if (value === undefined || value === null || value === "") return fallback;
+  const parsed = Number.parseInt(String(value), 10);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${label} must be a positive integer.`);
+  }
+  return parsed;
+}
+
 function stripQuotes(value) {
   const trimmed = String(value || "").trim();
   if (
@@ -258,11 +267,25 @@ function addDays(date, days) {
   return next;
 }
 
-function previousCompletedWeek(referenceDate = new Date()) {
+function weekStartDayIndex(value) {
+  const normalized = String(value || "monday").trim().toLowerCase();
+  if (["sun", "sunday", "0"].includes(normalized)) return 0;
+  if (["mon", "monday", "1"].includes(normalized)) return 1;
+  throw new Error(`Unsupported week start day: ${value}. Use monday or sunday.`);
+}
+
+function configuredWeekStartDay(args) {
+  return args["week-start-day"] || process.env.STORE_DOWNLOADS_WEEK_START_DAY || "monday";
+}
+
+function previousCompletedWeek(referenceDate = new Date(), weekStartDay = "monday") {
   const reference = new Date(referenceDate);
   reference.setHours(12, 0, 0, 0);
   const dayBefore = addDays(reference, -1);
-  const end = addDays(dayBefore, -dayBefore.getDay());
+  const startIndex = weekStartDayIndex(weekStartDay);
+  const endIndex = (startIndex + 6) % 7;
+  const daysSinceEnd = (dayBefore.getDay() - endIndex + 7) % 7;
+  const end = addDays(dayBefore, -daysSinceEnd);
   const start = addDays(end, -6);
   return {
     start,
@@ -270,6 +293,21 @@ function previousCompletedWeek(referenceDate = new Date()) {
     startDate: formatDate(start),
     endDate: formatDate(end),
   };
+}
+
+function shiftWeek(week, offsetWeeks) {
+  const start = addDays(week.start, -7 * offsetWeeks);
+  const end = addDays(week.end, -7 * offsetWeeks);
+  return {
+    start,
+    end,
+    startDate: formatDate(start),
+    endDate: formatDate(end),
+  };
+}
+
+function backfillWeeksFrom(baseWeek, count) {
+  return Array.from({ length: count }, (_, index) => shiftWeek(baseWeek, index));
 }
 
 function eachDate(start, end) {
@@ -288,11 +326,28 @@ function monthsInRange(start, end) {
   return [...months];
 }
 
-function decompressMaybe(buffer) {
-  if (buffer.length >= 2 && buffer[0] === 0x1f && buffer[1] === 0x8b) {
-    return zlib.gunzipSync(buffer).toString("utf8");
+function decodeReportBuffer(buffer) {
+  if (buffer.length >= 2 && buffer[0] === 0xff && buffer[1] === 0xfe) {
+    return buffer.toString("utf16le").replace(/^\uFEFF/, "");
   }
-  return buffer.toString("utf8");
+
+  const sampleLength = Math.min(buffer.length, 200);
+  let nullCount = 0;
+  for (let index = 0; index < sampleLength; index += 1) {
+    if (buffer[index] === 0) nullCount += 1;
+  }
+  if (nullCount > sampleLength / 4) {
+    return buffer.toString("utf16le").replace(/^\uFEFF/, "");
+  }
+
+  return buffer.toString("utf8").replace(/^\uFEFF/, "");
+}
+
+function decompressMaybe(buffer) {
+  const payload = buffer.length >= 2 && buffer[0] === 0x1f && buffer[1] === 0x8b
+    ? zlib.gunzipSync(buffer)
+    : buffer;
+  return decodeReportBuffer(payload);
 }
 
 function parseDelimited(text, delimiter) {
@@ -442,8 +497,43 @@ function readGoogleServiceAccount(args) {
   return JSON.parse(fs.readFileSync(absolutePath, "utf8"));
 }
 
-async function fetchGoogleInstallsCsv({ accessToken, bucket, packageName, yearMonth }) {
-  const objectName = `stats/installs/installs_${packageName}_${yearMonth}_country.csv`;
+function googleAndroidMetric(args) {
+  return args["android-metric"] || process.env.STORE_DOWNLOADS_ANDROID_METRIC || "daily_device_installs";
+}
+
+function androidReportSpec(metric) {
+  switch (metric) {
+    case "daily_user_installs":
+      return {
+        objectName: (packageName, yearMonth) => `stats/installs/installs_${packageName}_${yearMonth}_country.csv`,
+        valueColumn: "Daily User Installs",
+      };
+    case "daily_device_installs":
+      return {
+        objectName: (packageName, yearMonth) => `stats/installs/installs_${packageName}_${yearMonth}_country.csv`,
+        valueColumn: "Daily Device Installs",
+      };
+    case "install_events":
+      return {
+        objectName: (packageName, yearMonth) => `stats/installs/installs_${packageName}_${yearMonth}_country.csv`,
+        valueColumn: "Install events",
+      };
+    case "store_listing_acquisitions":
+      return {
+        objectName: (packageName, yearMonth) => `stats/store_performance/store_performance_${packageName}_${yearMonth}_country.csv`,
+        valueColumn: "Store listing acquisitions",
+      };
+    case "total_store_acquisitions":
+      return {
+        objectName: (packageName, yearMonth) => `stats/store_performance/total_store_performance_${packageName}_${yearMonth}_country.csv`,
+        valueColumn: "Total store acquisitions",
+      };
+    default:
+      throw new Error(`Unsupported Android metric: ${metric}`);
+  }
+}
+
+async function fetchGoogleReportCsv({ accessToken, bucket, objectName }) {
   const encodedObjectName = encodeURIComponent(objectName);
   const encodedBucket = encodeURIComponent(bucket);
   const url = `https://storage.googleapis.com/storage/v1/b/${encodedBucket}/o/${encodedObjectName}?alt=media`;
@@ -463,11 +553,15 @@ async function collectAndroidDownloads({ args, week, trackedApps, verboseErrors 
   );
   const serviceAccount = readGoogleServiceAccount(args);
   const accessToken = await googleAccessToken(serviceAccount);
+  const metric = googleAndroidMetric(args);
+  const reportSpec = androidReportSpec(metric);
   const totals = Object.fromEntries(trackedApps.map((app) => [app.key, 0]));
   const errors = [];
+  const warnings = [];
   const months = monthsInRange(week.start, week.end);
   const startDate = week.startDate;
   const endDate = week.endDate;
+  const requireCompleteWeek = boolValue(process.env.STORE_DOWNLOADS_REQUIRE_ANDROID_WEEK_COMPLETE, false);
 
   for (const app of trackedApps) {
     if (!app.androidPackage) {
@@ -477,33 +571,54 @@ async function collectAndroidDownloads({ args, week, trackedApps, verboseErrors 
       });
       continue;
     }
+    const appRows = [];
     for (const yearMonth of months) {
       try {
-        const rows = await fetchGoogleInstallsCsv({
+        const rows = await fetchGoogleReportCsv({
           accessToken,
           bucket,
-          packageName: app.androidPackage,
-          yearMonth,
+          objectName: reportSpec.objectName(app.androidPackage, yearMonth),
         });
-        for (const row of rows) {
-          const date = row.Date;
-          if (!date || date < startDate || date > endDate) continue;
-          const packageName = row["Package Name"] || row["Package name"] || "";
-          if (packageName && packageName !== app.androidPackage) continue;
-          totals[app.key] += numericValue(row["Daily User Installs"]) ?? 0;
-        }
+        appRows.push(...rows);
       } catch (error) {
         errors.push({
           app: app.key,
           yearMonth,
+          metric,
           ...(verboseErrors ? { packageName: app.androidPackage } : {}),
           message: verboseErrors ? error.message : compactErrorMessage(error),
         });
       }
     }
+
+    const availableDates = appRows
+      .map((row) => row.Date)
+      .filter(Boolean)
+      .sort();
+    const maxAvailableDate = availableDates[availableDates.length - 1] || null;
+    if (maxAvailableDate && maxAvailableDate < endDate) {
+      const incompleteWeek = {
+        app: app.key,
+        metric,
+        message: `Android report incomplete: latest ${maxAvailableDate}, target ${endDate}`,
+      };
+      if (requireCompleteWeek) {
+        errors.push(incompleteWeek);
+        continue;
+      }
+      warnings.push(incompleteWeek);
+    }
+
+    for (const row of appRows) {
+      const date = row.Date;
+      if (!date || date < startDate || date > endDate) continue;
+      const packageName = row["Package Name"] || row["Package name"] || "";
+      if (packageName && packageName !== app.androidPackage) continue;
+      totals[app.key] += numericValue(row[reportSpec.valueColumn]) ?? 0;
+    }
   }
 
-  return { totals, errors };
+  return { totals, errors, warnings };
 }
 
 function notionToken(args) {
@@ -574,32 +689,42 @@ function isMissing(value) {
   return value === null || value === undefined;
 }
 
-function buildPatchProperties(page, row, allowOverwrite) {
+function buildPatchProperties(page, row, { allowOverwrite, allowAndroidOverwrite }) {
   const patch = {};
   const existingIos = existingNumber(page, "IOS");
   const existingAndroid = existingNumber(page, "Android");
   const existingTotal = existingNumber(page, "Sayı");
-  let androidWillBeFilled = false;
+  let androidWillChange = false;
 
-  if (Number.isFinite(row.ios) && (isMissing(existingIos) || (allowOverwrite && existingIos !== row.ios))) {
+  const iosWillChange = Number.isFinite(row.ios)
+    && (isMissing(existingIos) || (allowOverwrite && existingIos !== row.ios));
+  if (iosWillChange) {
     patch.IOS = notionNumberProperty(row.ios);
   }
 
-  if (Number.isFinite(row.android) && (isMissing(existingAndroid) || (allowOverwrite && existingAndroid !== row.android))) {
+  const canOverwriteAndroid = allowOverwrite || allowAndroidOverwrite;
+  androidWillChange = Number.isFinite(row.android)
+    && (isMissing(existingAndroid) || (canOverwriteAndroid && existingAndroid !== row.android));
+  if (androidWillChange) {
     patch.Android = notionNumberProperty(row.android);
-    if (isMissing(existingAndroid)) androidWillBeFilled = true;
   }
 
+  const effectiveIos = iosWillChange
+    ? row.ios
+    : (Number.isFinite(existingIos) ? existingIos : row.ios);
+  const effectiveAndroid = androidWillChange
+    ? row.android
+    : (Number.isFinite(existingAndroid) ? existingAndroid : row.android);
   const desiredTotal = rowTotal({
-    ...row,
-    ios: Number.isFinite(row.ios) ? row.ios : existingIos,
-    android: Number.isFinite(row.android) ? row.android : existingAndroid,
+    ios: Number.isFinite(effectiveIos) ? effectiveIos : null,
+    android: Number.isFinite(effectiveAndroid) ? effectiveAndroid : null,
   });
   if (Number.isFinite(desiredTotal)) {
     const existingWasIosOnly = Number.isFinite(existingIos) && existingTotal === existingIos;
     if (
       isMissing(existingTotal)
-      || (androidWillBeFilled && existingWasIosOnly)
+      || (androidWillChange && existingWasIosOnly)
+      || (allowAndroidOverwrite && androidWillChange && existingTotal !== desiredTotal)
       || (allowOverwrite && existingTotal !== desiredTotal)
     ) {
       patch["Sayı"] = notionNumberProperty(desiredTotal);
@@ -646,6 +771,7 @@ async function upsertNotionRows({ args, rows }) {
   const databaseId = notionDatabaseId(args);
   const dryRun = boolValue(args["dry-run"], false);
   const allowOverwrite = boolValue(args["allow-overwrite"], false);
+  const allowAndroidOverwrite = boolValue(args["allow-android-overwrite"], false);
   const results = [];
 
   for (const row of rows) {
@@ -670,7 +796,7 @@ async function upsertNotionRows({ args, rows }) {
     }
 
     const page = existingRows[0];
-    const patch = buildPatchProperties(page, row, allowOverwrite);
+    const patch = buildPatchProperties(page, row, { allowOverwrite, allowAndroidOverwrite });
     if (Object.keys(patch).length === 0) {
       results.push({ action: "noop", name: row.name, pageId: page.id, url: page.url });
       continue;
@@ -767,8 +893,11 @@ Useful flags:
   --date YYYY-MM-DD
   --week-start YYYY-MM-DD
   --week-end YYYY-MM-DD
+  --week-start-day monday|sunday
   --dry-run
   --allow-overwrite
+  --allow-android-overwrite
+  --backfill-weeks <count>
   --output <path>
   --skip-ios
   --skip-android
@@ -790,61 +919,108 @@ async function main() {
   const envInfo = loadEnvFile(args["env-file"] || DEFAULT_ENV_PATH);
   const trackedApps = loadTrackedApps(args);
   const verboseErrors = boolValue(args["verbose-errors"], false);
-  const week = args["week-start"] && args["week-end"]
+  const baseWeek = args["week-start"] && args["week-end"]
     ? {
       start: parseDateOnly(args["week-start"]),
       end: parseDateOnly(args["week-end"]),
       startDate: args["week-start"],
       endDate: args["week-end"],
     }
-    : previousCompletedWeek(args.date ? parseDateOnly(args.date) : new Date());
+    : previousCompletedWeek(
+      args.date ? parseDateOnly(args.date) : new Date(),
+      configuredWeekStartDay(args),
+    );
+  const backfillCount = positiveInteger(
+    args["backfill-weeks"] || process.env.STORE_DOWNLOADS_BACKFILL_WEEKS,
+    1,
+    "--backfill-weeks",
+  );
+  const weeks = backfillWeeksFrom(baseWeek, backfillCount);
+  const weekResults = [];
+  const allRows = [];
 
-  let iosResult = { totals: Object.fromEntries(trackedApps.map((app) => [app.key, null])), errors: [] };
-  if (!boolValue(args["skip-ios"], false)) {
-    const vendorNumbers = requireValue(
+  const skipIos = boolValue(args["skip-ios"], false);
+  const skipAndroid = boolValue(args["skip-android"], false);
+  const includeIdentifiers = boolValue(args["include-identifiers"], false);
+  let vendorNumbers = [];
+  let appleCredentials = null;
+
+  if (!skipIos) {
+    vendorNumbers = requireValue(
       "--vendor-numbers or ASC_VENDOR_NUMBERS",
       args["vendor-numbers"] || process.env.ASC_VENDOR_NUMBERS,
     )
       .split(",")
       .map((value) => value.trim())
       .filter(Boolean);
-    if (vendorNumbers.length === 0) {
-      throw new Error("ASC_VENDOR_NUMBERS must include at least one vendor number.");
+    if (vendorNumbers.length === 0) throw new Error("ASC_VENDOR_NUMBERS must include at least one vendor number.");
+    appleCredentials = loadAppleCredentials(args);
+  }
+
+  for (const week of weeks) {
+    let iosResult = { totals: Object.fromEntries(trackedApps.map((app) => [app.key, null])), errors: [] };
+    if (!skipIos) {
+      iosResult = await collectIosDownloads({
+        credentials: appleCredentials,
+        week,
+        vendorNumbers,
+        trackedApps,
+        verboseErrors,
+      });
     }
 
-    iosResult = await collectIosDownloads({
-      credentials: loadAppleCredentials(args),
+    let androidResult = {
+      totals: Object.fromEntries(trackedApps.map((app) => [app.key, null])),
+      errors: [],
+      warnings: [],
+    };
+    if (!skipAndroid) {
+      try {
+        androidResult = await collectAndroidDownloads({ args, week, trackedApps, verboseErrors });
+      } catch (error) {
+        androidResult = {
+        totals: Object.fromEntries(trackedApps.map((app) => [app.key, null])),
+        errors: [{ message: verboseErrors ? error.message : compactErrorMessage(error) }],
+        warnings: [],
+      };
+    }
+    }
+
+    const rows = buildRows({
       week,
-      vendorNumbers,
+      iosTotals: iosResult.totals,
+      androidTotals: androidResult.totals,
+      androidAvailableByApp: androidAvailability(androidResult.errors, trackedApps),
       trackedApps,
-      verboseErrors,
+      includeIdentifiers,
+    });
+    allRows.push(...rows);
+    weekResults.push({
+      week: {
+        start: week.startDate,
+        end: week.endDate,
+        startDay: configuredWeekStartDay(args),
+      },
+      rows,
+      sources: {
+        ios: {
+          status: iosResult.errors.length > 0 ? "partial" : "complete",
+          errors: iosResult.errors,
+        },
+        android: {
+          status: androidResult.errors.length > 0 ? "partial" : "complete",
+          errors: androidResult.errors,
+          warnings: androidResult.warnings || [],
+        },
+      },
     });
   }
 
-  let androidResult = { totals: Object.fromEntries(trackedApps.map((app) => [app.key, null])), errors: [] };
-  if (!boolValue(args["skip-android"], false)) {
-    try {
-      androidResult = await collectAndroidDownloads({ args, week, trackedApps, verboseErrors });
-    } catch (error) {
-      androidResult = {
-        totals: Object.fromEntries(trackedApps.map((app) => [app.key, null])),
-        errors: [{ message: verboseErrors ? error.message : compactErrorMessage(error) }],
-      };
-    }
-  }
-
-  const rows = buildRows({
-    week,
-    iosTotals: iosResult.totals,
-    androidTotals: androidResult.totals,
-    androidAvailableByApp: androidAvailability(androidResult.errors, trackedApps),
-    trackedApps,
-    includeIdentifiers: boolValue(args["include-identifiers"], false),
-  });
-
   const notion = boolValue(args["skip-notion"], false)
     ? { status: "skipped", reason: "skip_notion" }
-    : await upsertNotionRows({ args, rows });
+    : await upsertNotionRows({ args, rows: allRows });
+
+  const primaryWeek = weekResults[0];
 
   const result = {
     status: "complete",
@@ -853,19 +1029,15 @@ async function main() {
       path: envInfo.path,
     },
     week: {
-      start: week.startDate,
-      end: week.endDate,
+      start: primaryWeek.week.start,
+      end: primaryWeek.week.end,
+      startDay: primaryWeek.week.startDay,
     },
-    rows,
+    rows: primaryWeek.rows,
+    ...(weekResults.length > 1 ? { weeks: weekResults } : {}),
     sources: {
-      ios: {
-        status: iosResult.errors.length > 0 ? "partial" : "complete",
-        errors: iosResult.errors,
-      },
-      android: {
-        status: androidResult.errors.length > 0 ? "partial" : "complete",
-        errors: androidResult.errors,
-      },
+      ios: primaryWeek.sources.ios,
+      android: primaryWeek.sources.android,
       notion,
     },
   };

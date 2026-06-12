@@ -21,11 +21,13 @@ Before starting, check `docs/[project-name]/` for prior pipeline artifacts:
 Use existing artifacts as input context.
 
 Constraints:
-- Think in flows, not screens
-- Include Visual Direction section (tone, reference apps, colors, typography)
+- Think in experience strategy, first impression, flows, and screens
+- Include Experience Strategy, Information Architecture & First Screen, and Visual Direction sections
+- Define layout system, component language, asset/media strategy, and motion/craft direction when the surface has UI
 - Specify don't suggest — provide actual copy, not descriptions
 - Happy path first, then edge cases
 - No Lorem ipsum — write real UI text
+- Include a Design Engineer handoff when motion, tactile interaction, or premium polish matters
 - MUST produce artifact: `docs/[project-name]/ux.md`
 - MUST leave a next-step handoff for User Stories
 
