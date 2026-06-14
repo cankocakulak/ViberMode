@@ -20,6 +20,7 @@ This repository keeps its public documentation under `docs/`.
   - `codex-operational-capabilities.md` is the best first read for understanding what Codex can read/write across RevenueCat, iOS, Android, store metadata, and reporting APIs
   - `app-factory-automation-overview.md` summarizes the app factory stages, automations, state handoffs, and Stage 4 submission path
   - `codex-automations.md` lists the currently configured manual Codex automations and their targets
+  - `local-environment.md` explains portable path, env var, app registry, and secret boundaries for public docs and local operators
   - Stage 3 product-to-code now includes experience hardening before final review for user-facing apps
   - `app-factory-state.md` documents the private app idea backlog and factory state repo
   - App opportunity research outputs are stored in the private state repo under `research-runs/`
@@ -47,9 +48,11 @@ If you are new to the repo:
 2. `docs/architecture/boundary-decisions.md` - what is intentionally outside this repo
 3. `docs/use-cases/README.md` - concrete operating paths and automation mappings
 4. `docs/use-cases/ios-app-factory.md` - idea-to-TestFlight path, visuals, and automation handoff
-5. `docs/use-cases/mobile-internal-release.md` - platform release adapter path for internal tester distribution
-6. `docs/operations/codex-operational-capabilities.md` - how Codex operates connected services safely
-7. `docs/reference/decision-tree.md` - which service or capability to use
-8. `docs/reference/capability-map.md` - exact role and workflow descriptions
-9. `docs/visuals/README.md` - only when editing exported diagrams
-10. `docs/operations/` - only when running private automation or release operations
+5. `docs/use-cases/app-autopilot.md` - known-app improve/change/growth/submit front door
+6. `docs/use-cases/mobile-internal-release.md` - platform release adapter path for internal tester distribution
+7. `docs/operations/local-environment.md` - portable local path and env setup rules
+8. `docs/operations/codex-operational-capabilities.md` - how Codex operates connected services safely
+9. `docs/reference/decision-tree.md` - which service or capability to use
+10. `docs/reference/capability-map.md` - exact role and workflow descriptions
+11. `docs/visuals/README.md` - only when editing exported diagrams
+12. `docs/operations/` - only when running private automation or release operations

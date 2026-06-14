@@ -4,6 +4,8 @@
 
 Apply actionable change notes to one existing generated iOS app, validate the result, and upload a new internal TestFlight build when release gates pass.
 
+For a known app where the user names the app instead of the repo and manifest paths, prefer `docs/use-cases/app-autopilot.md` as the front door.
+
 ## When To Use
 
 Use this when an app already exists and the work starts from change notes, bug reports, polish requests, or release-facing fixes.
@@ -50,7 +52,7 @@ Docs:
 
 ## Automation
 
-Codex automation:
+Legacy app-specific Codex automation example:
 
 ```text
 id: manual-plant-routine-change-to-testflight
@@ -59,10 +61,10 @@ status: PAUSED
 kind: heartbeat
 ```
 
-This runner is currently specific to:
+This runner is specific to one local operator's app path and should not be treated as a public framework default. New app-specific runners should call `app-autopilot` and resolve the app by alias.
 
 ```text
-/Users/mcan/ViberMode/.vibermode-generated-ios-apps/ios-plant-routine-2026-05-29
+Use app-autopilot for [app alias]. mode=change-to-release. submit_when_ready=true. release_target=ios-testflight.
 ```
 
 ## State Boundaries

@@ -16,6 +16,7 @@ build/
 .env.*.local
 .vibermode-automation.env
 .store-downloads-apps*.json
+docs/operations/app-registry.local.json
 .vibermode-state/
 .vibermode-generated-ios-apps/
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,7 @@ import {
 
 const scriptPath = fileURLToPath(import.meta.url);
 const scriptsDir = path.dirname(scriptPath);
+const defaultWorkspaceRoot = path.join(os.homedir(), "ViberModeWorkspaces");
 
 function requireValue(name, value) {
   if (!value) {
@@ -182,10 +184,11 @@ function printUsage() {
   process.stdout.write(`Usage:
   GH_TOKEN=... node scripts/ios-app-factory-prepare.mjs \\
     --state-root <private-state-repo> \\
-    --workspace-parent <generated-apps-dir> \\
+    --workspace-root <vibermode-workspaces-dir> \\
     --template-owner KantAkademi2 \\
     --template-repo ios-boilerplate \\
     --destination-owner ViberBoyz \\
+    [--ai-services-path <shared-ai-services-repo>] \\
     [--commit-state] [--state-sync api|git|none]
 
 Purpose:
@@ -195,7 +198,155 @@ Purpose:
 State sync:
   --commit-state defaults to --state-sync api, which updates ViberBoyz/app-factory-state
   through the GitHub Contents API instead of relying on git credentials.
+
+Workspace:
+  --workspace-root defaults to ~/ViberModeWorkspaces.
+  New runs use generated-products/<repo-name>/ios-app as the primary repo path.
 `);
+}
+
+function resolveFactoryWorkspace(selection, args, workspaceRoot) {
+  const generatedProductsRoot = path.resolve(
+    args["generated-products-root"] ||
+      process.env.VIBERMODE_GENERATED_PRODUCTS_ROOT ||
+      path.join(workspaceRoot, "generated-products"),
+  );
+  const legacyWorkspaceParent = args["workspace-parent"] || process.env.WORKSPACE_PARENT;
+  const useBundleLayout = Boolean(
+    args["workspace-root"] ||
+      process.env.VIBERMODE_WORKSPACE_ROOT ||
+      args["generated-products-root"] ||
+      process.env.VIBERMODE_GENERATED_PRODUCTS_ROOT ||
+      !legacyWorkspaceParent,
+  );
+
+  if (useBundleLayout) {
+    const bundleRoot = path.join(generatedProductsRoot, selection.repo_name);
+    return {
+      layout: "bundle",
+      workspace_root: workspaceRoot,
+      generated_products_root: generatedProductsRoot,
+      bundle_root: bundleRoot,
+      ios_workspace_path: path.join(bundleRoot, "ios-app"),
+    };
+  }
+
+  const workspaceParent = path.resolve(legacyWorkspaceParent);
+  const workspacePath = path.join(workspaceParent, selection.repo_name);
+  return {
+    layout: "legacy-flat",
+    workspace_root: null,
+    generated_products_root: null,
+    legacy_workspace_parent: workspaceParent,
+    bundle_root: workspacePath,
+    ios_workspace_path: workspacePath,
+  };
+}
+
+function aiServicesPath(args) {
+  const value = args["ai-services-path"] || process.env.VIBERMODE_AI_SERVICES_PATH || process.env.AI_SERVICES_PATH;
+  return value ? path.resolve(value) : null;
+}
+
+function materializeAiServicesLink(factoryWorkspace, args, { dryRun = false } = {}) {
+  const sourcePath = aiServicesPath(args);
+  if (!sourcePath) return null;
+
+  const linkPath = path.join(factoryWorkspace.bundle_root, "ai-services");
+  const entry = {
+    role: "ai-services",
+    workspace_path: linkPath,
+    source_path: sourcePath,
+    link_type: "symlink",
+    required: false,
+  };
+
+  if (factoryWorkspace.layout !== "bundle") {
+    return {
+      ...entry,
+      status: "skipped_legacy_flat_layout",
+      note: "ai-services symlinks are only materialized next to bundle-layout repos, not inside a generated app repo.",
+    };
+  }
+
+  if (dryRun) {
+    return {
+      ...entry,
+      status: "would_link",
+    };
+  }
+
+  if (!fs.existsSync(sourcePath)) {
+    return {
+      ...entry,
+      status: "target_missing",
+    };
+  }
+
+  fs.mkdirSync(factoryWorkspace.bundle_root, { recursive: true });
+
+  if (fs.existsSync(linkPath)) {
+    const stat = fs.lstatSync(linkPath);
+    if (stat.isSymbolicLink()) {
+      const existingTarget = path.resolve(path.dirname(linkPath), fs.readlinkSync(linkPath));
+      return {
+        ...entry,
+        status: existingTarget === sourcePath ? "reused" : "conflict",
+        existing_target: existingTarget,
+      };
+    }
+
+    return {
+      ...entry,
+      status: "conflict",
+      note: "A non-symlink path already exists at the ai-services link location.",
+    };
+  }
+
+  fs.symlinkSync(sourcePath, linkPath, "dir");
+  return {
+    ...entry,
+    status: "created",
+  };
+}
+
+function buildWorkspaceBundle({ factoryWorkspace, selection, repoUrl, workspaceResult, aiServicesEntry }) {
+  const iosRepo = {
+    role: "ios-app",
+    workspace_path: workspaceResult?.workspace_path || factoryWorkspace.ios_workspace_path,
+    repo_url: workspaceResult?.repo_url || repoUrl,
+    platform: selection.platform || "ios",
+    stack: selection.stack || "SwiftUI",
+    required: true,
+  };
+
+  if (workspaceResult?.branch) iosRepo.branch = workspaceResult.branch;
+  if (workspaceResult?.head_sha) iosRepo.head_sha = workspaceResult.head_sha;
+
+  return {
+    schema_version: 1,
+    root: factoryWorkspace.bundle_root,
+    layout: factoryWorkspace.layout,
+    workspace_root: factoryWorkspace.workspace_root,
+    generated_products_root: factoryWorkspace.generated_products_root,
+    primary_repo_role: "ios-app",
+    repos: [
+      iosRepo,
+      ...(aiServicesEntry ? [aiServicesEntry] : []),
+    ],
+    future_repo_roles: [
+      {
+        role: "backend",
+        creation: "on-demand",
+        note: "Create from the backend template only when PRD/stories require an app-specific service.",
+      },
+      {
+        role: "ai-services",
+        creation: "symlink-or-existing-repo",
+        note: "Prefer a symlink to the shared ai-services operations repo instead of copying it into the app repo.",
+      },
+    ],
+  };
 }
 
 function buildFactoryContext(selection, args) {
@@ -291,6 +442,34 @@ function buildFactoryContext(selection, args) {
   };
 }
 
+function buildAppAutopilotContext({ selection, workspaceResult, runManifestPath }) {
+  const targetRepo = workspaceResult.workspace_path;
+  const projectName = selection.repo_name;
+  const artifactRoot = path.join(targetRepo, "docs", projectName);
+
+  return {
+    schema_version: 1,
+    name: selection.app_name,
+    aliases: [
+      selection.app_name,
+      selection.project_name,
+      selection.repo_name,
+      selection.idea_id,
+      selection.run_id,
+    ].filter(Boolean),
+    platform: "ios",
+    target_repo: targetRepo,
+    project_name: projectName,
+    artifact_root: artifactRoot,
+    change_request_path: path.join(artifactRoot, "change-request.md"),
+    run_manifest_path: runManifestPath,
+    bundle_id: selection.bundle_id,
+    default_release_target: "ios-testflight",
+    submit_when_ready_default: false,
+    forbid_dirty: [],
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -299,9 +478,9 @@ async function main() {
     return;
   }
 
-  const stateRoot = path.resolve(requireValue("--state-root or APP_FACTORY_STATE_ROOT", args["state-root"] || process.env.APP_FACTORY_STATE_ROOT));
-  const workspaceParent = path.resolve(
-    requireValue("--workspace-parent or WORKSPACE_PARENT", args["workspace-parent"] || process.env.WORKSPACE_PARENT),
+  const workspaceRoot = path.resolve(args["workspace-root"] || process.env.VIBERMODE_WORKSPACE_ROOT || defaultWorkspaceRoot);
+  const stateRoot = path.resolve(
+    args["state-root"] || process.env.APP_FACTORY_STATE_ROOT || path.join(workspaceRoot, "app-factory-state"),
   );
   const templateOwner = args["template-owner"] || process.env.TEMPLATE_OWNER || "KantAkademi2";
   const templateRepo = args["template-repo"] || process.env.TEMPLATE_REPO || "ios-boilerplate";
@@ -328,19 +507,30 @@ async function main() {
     return;
   }
 
+  const factoryWorkspace = resolveFactoryWorkspace(selection, args, workspaceRoot);
+  const previewRepoUrl = `https://github.com/${destinationOwner}/${selection.repo_name}.git`;
+
   if (dryRun) {
+    const aiServicesEntry = materializeAiServicesLink(factoryWorkspace, args, { dryRun: true });
     output(
       {
         status: "dry_run",
         selection,
         product_to_code_input_preview: {
           project_name: selection.repo_name,
-          workspace_path: path.join(workspaceParent, selection.repo_name),
-          repo_url: `https://github.com/${destinationOwner}/${selection.repo_name}.git`,
+          workspace_path: factoryWorkspace.ios_workspace_path,
+          repo_url: previewRepoUrl,
           product_idea: selection.product_idea,
           repo_mode: "greenfield",
           platform: selection.platform,
           stack: selection.stack,
+          workspace_bundle: buildWorkspaceBundle({
+            factoryWorkspace,
+            selection,
+            repoUrl: previewRepoUrl,
+            workspaceResult: null,
+            aiServicesEntry,
+          }),
           factory_context: buildFactoryContext(selection, args),
         },
         next_action: "Run without --dry-run to create the template repo and clone the workspace.",
@@ -379,8 +569,9 @@ async function main() {
       path.join(scriptsDir, "acquire-workspace.mjs"),
       "--repo-url",
       repoResult.clone_url,
-      "--workspace-parent",
-      workspaceParent,
+      ...(factoryWorkspace.layout === "bundle"
+        ? ["--workspace-path", factoryWorkspace.ios_workspace_path]
+        : ["--workspace-parent", factoryWorkspace.legacy_workspace_parent]),
       "--project-name",
       repoResult.selected_name,
       "--allow-existing",
@@ -389,10 +580,19 @@ async function main() {
     { cwd: path.resolve(scriptsDir, "..") },
   );
   const workspaceResult = parseJsonOutput(workspaceProcess.stdout, "acquire-workspace");
+  const aiServicesEntry = materializeAiServicesLink(factoryWorkspace, args);
+  const workspaceBundle = buildWorkspaceBundle({
+    factoryWorkspace,
+    selection,
+    repoUrl: repoResult.clone_url,
+    workspaceResult,
+    aiServicesEntry,
+  });
 
   markPrepared(backlog, selection, repoResult, workspaceResult);
   saveBacklog(backlogPath, backlog);
 
+  const runManifestPath = path.join(stateRoot, "factory", "runs", `${selection.run_id}.json`);
   const runManifest = {
     schema_version: 1,
     run_id: selection.run_id,
@@ -410,6 +610,12 @@ async function main() {
     },
     repository: repoResult,
     workspace: workspaceResult,
+    workspace_bundle: workspaceBundle,
+    app_autopilot: buildAppAutopilotContext({
+      selection,
+      workspaceResult,
+      runManifestPath,
+    }),
     product_to_code_input: {
       project_name: repoResult.selected_name,
       workspace_path: workspaceResult.workspace_path,
@@ -418,13 +624,13 @@ async function main() {
       repo_mode: "greenfield",
       platform: selection.platform,
       stack: selection.stack,
+      workspace_bundle: workspaceBundle,
       factory_context: buildFactoryContext(selection, args),
     },
     next_action:
       "Run ViberMode product-to-code using product_to_code_input, then update this run manifest with validation and commit details.",
   };
 
-  const runManifestPath = path.join(stateRoot, "factory", "runs", `${selection.run_id}.json`);
   writeJson(runManifestPath, runManifest);
 
   let stateCommit = { status: "not_requested" };
@@ -448,6 +654,7 @@ async function main() {
       repo_url: repoResult.html_url,
       clone_url: repoResult.clone_url,
       workspace_path: workspaceResult.workspace_path,
+      workspace_bundle_root: workspaceBundle.root,
       run_manifest_path: runManifestPath,
       state_commit: stateCommit,
       next_action: runManifest.next_action,

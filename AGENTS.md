@@ -52,6 +52,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 
 | Workflow | Surface | Description |
 |----------|---------|-------------|
+| **app-autopilot** | `packs/vibermode/workflows/app-autopilot.md` | Resolves a known app by name and routes change, self-improve, or submit-only work through existing quality and release gates |
 | **meta-ads-operator** | `adapters/codex/skills/meta-ads-operator/SKILL.md` | Analyzes Meta/Facebook/Instagram Ads performance and safely plans or performs Marketing API actions with paused-by-default write workflows |
 
 ## How to Use
@@ -88,6 +89,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **remediation-router** agent" → Read `packs/vibermode/roles/iterate/remediation-router.md`
 - "Use the **change-task-planner** agent" → Read `packs/vibermode/roles/iterate/change-task-planner.md`
 - "Use the **meta-ads-operator** workflow" → Read `adapters/codex/skills/meta-ads-operator/SKILL.md`
+- "Use the **app-autopilot** workflow" → Read `packs/vibermode/workflows/app-autopilot.md`
 
 ## Rules
 

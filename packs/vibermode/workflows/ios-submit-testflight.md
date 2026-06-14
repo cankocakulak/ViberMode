@@ -61,7 +61,7 @@ Default command:
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-id.json
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-id.json
 ```
 
 Purpose:
@@ -218,7 +218,7 @@ On failure, update the same run manifest:
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-id.json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-id.json \
   --submit \
   --commit-state \
   --app-name "Mood Dots by ViberBoyz"

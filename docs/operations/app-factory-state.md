@@ -14,11 +14,13 @@ Recommended repo:
 ViberBoyz/app-factory-state
 ```
 
-Recommended local checkout:
+Recommended local checkout variable:
 
 ```text
-/Users/mcan/Documents/Codex/vibermode-state/app-factory-state
+APP_FACTORY_STATE_ROOT
 ```
+
+If `APP_FACTORY_STATE_ROOT` is unset, scripts may derive it from `VIBERMODE_WORKSPACE_ROOT/app-factory-state` or fall back to an operator-local default. See `docs/operations/local-environment.md`.
 
 ViberMode remains public and stores only reusable scripts/workflow definitions. Do not commit secrets or private market research into ViberMode.
 
@@ -69,8 +71,8 @@ Analyze a static App Store metric CSV:
 
 ```bash
 node scripts/analyze-app-store-csv.mjs \
-  --input "/Users/mcan/app-factory-state/App Store Top Apps Revenue PoP Growth (May 11, 2026 - May 20, 2026, US), Detailed.csv" \
-  --output-dir /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/research-runs/2026-05-27/education-us \
+  --input "/path/to/app-store-metrics.csv" \
+  --output-dir $VIBERMODE_WORKSPACE_ROOT/app-factory-state/research-runs/2026-05-27/education-us \
   --source-id app-store-education-revenue-growth-2026-05-11 \
   --market US \
   --category Education
@@ -82,7 +84,7 @@ Add a live App Store/iTunes gap probe for one top cluster:
 
 ```bash
 node scripts/research-app-store-gap.mjs \
-  --research-dir /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/research-runs/2026-05-27/education-us \
+  --research-dir $VIBERMODE_WORKSPACE_ROOT/app-factory-state/research-runs/2026-05-27/education-us \
   --cluster "Plant / nature ID" \
   --market US
 ```
@@ -95,21 +97,21 @@ Validate the private backlog:
 
 ```bash
 node scripts/idea-backlog.mjs validate \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state
+  --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state
 ```
 
 Preview the next idea:
 
 ```bash
 node scripts/idea-backlog.mjs select \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state
+  --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state
 ```
 
 Reserve the next idea:
 
 ```bash
 node scripts/idea-backlog.mjs select \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
+  --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state \
   --reserve
 ```
 
@@ -117,7 +119,7 @@ Upsert a researched idea:
 
 ```bash
 node scripts/idea-backlog.mjs upsert \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
+  --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state \
   --idea-file /path/to/idea.json
 ```
 
@@ -128,22 +130,23 @@ Prepare the next generated iOS repo from the first ready backlog item:
 ```bash
 GH_TOKEN="$(security find-generic-password -a "$USER" -s "viberboyz-gh-token" -w)" \
 node scripts/ios-app-factory-prepare.mjs \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
-  --workspace-parent /Users/mcan/Documents/Codex/generated-ios-apps \
+  --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state \
+  --workspace-root $VIBERMODE_WORKSPACE_ROOT \
   --template-owner KantAkademi2 \
   --template-repo ios-boilerplate \
   --destination-owner ViberBoyz \
-  --commit-state
+  --commit-state \
+  --state-sync git
 ```
 
-`--commit-state` defaults to `--state-sync api`, so the private state repo is updated through the GitHub Contents API. Use `--state-sync git` only when the local checkout can push to the state repo reliably.
+The manual factory runner should use `--state-sync git` so the local private state checkout stays clean after the run. `--state-sync api` is still available as a fallback when local git push is unavailable, but it can leave the local checkout behind until it is pulled.
 
 Dry run without creating a repo:
 
 ```bash
 node scripts/ios-app-factory-prepare.mjs \
-  --state-root /Users/mcan/Documents/Codex/vibermode-state/app-factory-state \
-  --workspace-parent /Users/mcan/Documents/Codex/generated-ios-apps \
+  --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state \
+  --workspace-root $VIBERMODE_WORKSPACE_ROOT \
   --dry-run
 ```
 
@@ -159,14 +162,30 @@ The prepare script reports:
   "app_name": "Example",
   "repo_url": "https://github.com/ViberBoyz/ios-example-YYYY-MM-DD",
   "clone_url": "https://github.com/ViberBoyz/ios-example-YYYY-MM-DD.git",
-  "workspace_path": "/Users/mcan/Documents/Codex/generated-ios-apps/ios-example-YYYY-MM-DD",
-  "run_manifest_path": "/Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json"
+  "workspace_path": "$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-example-YYYY-MM-DD/ios-app",
+  "workspace_bundle_root": "$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-example-YYYY-MM-DD",
+  "run_manifest_path": "$VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json"
 }
 ```
 
-The run manifest contains a `product_to_code_input` object. The Codex factory automation should use that object to run `packs/vibermode/workflows/product-to-code.md`.
+The run manifest contains a `product_to_code_input` object. New runs also include `product_to_code_input.workspace_bundle`, whose primary repo is the generated iOS app at `ios-app/`. The Codex factory automation should use that object to run `packs/vibermode/workflows/product-to-code.md`.
 
-For iOS factory runs, `product_to_code_input.factory_context` references `ViberBoyz/ios-factory-patterns` and requires onboarding, first-value, and upgrade/paywall shell coverage during product-to-code. The generated app should copy and adapt relevant pattern files rather than depending on the pattern repo at runtime.
+For iOS factory runs, `product_to_code_input.factory_context` references `ViberBoyz/ios-factory-patterns` and requires onboarding, first-value, and upgrade/paywall shell coverage during product-to-code. The generated app should copy and adapt relevant pattern files rather than depending on the pattern repo at runtime. If `--ai-services-path` or `VIBERMODE_AI_SERVICES_PATH` is provided, the factory can attach shared `ai-services` as a symlink beside `ios-app/` under the bundle root.
+
+## Runtime Topology Application
+
+After product-to-spec reaches approved `spec-review.md`, apply the approved Runtime Topology before bootstrap:
+
+```bash
+GH_TOKEN="$(security find-generic-password -a "$USER" -s "viberboyz-gh-token" -w)" \
+npm run workspace:topology -- \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
+  --backend-template-owner "$BACKEND_TEMPLATE_OWNER" \
+  --backend-template-repo "$BACKEND_TEMPLATE_REPO" \
+  --destination-owner ViberBoyz
+```
+
+The topology command updates the same run manifest. For app-only runs it records an explicit no-op checkpoint. When the approved Runtime Topology names a P0 backend trigger, it delegates to the backend provisioner and adds a `backend` repo entry under `product_to_code_input.workspace_bundle.repos`. The local checkout lives at `[workspace_bundle.root]/backend`. If a backend entry already exists, the provisioner preserves it and reuses or reacquires the checkout instead of creating a duplicate GitHub repo.
 
 ## TestFlight Submission
 
@@ -174,14 +193,14 @@ After product-to-code completes, Stage 4 may upload a generated app to internal 
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json
 ```
 
 The plain command runs preflight only. Live Apple-side submission requires:
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
   --submit \
   --commit-state
 ```
@@ -194,14 +213,14 @@ After product-to-code completes for a generated Android app, Stage 4 may upload 
 
 ```bash
 node scripts/android-submit-play-internal.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json
 ```
 
 The plain command runs preflight only. Live Google Play submission requires Play Console bootstrap plus explicit `--submit`:
 
 ```bash
 node scripts/android-submit-play-internal.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
   --build \
   --submit \
   --confirm-play-console-bootstrap \

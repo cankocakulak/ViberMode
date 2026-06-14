@@ -64,6 +64,7 @@ Success Criteria:
 - interaction, visual, copy, edge-state, and accessibility issues are checked
 - iOS factory required flows are evaluated when `factory_context.type = ios_app_factory`
 - every issue has a task resolution mode
+- specialty quality passes are named when the remediation should involve `design-engineer`, `ux-tweaker`, or `surface-hardener`
 - iOS factory runs include actual screenshot or video file paths for onboarding, first value, core loop, and upgrade/paywall shell
 - iOS factory runs fail if onboarding is one screen or a raw `List`/form-style explanation
 - existing-app release runs fail if changed visual surfaces are not reached in screenshot, video, simulator, or manual evidence
@@ -100,6 +101,7 @@ Routing rules:
 
 - Reopen tasks when the original implemented slice failed its UX contract.
 - Create follow-up tasks for separable polish, screenshots, keyboard handling, or paywall/onboarding adaptation.
+- Preserve any `quality_passes` guidance from `experience-review.md` in the routed task notes so the implementation loop knows which helper role should be used.
 - Do not mutate PRD, UX, or story intent unless the experience review explicitly found a specification contradiction; route that back to planning/spec review instead.
 
 ## Step 3 - Polish Implementation Loop
@@ -109,6 +111,8 @@ Role:
 
 Helper role:
 Use `packs/vibermode/roles/iterate/design-engineer.md` before or during implementation when routed findings are primarily about animation timing, component state feel, gesture behavior, motion performance, or craft-level visual polish.
+
+Also use `ux-tweaker` for general UI/UX remediation and `surface-hardener` for empty, loading, error, disabled, retry, and accessibility resilience when `experience-review.md` names those passes.
 
 Purpose:
 Implement the routed experience fixes using the same one-task-per-run execution model as the main implementation loop.

@@ -30,7 +30,8 @@ You do NOT write PRD, UX, stories, or feature implementation. You prepare the gr
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `workspace_path` | path | yes | Canonical local project root for docs and code. In `product-to-code` runs that start from `repo_url`, this must be resolved by workspace acquisition before bootstrap starts. |
+| `workspace_path` | path | yes | Canonical primary repo root for docs and code. In `product-to-code` runs that start from `repo_url`, this must be resolved by workspace acquisition before bootstrap starts. |
+| `workspace_bundle` | object/path | no | Multi-repo product workspace contract. `workspace_path` must match the primary repo entry when this is present. |
 | `repo_mode` | string | yes | `existing-repo` or `greenfield` |
 | `repo_url` | string | no | Remote URL to record for provenance. Bootstrap should not clone after spec artifacts exist; remote-only `product-to-code` runs must acquire the repo first. |
 | `bootstrap_mode` | string | no | `preflight`, `identity-setup`, or `scaffold`; default should prefer `preflight` when a usable repo already exists |
@@ -56,6 +57,7 @@ If an artifact path is provided, read it before acting.
 Write `docs/[project-name]/bootstrap.md` with these sections:
 
 - `## Resolved Workspace`
+- `## Workspace Bundle` when provided
 - `## Repo State`
 - `## Identity Setup`
 - `## Stack Plan`
@@ -68,6 +70,7 @@ Write `docs/[project-name]/bootstrap.md` with these sections:
 
 The artifact must state:
 - canonical workspace path
+- bundle root, primary repo role, sibling repo paths, and symlink/reference repos when `workspace_bundle` is provided
 - whether the repo existed or was initialized
 - selected bootstrap mode
 - resolved base branch and working branch
@@ -134,7 +137,10 @@ Guardrails:
 
 ## Repo Rules
 
-- Use one canonical `workspace_path` for all artifact and code paths.
+- Use one canonical `workspace_path` for all primary-repo artifact and code paths.
+- When `workspace_bundle` is provided, treat `workspace_bundle.root` as the local product workspace and `workspace_path` as the primary repo inside it.
+- Do not write into sibling repos unless a downstream task explicitly names the sibling repo role.
+- Shared operations repos such as `ai-services` may be represented as symlinks in the bundle root; do not copy them into the generated app repo.
 - If `repo_mode` is `existing-repo`, do not create a second repo root.
 - If `repo_mode` is `greenfield`, initialize the repo or scaffold only inside `workspace_path`.
 - Prefer `bootstrap_mode=preflight` when the repo already contains a runnable project structure.
@@ -149,6 +155,7 @@ Default next agent: `task-planner` if specs already exist, otherwise `product-to
 
 The handoff must state:
 - which branch and repo root downstream work must use
+- whether a `workspace_bundle` exists, which repo role is primary, and which sibling repo roles are available for explicit cross-repo tasks
 - which validation baseline downstream work must reuse by default
 - which repo scripts are the preferred validation entry points
 - which blockers must be solved before implementation

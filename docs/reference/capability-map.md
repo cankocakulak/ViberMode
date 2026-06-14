@@ -58,6 +58,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I am starting from an idea and need specs | `product-to-spec` |
 | I already have specs and want implementation execution | `spec-to-code` |
 | I want the full idea-to-code path | `product-to-code` |
+| I want to name an app and have Codex improve, prepare, or submit it | `app-autopilot` |
 | I want to work inside an existing repo without the full greenfield flow | `repo-change` |
 | I have mixed feedback, bug notes, or release-facing changes to organize | `change-triager` |
 | I want existing-repo changes validated and optionally released | `change-to-release` |
@@ -559,6 +560,27 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - One invocation targets one repo and writes artifacts under that repo's `docs/[project-name]/` folder.
 - Surfaces:
   - Codex: `viber-change-to-release`
+  - Cursor: not currently projected
+
+#### `app-autopilot`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Resolve a known app by alias, choose change, self-improve, growth-experiment, or submit-only mode, and delegate to existing ViberMode gates
+- Modes:
+  - `change-to-release` for explicit user notes
+  - `self-improve` for agent-selected improvements from runtime and screenshot evidence
+  - `growth-experiment` for one agent-selected product or activation bet grounded in the app intent
+  - `submit-only` for TestFlight or Google Play internal release without product code changes
+- Use when:
+  - the user names an app instead of supplying repo paths and manifests
+  - the user asks for "self-improve", "growth", "more users", "release-only", TestFlight, or Google Play internal submission
+- Distinction:
+  - Use `change-to-release` directly when the target repo and change request are already explicit.
+  - Use platform submitters directly when a completed run manifest is already explicit and no app lookup is needed.
+- Surfaces:
+  - Codex: `viber-app-autopilot`
   - Cursor: not currently projected
 
 ### Support workflows

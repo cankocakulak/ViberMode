@@ -16,6 +16,7 @@ Roles are the workers. Workflows are the operating procedures. Services are the 
 
 | Service | Outcome | Main Entry Workflow | Supporting Workflows |
 |---------|---------|---------------------|----------------------|
+| App Autopilot | Resolve a known app by alias, then improve, change, prepare, or submit it through existing gates | `app-autopilot` | `change-to-release`, `experience-hardening`, `ios-submit-testflight`, `android-submit-play-internal` |
 | Product to Code | Turn a raw idea or product slice into reviewed code in a repo | `product-to-code` | `product-to-spec`, `bootstrap`, `spec-to-code`, `experience-hardening`, `remediation-routing` |
 | Existing Repo Change to Release | Turn feedback or requested changes into validated changes, optionally released | `change-to-release` | `change-triager`, `repo-change`, `experience-hardening`, `ios-submit-testflight` or `android-submit-play-internal` when applicable |
 | iOS App Factory | Research app ideas, create an iOS repo, implement it, and prepare TestFlight delivery | `daily-ios-app-pipeline` | `app-opportunity-research`, `idea-research-backlog`, `product-to-code`, `ios-submit-testflight` |
@@ -28,11 +29,36 @@ Operational guides are not service workflows, but they explain how Codex operate
 Use-case manifests:
 
 - `docs/use-cases/product-to-code.md`
+- `docs/use-cases/app-autopilot.md`
 - `docs/use-cases/existing-repo-change-to-release.md`
 - `docs/use-cases/ios-app-factory.md`
 - `docs/use-cases/mobile-internal-release.md`
 - `docs/use-cases/app-opportunity-research.md`
 - `docs/use-cases/generated-app-change-to-testflight.md`
+
+## App Autopilot Service
+
+Use this when the user names a known app and wants Codex to choose the correct existing workflow without manually providing repo paths, artifact roots, and run manifests.
+
+```text
+app alias + operator intent
+  -> app-autopilot
+  -> app registry resolution
+  -> change-to-release, self-improve, or submit-only
+  -> platform submitter when requested and gates pass
+```
+
+Modes:
+
+- `change-to-release` applies explicit user notes through the existing release-capable workflow.
+- `self-improve` launches or inspects the app, captures evidence, writes a bounded change request, and delegates implementation to `change-to-release`.
+- `submit-only` performs release-only/TestFlight/Google Play internal submission from existing artifacts and does not edit product code.
+
+Canonical docs:
+
+- `packs/vibermode/workflows/app-autopilot.md`
+- `docs/use-cases/app-autopilot.md`
+- `docs/operations/app-registry.md`
 
 ## Product To Code Service
 

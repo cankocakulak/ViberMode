@@ -23,6 +23,7 @@ If you do not yet understand how the workflows combine into higher-level service
 ### 2. Are you working inside an existing repository?
 
 - Yes:
+  - Use `app-autopilot` when the user names a known app and wants "improve it", "self-improve", "release-only", TestFlight, or Google Play internal submission without spelling out repo paths
   - Use `change-to-release` when the requested changes should be validated and optionally released or deployed
   - Use `repo-change` for broad repo iteration work without release orchestration
   - Or pick a narrower iterate agent below
@@ -155,6 +156,17 @@ If you do not yet understand how the workflows combine into higher-level service
 ### Existing repo feedback to release
 
 - `change-triager -> repo-change -> experience-hardening -> release adapter`
+
+### Known app autopilot
+
+- Use `app-autopilot`.
+- Pick one mode:
+  - `change-to-release` when user notes drive the batch
+  - `self-improve` when Codex should inspect the app, capture evidence, and choose a bounded batch
+  - `growth-experiment` when Codex should understand the app intent, choose one product/growth bet, implement it, and leave an experiment log
+  - `submit-only` when no product code should change and the job is TestFlight or Google Play internal submission
+- Note:
+  - `self-improve` and `growth-experiment` can submit only after real changed-surface evidence, experience review, final review, and platform preflight pass
 
 ### Completed generated mobile app to internal testers
 

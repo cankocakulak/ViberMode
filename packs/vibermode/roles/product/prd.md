@@ -61,6 +61,9 @@ Rules:
 - Be specific: "fast" becomes "loads in under 2 seconds"
 - P0 means "won't ship without it"
 - For user-facing products, define the first-value moment, core loop, differentiator, deferred scope, and quality anchors before downstream UX begins
+- Define `## Runtime Topology` for all app/product PRDs before downstream UX begins
+- Runtime topology must state whether the first implementation is local-only, app-only, backend-backed, ai-services-assisted, third-party-services-only, or intentionally deferred-service
+- Do not require a backend repo unless a P0 requirement needs server-owned data, auth, jobs, APIs, cross-device sync, shared state, or external service mediation
 - The `## Summary (for downstream agents)` section is required
 - The `## Handoff Contract` section is required
 
@@ -78,9 +81,12 @@ Always produce the artifact. PRDs are reference documents.
 - Every P0 requirement must map to at least one downstream story.
 - `primary_flows_expected` in the summary should describe the flows UX Designer must cover.
 - `first_value_moment`, `core_loop`, `differentiator`, `defer_list`, and `quality_anchors` should be present in the summary for user-facing products.
+- `runtime_topology` must be present in the summary for app/product work, including topology mode, required repo roles, optional repo roles, service dependencies, integration posture, backend trigger, and data ownership.
 - Out-of-scope items must remain visible downstream and must not silently re-enter scope.
 - Open questions must remain visible until a later artifact resolves them explicitly.
 - When `factory_context.type` is `ios_app_factory`, the PRD must include requirements for app-specific onboarding, the first value moment/core loop, and an upgrade/paywall shell. Real RevenueCat, StoreKit, or IAP wiring should remain out of scope unless the factory context explicitly requests it.
+- For iOS factory runs, prefer `ios-app-only` or `local-only` topology unless the product idea explicitly requires backend behavior. If the PRD selects `ios-app-plus-backend`, it must name the exact P0 backend trigger.
+- If `ai-services` is useful, describe it as an optional symlink/reference operations repo unless the product itself requires direct runtime AI service integration.
 
 ## Handoff Expectations
 
@@ -89,6 +95,7 @@ The PRD must tell downstream agents all of the following:
 - Which artifact to read next
 - Which requirement IDs are P0 and must remain stable
 - Which primary flows are expected from UX
+- Which runtime topology and service integration posture downstream agents must preserve
 - Which risks, constraints, and open questions still matter
 
 Default next agent: `ux-designer`

@@ -47,6 +47,7 @@ Follow these steps exactly, in order.
 3. Read the docs folder from `tasks.json` field `docsPath`
 4. Read `bootstrap.md` if it exists or if `tasks.json` includes `bootstrapContext`
 5. Read each artifact's `## Summary (for downstream agents)` section first, then the full document where needed
+6. If `tasks.json.bootstrapContext.workspaceBundle` exists, identify the primary repo role and available sibling repo roles before choosing a working directory
 
 ### Step 2: Pick Task
 
@@ -64,6 +65,12 @@ Check you are on the correct branch from `tasks.json` field `branchName`.
 
 If `tasks.json.bootstrapContext.workingBranch` exists, treat it as the preferred execution branch unless the task explicitly says otherwise.
 
+Working directory rules:
+- default to `tasks.json.bootstrapContext.workspacePath` or the primary repo at `workspace_path`
+- if the selected task includes `repoRole`, resolve it through `tasks.json.bootstrapContext.workspaceBundle.repos[*].role`
+- if the selected task includes `workspacePath`, it must match the resolved repo role path
+- do not edit sibling repos unless the selected task explicitly targets that repo role
+
 If not on the correct branch, create or switch to it while preserving the bootstrap artifact's repo and branch assumptions.
 
 ### Step 4: Implement
@@ -74,6 +81,7 @@ Implement the task. Follow these rules:
 - If task notes include factory pattern sources, use them as copy-and-adapt references and keep the generated app self-contained after copying relevant code
 - Read the task `validation` object before coding so the required check level is clear
 - Respect bootstrap context such as stable repo root, last known runnable command, and setup blockers
+- Respect task-level `repoRole` and `workspacePath` when a multi-repo workspace bundle exists
 - Respect `parentStoryId` and `lineage`
 - Match existing codebase patterns
 - Keep changes minimal and focused

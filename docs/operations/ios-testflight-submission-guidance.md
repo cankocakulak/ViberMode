@@ -61,17 +61,19 @@ Not allowed in ViberMode:
 - App-specific private market research
 - generated IPA files or archives
 
-Private state belongs in:
+Private state belongs in the operator's configured state root:
 
 ```text
-/Users/mcan/Documents/Codex/vibermode-state/app-factory-state
+APP_FACTORY_STATE_ROOT
 ```
 
-Generated app workspaces belong in:
+Generated app workspaces belong under the operator's configured generated-products root:
 
 ```text
-/Users/mcan/Documents/Codex/generated-ios-apps
+VIBERMODE_GENERATED_PRODUCTS_ROOT/[repo-name]/ios-app
 ```
+
+If those variables are unset, scripts may derive paths from `VIBERMODE_WORKSPACE_ROOT`. See `docs/operations/local-environment.md`.
 
 ## One-Time Local Setup
 
@@ -267,7 +269,7 @@ Current Stage 4 records this metadata in `submission.metadata`; it does not yet 
 Example:
 
 ```text
-/Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-20260527120805-7bc409.json
+$VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-20260527120805-7bc409.json
 ```
 
 The manifest should have:
@@ -285,7 +287,7 @@ The manifest should have:
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-id.json
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-id.json
 ```
 
 Expected result:
@@ -303,7 +305,7 @@ Preflight has no Apple, GitHub, generated repo, or private state side effects.
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-id.json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-id.json \
   --submit \
   --commit-state \
   --app-name "Mood Dots by ViberBoyz"
@@ -323,7 +325,7 @@ If the App Store Connect app already exists and `produce` blocks unnecessarily:
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/Documents/Codex/vibermode-state/app-factory-state/factory/runs/run-id.json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-id.json \
   --submit \
   --skip-produce \
   --commit-state

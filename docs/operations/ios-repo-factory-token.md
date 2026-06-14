@@ -123,7 +123,7 @@ TOKEN_SERVICE="<service-name>"
 
 GH_TOKEN="$(security find-generic-password -a "$USER" -s "$TOKEN_SERVICE" -w)" \
 REPO_URL="https://github.com/<target-org>/ios-app-$(TZ=Europe/Istanbul date +%F).git" \
-WORKSPACE_PARENT="/absolute/path/to/generated-ios-apps" \
+WORKSPACE_PATH="$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-app-$(TZ=Europe/Istanbul date +%F)/ios-app" \
 PROJECT_NAME="ios-app-$(TZ=Europe/Istanbul date +%F)" \
 node scripts/acquire-workspace.mjs
 ```
@@ -134,12 +134,12 @@ Expected success shape:
 {
   "status": "cloned",
   "repo_url": "https://github.com/<target-org>/ios-app-YYYY-MM-DD.git",
-  "workspace_path": "/absolute/path/to/generated-ios-apps/ios-app-YYYY-MM-DD",
+  "workspace_path": "$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-app-YYYY-MM-DD/ios-app",
   "branch": "main"
 }
 ```
 
-Pass the returned `workspace_path` into `product-to-code`. If the workspace already exists and is a git repo, the script returns `status: "reused"` instead of cloning again.
+Pass the returned `workspace_path` into `product-to-code` as the primary repo path. Factory-prepared runs should also pass a `workspace_bundle` whose root is `$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-app-YYYY-MM-DD`. If the workspace already exists and is a git repo, the script returns `status: "reused"` instead of cloning again.
 
 ## Private Automation Hosts
 

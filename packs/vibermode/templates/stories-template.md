@@ -36,6 +36,11 @@ One-line description of the overall feature.
 - Core Loop → `FEATURE-001`
 - Quality Anchor: `[Surface/State]` → `FEATURE-001`
 
+### Runtime Topology Coverage
+- Topology Mode → `FEATURE-001`
+- Required Repo Roles → `FEATURE-001`
+- Backend Trigger → None, or `FEATURE-###`
+
 ## Summary (for downstream agents)
 
 ```yaml
@@ -56,6 +61,11 @@ coverage:
     core_loop: ["FEATURE-001"]
     quality_anchors:
       "[Surface/State]": ["FEATURE-001"]
+  runtime_topology:
+    mode: "local-only"
+    required_repo_roles: ["ios-app"]
+    backend_trigger_story: null
+    ai_services_usage: "none/symlink/reference/runtime"
 dependencies:
   FEATURE-001: []
 implementation_risks:
@@ -81,12 +91,14 @@ Critical Inputs:
 - Dependencies
 - Implementation boundaries
 - Coverage map
+- Runtime topology and any non-primary repo boundaries
 
 Sections That Must Not Change:
 - Story IDs
 - Acceptance criteria intent
 - Dependencies
 - Implementation Boundary
+- Runtime Topology Coverage, unless spec review routes back to PRD/UX/stories
 
 Mapping Rules:
 - Every P0 requirement must map to at least one story.

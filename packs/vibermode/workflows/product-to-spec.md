@@ -79,6 +79,7 @@ Success Criteria:
 - P0 requirements are explicit and testable
 - requirement IDs are stable
 - first-value moment, core loop, differentiator, deferred scope, and quality anchors are explicit for user-facing products
+- runtime topology is explicit, including topology mode, required repo roles, optional/deferred repo roles, service dependencies, integration posture, backend trigger, and data ownership
 - out-of-scope is clear
 - artifact includes summary and handoff contract
 
@@ -110,6 +111,7 @@ Success Criteria:
 - visual direction includes layout system, component language, and asset/media strategy when relevant
 - primary flows use the canonical UX flow structure
 - PRD requirement references are preserved
+- runtime topology and integration posture from the PRD are preserved or contradictions are called out
 - first-value, core loop, onboarding or first-run experience, empty states, and upgrade/paywall shell are designed when relevant
 - pattern sources are named with copy-and-adapt instructions when provided
 - copy, interaction, and motion/craft rules are explicit
@@ -143,6 +145,7 @@ Success Criteria:
 - every primary UX flow maps to at least one story
 - stories preserve the foundation -> first-value/core-loop -> experience surfaces ordering when those slices exist
 - every story has ID, dependencies, implementation boundary, and Given/When/Then criteria
+- story implementation boundaries preserve the approved runtime topology and isolate non-primary repo work when it is required
 - artifact includes coverage map, summary, and handoff contract
 
 Next Step:
@@ -171,6 +174,7 @@ Success Criteria:
 - verdict is explicit
 - findings cite artifacts and concrete weaknesses
 - user-facing specs are blocked when first-value, core loop, differentiator, quality anchors, or pattern adaptation are missing
+- specs are blocked when runtime topology is missing, contradictory, or smuggles hidden backend/service scope into UX or stories
 - rerun routing identifies which upstream stage must change when the verdict is not approved
 - weak or contradictory specs do not silently pass into bootstrap or task planning
 

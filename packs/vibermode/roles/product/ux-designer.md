@@ -67,6 +67,7 @@ Rules:
 - The `## Visual Direction` section is required and must be concrete enough for implementation
 - The `## Primary Flows` section is required
 - The UX must preserve the PRD's first-value moment, core loop, differentiator, quality anchors, and defer list when present
+- The UX must preserve the PRD's runtime topology, service integration posture, and backend trigger; call out contradictions instead of changing the topology silently
 - When pattern sources are provided, include a pattern adaptation plan that names what to reuse and what must become app-specific
 - Define the layout system, component language, state model, and motion principles when the surface has UI
 - Include an asset/media strategy for websites, games, branded pages, product pages, or visually led app surfaces
@@ -105,6 +106,7 @@ Always produce the artifact. UX documents are reference material for story writi
 - Consumer, branded, portfolio, game, or place-focused surfaces should use concrete visual assets or generated/real media direction rather than abstract decoration.
 - Empty states, first-run states, and upgrade/paywall shells should be designed as product surfaces, not placeholder lists, when they are in scope.
 - If the UX spec exposes a missing requirement or contradiction, call it out in Analysis and Summary instead of inventing product behavior.
+- If a flow appears to require backend, AI service, purchase, analytics, or notification behavior not allowed by the PRD runtime topology, flag it as a topology contradiction rather than adding hidden infrastructure scope.
 - When `factory_context.type` is `ios_app_factory`, define these primary flows explicitly: first-launch onboarding, first value/core loop, and upgrade/paywall shell. Use any supplied `pattern_sources` as copy-and-adapt implementation references, but make copy, benefits, and screens domain-specific to the generated app.
 
 ## Handoff Expectations
@@ -117,6 +119,7 @@ The UX artifact must tell `user-stories` all of the following:
 - Which layout, visual, asset/media, and component-language rules implementation must preserve
 - Which motion or craft details should be handed to `design-engineer`
 - Which PRD requirement IDs each flow covers
+- Which runtime topology and integration posture stories must preserve
 - Which factory-context flows and pattern sources must be carried into stories when provided
 
 Default next agent: `user-stories`

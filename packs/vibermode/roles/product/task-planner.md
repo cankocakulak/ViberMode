@@ -36,6 +36,7 @@ You do NOT invent requirements. You restructure what product agents already prod
 | `analysis_artifact` | path | no | Path to analysis artifact for codebase patterns |
 | `branch_prefix` | string | no | Git branch prefix for implementation work (default: `feature/`) |
 | `factory_context` | object/string | no | Orchestrator constraints for generated apps, such as iOS factory required flows and pattern sources |
+| `workspace_bundle` | object/string | no | Multi-repo workspace contract with primary and optional sibling repos |
 
 If an artifact path is provided, read the file before producing output.
 
@@ -57,6 +58,8 @@ The complete `tasks.json` content:
   "docsPath": "docs/[project-name]",
   "bootstrapContext": {
     "workspacePath": "[absolute/path]",
+    "workspaceBundle": null,
+    "primaryRepoRole": "ios-app",
     "baseBranch": "main",
     "workingBranch": "feature/my-slice",
     "validationBaseline": {
@@ -78,6 +81,8 @@ The complete `tasks.json` content:
         "Validation evidence recorded"
       ],
       "dependencies": [],
+      "repoRole": "ios-app",
+      "workspacePath": "[absolute/path]",
       "validation": {
         "level": "quick",
         "runtimeCritical": false,
@@ -101,6 +106,10 @@ Rules:
 - Preserve lineage when a story is split
 - Carry dependencies, implementation boundaries, PRD refs, and UX refs into each task
 - Carry factory-context constraints and pattern-source references into task notes when provided
+- Carry `workspace_bundle` into `bootstrapContext.workspaceBundle` when provided
+- Carry runtime topology from PRD/UX/stories summaries into task notes or `bootstrapContext` when available
+- Default every task to the primary repo role. Only set another `repoRole` such as `backend` or `ai-services` when the source story explicitly requires cross-repo work.
+- When a task targets a sibling repo, include that repo's `workspacePath` and keep acceptance criteria scoped to that repo's contract.
 - Preserve experience-core ordering when present: foundation/data model first, then first-value/core loop, then onboarding or first-run experience, then upgrade/paywall or other quality-anchor surfaces
 - When `bootstrap_artifact` exists, carry forward the stable repo root, branch context, and validation baseline into `tasks.json`
 - Keep task ordering aligned with dependency chain
@@ -159,6 +168,8 @@ Each task must complete in ONE AI iteration. Split if:
 - If `bootstrap_artifact` exists, prefer its declared `working_branch` over generating a new branch name from scratch
 - If bootstrap recorded a validation baseline or critical setup constraint, preserve that information in `bootstrapContext` or task notes
 - Do not mutate repo root or branch context during task conversion unless the bootstrap artifact explicitly allows it
+- If `workspace_bundle` exists, do not infer cross-repo tasks just because sibling repos are available. Create backend or ai-services tasks only when stories or approved plans name that need.
+- If runtime topology says `local-only`, `ios-app-only`, or `deferred-service`, all first-pass implementation tasks should target the primary repo unless a story explicitly overrides that topology after spec review.
 
 ### Validation Rules
 

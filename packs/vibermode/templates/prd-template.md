@@ -35,6 +35,23 @@ For existing projects: reference analysis artifact, note any new dependencies ne
 | Backend | ... | ... |
 | ... | ... | ... |
 
+## Runtime Topology
+
+State how the first implementation should run locally and which repos or external services are actually required.
+
+- **Topology Mode**: `local-only`, `ios-app-only`, `ios-app-plus-backend`, `ios-app-plus-backend-plus-ai-services`, `third-party-services-only`, or `deferred-service`
+- **Primary Repo Role**: Usually `ios-app`
+- **Required Repos Now**:
+  - `ios-app`: why it is required
+- **Optional / Deferred Repos**:
+  - `backend`: create only if the P0 scope needs server-owned data, auth, jobs, APIs, or shared state
+  - `ai-services`: use as a symlink/reference when operational AI workflows are needed; do not copy it into the app repo
+- **Service Dependencies**: local persistence, backend APIs, RevenueCat/StoreKit, analytics, notifications, AI providers, or none
+- **Integration Posture**: `real`, `mock`, `placeholder`, or `deferred` for each service dependency
+- **Backend Trigger**: exact requirement or story that would justify creating the backend repo; write `none` when not needed
+- **Data Ownership**: what lives on-device vs. server-side vs. external service
+- **Local Workspace Expectation**: expected repo layout under the product workspace bundle
+
 ## Out of Scope
 Explicitly list what this is NOT.
 
@@ -70,6 +87,16 @@ primary_flows_expected:
   - "Flow name"
 key_risks:
   - "Risk or constraint"
+runtime_topology:
+  mode: "local-only"
+  primary_repo_role: "ios-app"
+  required_repos_now: ["ios-app"]
+  optional_repos: ["backend", "ai-services"]
+  service_dependencies:
+    - name: "local persistence"
+      integration_posture: "real"
+  backend_trigger: "none"
+  data_ownership: "What is local, server-side, or external"
 open_questions:
   - "Question that still needs resolution"
 ```
@@ -91,12 +118,14 @@ Critical Inputs:
 - Product Core
 - P0 requirements
 - Tech stack constraints
+- Runtime topology and service integration posture
 
 Sections That Must Not Change:
 - Problem
 - Solution
 - Product Core
 - P0 requirements
+- Runtime Topology, unless spec review routes back to PRD
 - Out of Scope
 
 Mapping Rules:

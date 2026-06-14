@@ -91,6 +91,7 @@ Write `docs/[project-name]/experience-review.md` with these sections:
 - `## Visual and Copy Quality`
 - `## Edge States and Accessibility`
 - `## Factory Requirements` when `factory_context.type = ios_app_factory`
+- `## Quality Passes`
 - `## Issues`
 - `## Task Resolution`
 - `## Summary (for downstream agents)`
@@ -103,6 +104,7 @@ The artifact must state:
 - which screenshots, simulator runs, or runtime checks support the judgment
 - which missing evidence prevents approval, if any
 - which task or follow-up should absorb each required fix
+- whether any routed fix should use a specialty pass such as `design-engineer`, `ux-tweaker`, or `surface-hardener`
 
 For `factory_context.type = ios_app_factory`, the review artifact must also include:
 
@@ -165,6 +167,24 @@ Rules:
 - Use `create-followup-task` when the fix is a new, separable implementation slice.
 - If `tasks_artifact` is unavailable, still provide the intended resolution mode and explain the likely task boundary.
 - Do not approve while any required factory flow is missing, visibly generic, or untested.
+
+### Quality Passes
+
+When a finding needs a specialty helper before or during remediation, include a machine-readable block:
+
+```yaml
+quality_passes:
+  - agent: "design-engineer"
+    reason: "Onboarding and paywall transitions feel abrupt and need component craft review."
+    surfaces: ["OnboardingView", "PaywallView"]
+    status: "recommended"
+  - agent: "surface-hardener"
+    reason: "Core loop lacks empty and disabled states."
+    surfaces: ["CoreLoopView"]
+    status: "recommended"
+```
+
+Use `design-engineer` for motion, tactile feedback, gestures, animation timing, and craft-level component polish. Use `ux-tweaker` for general UI/UX changes. Use `surface-hardener` for empty, loading, error, disabled, retry, and accessibility resilience.
 
 ## iOS App Factory Review Rules
 

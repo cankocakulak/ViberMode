@@ -79,6 +79,10 @@ Produce the artifact whenever project context is known.
 - `create-followup-task`
   - append the new task to `tasks.json`
   - preserve parentStoryId, lineage, dependencies, and priority if provided
+  - preserve specialty helper guidance such as `quality_passes` in task notes when the source review included it
+- `quality_passes`
+  - do not execute helper agents in this role
+  - copy the relevant helper agent, reason, and surfaces into reopened or follow-up task notes
 - blocked-but-not-routable findings
   - do not invent a task
   - record the blocker in `remediation.md`

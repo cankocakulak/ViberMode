@@ -66,6 +66,7 @@ Rules:
 - Every criterion must be testable by a human or automated test
 - The first P0 stories should preserve this order when applicable: foundation/data model, first-value/core loop, onboarding or first-run experience, upgrade/paywall or other quality-anchor surfaces
 - Stories for visual shells, onboarding, empty states, and paywalls must include enough acceptance criteria for `experience-reviewer` to judge product specificity
+- Stories must preserve the PRD/UX runtime topology and must not introduce hidden backend, AI service, purchase, analytics, or notification work outside the approved topology
 - The `## Coverage Map` section is required
 - The `## Summary (for downstream agents)` section is required
 - The `## Handoff Contract` section is required
@@ -84,6 +85,7 @@ Always produce the artifact when using this agent in the product pipeline.
 - Every P0 PRD requirement must map to at least one story in `## Coverage Map`.
 - Every primary UX flow must map to at least one story in `## Coverage Map`.
 - First-value moment, core loop, and quality anchors from the UX summary must map to stories when present.
+- Runtime topology from the PRD/UX summary must be reflected in story implementation boundaries and `implementation_risks`.
 - Dependencies should be explicit, not implied.
 - Stories must be small enough to implement independently. If not, split them or flag them in `implementation_risks`.
 - Implementation boundaries must say what is in and out for that story so implementation agents do not expand scope.
@@ -97,6 +99,7 @@ The stories artifact must tell `task-planner` all of the following:
 - Which stories depend on which earlier stories
 - Which PRD requirements and UX flows each story covers
 - Which stories may still need splitting for autonomous implementation
+- Which stories, if any, justify non-primary repo work such as `backend` or `ai-services`
 
 Default next agent: `task-planner`
 

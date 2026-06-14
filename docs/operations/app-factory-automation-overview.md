@@ -34,13 +34,19 @@ KantAkademi2/ios-boilerplate
 
 Template repository used by the repo factory.
 
-## Local Paths
+## Local Environment
 
-```text
-/Users/mcan/ViberMode
-/Users/mcan/ViberMode/.vibermode-state/app-factory-state
-/Users/mcan/ViberMode/.vibermode-generated-ios-apps
-```
+Use `docs/operations/local-environment.md` as the portable setup reference. The public workflow should not assume a specific user home directory.
+
+Common operator variables:
+
+- `VIBERMODE_WORKSPACE_ROOT`
+- `APP_FACTORY_STATE_ROOT`
+- `VIBERMODE_GENERATED_PRODUCTS_ROOT`
+- `VIBERMODE_AI_SERVICES_PATH`
+- `GH_TOKEN`
+
+Local examples in this document are snapshots from one operator environment, not framework defaults.
 
 GitHub token lookup:
 
@@ -48,7 +54,7 @@ GitHub token lookup:
 security find-generic-password -s "viberboyz-gh-token" -w
 ```
 
-The token may be loaded into `GH_TOKEN` for one process. Automation prompts first source `/Users/mcan/ViberMode/.vibermode-automation.env` when present, then fall back to Keychain. Secrets must not be written to prompts, files, remotes, or logs.
+The token may be loaded into `GH_TOKEN` for one process. Automation prompts may source a local env file when present, then fall back to the OS credential store. Secrets must not be written to prompts, files, remotes, or logs.
 
 ## Stage Map
 
@@ -122,16 +128,19 @@ Command shape:
 
 ```bash
 set -a
-[ -f /Users/mcan/ViberMode/.vibermode-automation.env ] && . /Users/mcan/ViberMode/.vibermode-automation.env
+[ -f .vibermode-automation.env ] && . ./.vibermode-automation.env
 set +a
+: "${VIBERMODE_WORKSPACE_ROOT:=$HOME/ViberModeWorkspaces}"
+: "${APP_FACTORY_STATE_ROOT:=$VIBERMODE_WORKSPACE_ROOT/app-factory-state}"
 GH_TOKEN="${GH_TOKEN:-$(security find-generic-password -s "viberboyz-gh-token" -w 2>/dev/null || true)}" \
 node scripts/ios-app-factory-prepare.mjs \
-  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state \
-  --workspace-parent /Users/mcan/ViberMode/.vibermode-generated-ios-apps \
+  --state-root "$APP_FACTORY_STATE_ROOT" \
+  --workspace-root "$VIBERMODE_WORKSPACE_ROOT" \
   --template-owner KantAkademi2 \
   --template-repo ios-boilerplate \
   --destination-owner ViberBoyz \
-  --commit-state
+  --commit-state \
+  --state-sync git
 ```
 
 Private state outputs:
@@ -188,12 +197,14 @@ Public ViberMode surfaces:
 - `packs/vibermode/workflows/spec-to-code.md`
 - `packs/vibermode/workflows/experience-hardening.md`
 - `packs/vibermode/workflows/bootstrap.md`
+- `scripts/workspace-bundle-provision.mjs`
 
 Inputs:
 
 ```text
 factory/runs/[run-id].json
 generated repo workspace_path
+workspace_bundle
 product_to_code_input
 product_to_code_input.factory_context
 ```
@@ -206,7 +217,23 @@ Expected outputs:
 - structured experience evidence recorded in `factory/runs/[run-id].json` under `product_to_code_result.experience_review`
 - `factory/runs/[run-id].json` updated with build, validation, and commit details
 - `ideas/backlog.json` updated to reflect progress
+- runtime topology applied before bootstrap with `npm run workspace:topology`; this records a no-op checkpoint for app-only runs, verifies or attaches `ai-services`, and provisions `[workspace_bundle.root]/backend` only when approved runtime topology names a P0 backend trigger
 - iOS factory apps include onboarding, a testable first-value/core loop, and a paywall shell using `ViberBoyz/ios-factory-patterns` when useful
+- new factory runs should use bundle layout under `$VIBERMODE_WORKSPACE_ROOT/generated-products/[repo-name]/`, with the generated iOS repo at `ios-app/`
+- shared `ai-services` can be attached as a symlink at the bundle root when `VIBERMODE_AI_SERVICES_PATH` or `--ai-services-path` is provided
+
+Runtime topology command shape after spec review approval:
+
+```bash
+GH_TOKEN="${GH_TOKEN:-$(security find-generic-password -s "viberboyz-gh-token" -w 2>/dev/null || true)}" \
+npm run workspace:topology -- \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
+  --backend-template-owner "$BACKEND_TEMPLATE_OWNER" \
+  --backend-template-repo "$BACKEND_TEMPLATE_REPO" \
+  --destination-owner ViberBoyz
+```
+
+This step is still run when the approved Runtime Topology is app-only, local-only, third-party-services-only, or deferred-service; in those cases it records an explicit no-op result in the run manifest instead of creating a backend repo.
 
 Internal Stage 3 shape:
 
@@ -267,7 +294,7 @@ The first version is preflight-by-default. A plain run validates credentials, Xc
 
 ```bash
 node scripts/ios-submit-testflight.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/[run-id].json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/[run-id].json \
   --submit \
   --commit-state
 ```
@@ -337,14 +364,14 @@ Preflight:
 
 ```bash
 node scripts/android-submit-play-internal.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/[run-id].json
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/[run-id].json
 ```
 
 Live internal testing upload:
 
 ```bash
 node scripts/android-submit-play-internal.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/[run-id].json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/[run-id].json \
   --build \
   --submit \
   --confirm-play-console-bootstrap \
@@ -370,7 +397,7 @@ Current purpose:
 Manual Stage 1 runner. It runs one focused opportunity research pack, validates the backlog, and commits/pushes private state when candidates are upserted.
 
 Important note:
-The prompt uses `/Users/mcan/ViberMode/.vibermode-state/app-factory-state` as canonical private state and explicitly ignores the historical `/Users/mcan/Documents/Codex/vibermode-state/app-factory-state` path.
+The prompt uses `$VIBERMODE_WORKSPACE_ROOT/app-factory-state` as canonical private state and ignores historical private state paths under `repo-local .vibermode-state` or `old Documents/Codex state paths`.
 
 ### `viber-ios-app-factory-manual-runner`
 

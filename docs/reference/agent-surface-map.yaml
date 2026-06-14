@@ -433,6 +433,18 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/change-to-release.md
 
+  - id: app-autopilot
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: workflow
+    purpose: resolve a known app by alias and run change, self-improve, growth-experiment, or submit-only paths through existing gates
+    surfaces:
+      codex_skill: viber-app-autopilot
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: packs/vibermode/workflows/app-autopilot.md
+
   - id: idea-research-backlog
     kind: workflow
     callability: artifact-aware

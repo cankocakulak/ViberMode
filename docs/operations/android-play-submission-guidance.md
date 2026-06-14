@@ -61,17 +61,19 @@ Not allowed in ViberMode:
 - App-specific private market research
 - generated AAB/APK files
 
-Private state belongs in:
+Private state belongs in the operator's configured state root:
 
 ```text
-/Users/mcan/ViberMode/.vibermode-state/app-factory-state
+APP_FACTORY_STATE_ROOT
 ```
 
-Generated Android app workspaces should belong in a private generated-apps folder, for example:
+Generated Android app workspaces should belong under the operator's configured generated-products root:
 
 ```text
-/Users/mcan/ViberMode/.vibermode-generated-android-apps
+VIBERMODE_GENERATED_PRODUCTS_ROOT/[repo-name]/android-app
 ```
+
+If those variables are unset, scripts may derive paths from `VIBERMODE_WORKSPACE_ROOT`. See `docs/operations/local-environment.md`.
 
 ## One-Time Local Setup
 
@@ -231,7 +233,7 @@ Android internal testing can proceed with a narrower metadata surface than produ
 Example:
 
 ```text
-/Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-20260608120000-android.json
+$VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-20260608120000-android.json
 ```
 
 The manifest should have:
@@ -252,7 +254,7 @@ The manifest should have:
 
 ```bash
 node scripts/android-submit-play-internal.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-id.json
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-id.json
 ```
 
 Expected result:
@@ -270,7 +272,7 @@ Preflight has no Google Play, GitHub, generated repo, or private state side effe
 
 ```bash
 node scripts/android-submit-play-internal.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-id.json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-id.json \
   --build
 ```
 
@@ -293,7 +295,7 @@ node scripts/android-submit-play-internal.mjs \
 
 ```bash
 node scripts/android-submit-play-internal.mjs \
-  --run-manifest /Users/mcan/ViberMode/.vibermode-state/app-factory-state/factory/runs/run-id.json \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-id.json \
   --build \
   --submit \
   --confirm-play-console-bootstrap \

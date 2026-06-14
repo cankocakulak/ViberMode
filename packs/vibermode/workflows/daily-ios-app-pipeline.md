@@ -46,7 +46,8 @@ This private repo stores copy-and-adapt SwiftUI patterns for onboarding, app rou
 The orchestrator must resolve:
 
 - `state_root` - private state repo checkout
-- `workspace_parent` - local parent directory for generated app repos
+- `workspace_root` - local ViberMode workspace root, usually `$VIBERMODE_WORKSPACE_ROOT`
+- optional `workspace_parent` - legacy flat parent directory for generated app repos
 - `template_owner` - usually `KantAkademi2`
 - `template_repo` - usually `ios-boilerplate`
 - `destination_owner` - usually `ViberBoyz`
@@ -106,21 +107,23 @@ Command shape:
 
 ```bash
 GH_TOKEN="$GH_TOKEN" node scripts/ios-app-factory-prepare.mjs \
-  --state-root /Users/mcan/ViberMode/.vibermode-state/app-factory-state \
-  --workspace-parent /Users/mcan/Documents/Codex/generated-ios-apps \
+  --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state \
+  --workspace-root $VIBERMODE_WORKSPACE_ROOT \
   --template-owner KantAkademi2 \
   --template-repo ios-boilerplate \
   --destination-owner ViberBoyz \
-  --commit-state
+  --commit-state \
+  --state-sync git
 ```
 
-`--commit-state` syncs `ideas/backlog.json` and the run manifest to the private state repo through the GitHub Contents API by default. Use `--state-sync git` only in automation environments where the state checkout can push reliably.
+The manual factory automation should use `--state-sync git` when the local private state checkout can push reliably. API state sync remains available as a fallback, but it may leave the local checkout behind until it is pulled.
 
 Output:
 
 - generated repo URL
 - clone URL
 - local workspace path
+- workspace bundle root
 - run manifest path
 - product-to-code input block
 
@@ -147,12 +150,24 @@ Required input from run manifest:
 ```json
 {
   "project_name": "ios-example-2026-05-27",
-  "workspace_path": "/Users/mcan/Documents/Codex/generated-ios-apps/ios-example-2026-05-27",
+  "workspace_path": "$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-example-2026-05-27/ios-app",
   "repo_url": "https://github.com/ViberBoyz/ios-example-2026-05-27.git",
   "product_idea": "...",
   "repo_mode": "greenfield",
   "platform": "ios",
   "stack": "SwiftUI",
+  "workspace_bundle": {
+    "root": "$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-example-2026-05-27",
+    "layout": "bundle",
+    "primary_repo_role": "ios-app",
+    "repos": [
+      {
+        "role": "ios-app",
+        "workspace_path": "$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-example-2026-05-27/ios-app",
+        "required": true
+      }
+    ]
+  },
   "factory_context": {
     "type": "ios_app_factory",
     "distribution_target": "testflight",
@@ -184,12 +199,25 @@ Required input from run manifest:
 }
 ```
 
+After `spec-review.md` approves, apply the runtime topology before bootstrap:
+
+```bash
+npm run workspace:topology -- \
+  --run-manifest $VIBERMODE_WORKSPACE_ROOT/app-factory-state/factory/runs/run-YYYYMMDDHHMMSS-xxxxxx.json \
+  --backend-template-owner "$BACKEND_TEMPLATE_OWNER" \
+  --backend-template-repo "$BACKEND_TEMPLATE_REPO" \
+  --destination-owner ViberBoyz
+```
+
+This command reads the approved runtime topology from the generated repo artifacts, verifies or attaches `ai-services` when configured, records an explicit no-op checkpoint when backend is not required, and provisions `[bundle-root]/backend` only when the topology names a P0 backend trigger.
+
 For iOS factory runs, Stage 3 must treat `factory_context` as part of the product input. The generated app should include:
 
 - app-specific first-launch onboarding
 - a first-value/core loop the tester can reach without payment
 - an upgrade/paywall shell with honest mock or placeholder purchase handling when real IAP is not wired
 - reusable code copied and adapted from `ViberBoyz/ios-factory-patterns` when useful
+- optional sibling repos under the same bundle root only when the spec requires them, for example `backend/` or a symlinked `ai-services/`
 
 Stage 3 uses `product-to-code`, whose implementation stage includes a subloop:
 
@@ -213,6 +241,7 @@ Success Criteria:
 - run manifest is updated with validation and commit details
 - run manifest records structured experience evidence under `product_to_code_result.experience_review`
 - onboarding, first-value, and paywall shell coverage is visible in PRD, UX, stories, and tasks for iOS factory runs
+- backend sibling repo is provisioned before bootstrap when approved runtime topology names a P0 backend trigger
 - onboarding, first-value/core loop, upgrade/paywall shell, keyboard behavior, and small-screen fit are checked before completion for iOS factory runs
 - actual screenshot or video files cover onboarding, first value, core loop, and upgrade/paywall shell; UI launch smoke alone is not enough
 - onboarding is at least three meaningful steps/screens and not a single plain `List` or form-style explanation

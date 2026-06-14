@@ -22,6 +22,7 @@ The canonical definitions live in `packs/`. Tool-specific wrappers live in `adap
 | See every role/workflow surface | `docs/reference/capability-map.md` | capability -> Codex/Cursor/AGENTS surface |
 | Research app ideas without creating repos | `docs/use-cases/app-opportunity-research.md` | app research -> ranked candidates |
 | Run idea-to-TestFlight factory flow | `docs/use-cases/ios-app-factory.md` | ready idea -> repo -> code -> TestFlight |
+| Operate on a known app by name | `docs/use-cases/app-autopilot.md` | app alias -> improve/change/growth/submit |
 | Change an existing repo and maybe release | `docs/use-cases/existing-repo-change-to-release.md` | change notes -> validation -> release adapter |
 | Change a generated app and send it back to TestFlight | `docs/use-cases/generated-app-change-to-testflight.md` | app feedback -> validated update -> TestFlight |
 | Turn a product idea into code | `docs/use-cases/product-to-code.md` | specs -> bootstrap -> tasks -> implementation |
@@ -276,6 +277,7 @@ Then ask naturally:
 "Use product-to-code for this idea..."
 "Use ux-designer to design this website/app surface..."
 "Use repo-change for these feedback notes..."
+"Use app-autopilot for Quiet Envelope..."
 "Use design-engineer to polish this component motion..."
 "Use tester to verify this flow..."
 "Use ios-submitter to preflight this completed generated app..."
@@ -333,9 +335,26 @@ npm run export:idea-to-testflight:all
 # Run the change-to-release evidence gate checker.
 npm run change-release:gate
 
+# Resolve a known app alias before an app-autopilot run.
+npm run app:resolve -- --app "Quiet Envelope"
+
 # Inspect configured RevenueCat access if credentials exist.
 npm run revenuecat:status
 ```
+
+## Path And Environment Portability
+
+This is a public repo. Do not treat any personal path, username, private checkout, app registry, or credential location as a framework default.
+
+Use:
+
+- repo-relative paths for public ViberMode files
+- `VIBERMODE_WORKSPACE_ROOT` for a local private workspace root
+- `APP_FACTORY_STATE_ROOT` for the private app-factory state checkout
+- `VIBERMODE_GENERATED_PRODUCTS_ROOT` for generated app bundles
+- `VIBERMODE_APP_REGISTRY` or `docs/operations/app-registry.local.json` for machine-specific app aliases
+
+Read `docs/operations/local-environment.md` before editing automation prompts, release runbooks, or anything that references private app paths.
 
 ## What Is Canonical
 

@@ -68,6 +68,7 @@ Scripts:
 - `scripts/github-create-template-repo.mjs`
 - `scripts/acquire-workspace.mjs`
 - `scripts/ios-app-factory-prepare.mjs`
+- `scripts/workspace-bundle-provision.mjs`
 - `scripts/ios-submit-testflight.mjs`
 
 Docs:

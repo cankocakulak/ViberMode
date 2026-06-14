@@ -18,6 +18,9 @@
   "scripts": {
     "install:codex": "bash adapters/codex/install/install-skills.sh",
     "change-release:gate": "node scripts/change-release-gate-check.mjs",
+    "app:resolve": "node scripts/app-autopilot-resolve.mjs",
+    "workspace:topology": "node scripts/workspace-topology.mjs",
+    "workspace:provision": "node scripts/workspace-bundle-provision.mjs",
     "export:idea-to-testflight": "node scripts/export-idea-to-testflight-visual.mjs",
     "export:idea-to-testflight:png": "node scripts/export-idea-to-testflight-png.mjs",
     "export:idea-to-testflight:all": "npm run export:idea-to-testflight && npm run export:idea-to-testflight:png",

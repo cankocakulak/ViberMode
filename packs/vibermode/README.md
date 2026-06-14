@@ -8,6 +8,7 @@ This pack owns:
 - generic templates under `templates/`
 
 Current canonical workflow set includes:
+- `app-autopilot`
 - `app-opportunity-research`
 - `idea-research-backlog`
 - `daily-ios-app-pipeline`

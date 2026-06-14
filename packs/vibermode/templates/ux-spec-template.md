@@ -152,6 +152,13 @@ pattern_adaptation:
   - source: "Reference or source pattern"
     reuse: "Structure or behavior to reuse"
     adapt: "App-specific changes required"
+runtime_topology:
+  mode: "Copied from PRD"
+  primary_repo_role: "ios-app"
+  service_dependencies:
+    - name: "Service or local capability"
+      integration_posture: "real/mock/placeholder/deferred"
+  backend_trigger: "Requirement that justifies backend, or none"
 screens:
   - name: "[Screen/Component Name]"
     flows: ["[Flow Name]"]
@@ -178,6 +185,7 @@ Critical Inputs:
 - Primary flows
 - Information architecture and first screen
 - Screen/component breakdown
+- Runtime topology and integration posture from PRD
 - Interaction patterns
 - Motion and craft direction
 - Copy direction

@@ -57,8 +57,9 @@ Review methodology:
 2. **Consistency** — Do brainstorm, PRD, UX, and stories align without contradiction?
 3. **Testability** — Are acceptance criteria concrete enough to validate later?
 4. **Adaptability** — Can this spec fit the declared stack, repo shape, and boilerplate?
-5. **Experience Core** — For user-facing products, do the specs preserve first value, core loop, differentiator, quality anchors, and deferred scope?
-6. **Verdict** — APPROVED, CHANGES_REQUESTED, or BLOCKED
+5. **Runtime Topology** — Do PRD, UX, and stories agree on local-only, app-only, backend-backed, ai-services, third-party service, and integration posture decisions?
+6. **Experience Core** — For user-facing products, do the specs preserve first value, core loop, differentiator, quality anchors, and deferred scope?
+7. **Verdict** — APPROVED, CHANGES_REQUESTED, or BLOCKED
 
 ### Findings
 
@@ -73,6 +74,7 @@ Issue types:
 - `consistency`
 - `testability`
 - `adaptability`
+- `runtime-topology`
 - `validation-gap`
 - `scope`
 
@@ -121,11 +123,16 @@ Produce the artifact whenever project context is known.
 - [ ] Stories are small enough for task planning and implementation loops
 - [ ] Acceptance criteria can be validated later with build/test/runtime evidence
 - [ ] Declared stack or boilerplate can plausibly support the requested product behavior
+- [ ] PRD includes `## Runtime Topology` with topology mode, required repo roles, optional/deferred repo roles, service dependencies, integration posture, backend trigger, and data ownership
+- [ ] UX and stories preserve the PRD runtime topology without introducing hidden backend, AI service, purchase, analytics, notification, or external-service scope
+- [ ] If backend is required, the PRD names a concrete P0 backend trigger and stories isolate backend work enough for task planning
+- [ ] If backend is not required, backend repo creation is explicitly deferred or out of scope
+- [ ] If `ai-services` is referenced, it is clear whether it is a symlink/reference operations repo or a runtime dependency
 - [ ] No hidden scaffold work is being smuggled into ordinary feature stories
 - [ ] Summary and handoff sections are still usable downstream
 - [ ] User-facing specs name first-value moment, core loop, differentiator, quality anchors, and deferred scope
 - [ ] Pattern sources are treated as copy-and-adapt references rather than sample UI to paste unchanged
-- [ ] If `factory_context.type` is `ios_app_factory`, PRD, UX, and stories explicitly cover onboarding, first-value/core loop, upgrade/paywall shell, and pattern adaptation, with real purchase integration scoped separately unless requested
+- [ ] If `factory_context.type` is `ios_app_factory`, PRD, UX, and stories explicitly cover onboarding, first-value/core loop, upgrade/paywall shell, pattern adaptation, and runtime topology, with real purchase integration and backend repo creation scoped separately unless requested
 
 ## Behavior Guidelines
 
