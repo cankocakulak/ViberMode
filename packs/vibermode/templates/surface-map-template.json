@@ -1,0 +1,62 @@
+{
+  "project": "[ProjectName]",
+  "updatedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "sourceArtifacts": {
+    "prd": "docs/[project-name]/prd.md",
+    "ux": "docs/[project-name]/ux.md",
+    "stories": "docs/[project-name]/stories.md",
+    "tasks": "docs/[project-name]/tasks.json",
+    "runState": "docs/[project-name]/run-state.json"
+  },
+  "phaseReadiness": {
+    "foundation": "pending|complete|blocked",
+    "core": "pending|complete|blocked",
+    "polish": "pending|complete|blocked"
+  },
+  "surfaces": [
+    {
+      "id": "onboarding",
+      "name": "Onboarding",
+      "phase": "foundation",
+      "requiredForFactory": true,
+      "sourceFiles": [],
+      "entryPoint": "How the tester reaches this surface",
+      "states": ["default"],
+      "screenshotTarget": true,
+      "evidencePath": null,
+      "notes": "Promise, how it works, and first action should be visible across at least 3 meaningful steps."
+    },
+    {
+      "id": "first_value",
+      "name": "First Value",
+      "phase": "core",
+      "requiredForFactory": true,
+      "sourceFiles": [],
+      "entryPoint": "How the tester reaches the first useful moment",
+      "states": ["default", "empty", "saved/progress"],
+      "screenshotTarget": true,
+      "evidencePath": null,
+      "notes": "This should prove the product promise without purchase."
+    },
+    {
+      "id": "upgrade_shell",
+      "name": "Upgrade or Paywall Shell",
+      "phase": "foundation",
+      "requiredForFactory": true,
+      "sourceFiles": [],
+      "entryPoint": "Where the natural upgrade entry appears",
+      "states": ["preview", "disabled-or-mock-purchase"],
+      "screenshotTarget": true,
+      "evidencePath": null,
+      "notes": "Must be app-specific and honest when real purchase handling is not wired."
+    }
+  ],
+  "polishChecks": {
+    "keyboardDismissal": "not_applicable|pass|fail|blocked",
+    "smallScreenFit": "not_checked|pass|fail|blocked",
+    "dynamicType": "not_checked|pass|fail|blocked",
+    "accessibilityLabels": "not_checked|pass|fail|blocked",
+    "emptyLoadingErrorDisabledStates": "not_checked|pass|fail|blocked"
+  },
+  "openPolishTasks": []
+}

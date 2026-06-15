@@ -19,7 +19,7 @@ ViberMode is a documentation-first framework whose product is the set of portabl
 | Operations tooling | Node.js scripts | App research, backlog, repo factory, workspace acquisition, TestFlight submission, and reference validation |
 | Packaging | npm metadata | Exports `packs/*`, `adapters/*`, and `scripts/*`; no runtime dependency tree |
 | Installation | Shell script | `adapters/codex/install/install-skills.sh` copies skill wrappers and a shared support bundle into Codex |
-| Validation | Node reference validator | `npm run validate` runs `scripts/validate-reference-map.mjs`; current run passed for 39 capabilities |
+| Validation | Node reference and task-phase validators | `npm run validate` runs reference-map validation plus `scripts/validate-task-phases.mjs`; task-phase validation is strict for phase-aware/factory task files and warning-only for legacy task files |
 
 ## Project Structure
 ```text
@@ -27,6 +27,7 @@ packs/
 └── vibermode/
     ├── roles/          # Product and iterate role contracts
     ├── workflows/      # Product, repo-change, release, remediation, and iOS factory workflows
+    ├── patterns/       # Reusable copy-and-adapt iOS factory surface patterns
     └── templates/      # PRD, UX, and stories templates
 
 adapters/
@@ -46,6 +47,7 @@ scripts/
 - **Single source of truth**: Canonical behavior lives in `packs/vibermode/roles/*` and `packs/vibermode/workflows/*`; wrappers point back to those files.
 - **Artifact handoff model**: Product and change workflows use `docs/[project-name]/` artifacts instead of relying on chat history.
 - **Surface inventory**: `docs/reference/agent-surface-map.yaml` maps canonical paths to Codex, Cursor, and any-tool surfaces.
+- **Factory pattern catalog**: `packs/vibermode/patterns/ios-factory/` stores onboarding and paywall shell references that UX and task planning can select by pattern ID.
 - **Thin integration wrappers**: Codex and Cursor surfaces stay small and mostly defer to canonical pack files.
 - **Compatibility retention**: `ralph-converter` and `ralph-runner` remain as legacy aliases for `task-planner` and `implementation-runner`.
 - **Core boundary**: Domain-specific packs and external orchestration runtime material stay outside ViberMode core; see `docs/architecture/boundary-decisions.md`.
@@ -54,7 +56,7 @@ scripts/
 ## Workflow & Agent Architecture
 - **Existing-project path**: `analyzer -> product-to-spec -> bootstrap -> spec-to-code`
 - **Spec path**: `brainstormer -> prd -> ux-designer -> user-stories`
-- **Implementation path**: `task-planner -> implementation-runner -> runtime-validator -> reviewer`
+- **Implementation path**: `task-planner -> implementation-runner` with phase gates (`foundation -> core -> polish`) `-> runtime-validator -> experience-reviewer -> reviewer`
 - **Existing-repo change path**: `change-triager -> repo-change -> experience-hardening -> optional release adapter`
 - **Iterate toolkit**: `scout`, `planner`, `reviewer`, `ux-tweaker`, `ux-investigator`, `modularizer`, `tester`, `integration-auditor`, `surface-hardener`, and support gates.
 
@@ -92,6 +94,7 @@ reusable_patterns:
   - summary-plus-handoff-contract-per-artifact
   - thin-platform-wrapper-files
   - machine-readable-agent-surface-map
+  - copy-and-adapt-ios-factory-pattern-catalog
 known_constraints:
   - no full workflow runtime engine in this repo
   - compatibility surfaces for ralph aliases are intentionally retained

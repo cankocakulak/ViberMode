@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "project": "public-app-scan",
+  "status": "complete",
+  "updated_at": "2026-06-14T00:00:00.000Z",
+  "completed_tasks": [
+    "task-1",
+    "task-2"
+  ],
+  "current_task": null,
+  "notes": [
+    "Public scan is intentionally directional and does not emit ready candidates by itself.",
+    "Paid exports can still be layered in later through research:ingest."
+  ]
+}

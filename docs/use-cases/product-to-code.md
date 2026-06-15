@@ -17,6 +17,9 @@ idea or product slice
   -> product-to-spec
   -> bootstrap
   -> spec-to-code
+  -> app foundation
+  -> core feature build
+  -> polish-ready pass
   -> experience-hardening when user-facing
   -> remediation-routing when validation or review fails
   -> reviewed code
@@ -82,7 +85,9 @@ Must not write:
 - specs are approved or complete enough for implementation
 - bootstrap establishes the runnable target root
 - tasks are generated
-- implementation loop completes
+- implementation loop completes foundation, core, and polish-ready phases for user-facing apps
+- `tasks.json` phase gates pass `npm run validate:task-phases` when the run uses phase-aware task planning
+- `surface-map.json` exists when a user-facing generated app needs experience review
 - runtime validation passes
 - experience gate passes or is skipped as not applicable
 - final review approves

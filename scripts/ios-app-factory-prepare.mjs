@@ -357,6 +357,10 @@ function buildFactoryContext(selection, args) {
 
   const patternRepo = args["pattern-repo"] || process.env.IOS_FACTORY_PATTERN_REPO || "ViberBoyz/ios-factory-patterns";
   const patternRef = args["pattern-ref"] || process.env.IOS_FACTORY_PATTERN_REF || "main";
+  const localPatternCatalog =
+    args["local-pattern-catalog"] ||
+    process.env.IOS_FACTORY_LOCAL_PATTERN_CATALOG ||
+    "packs/vibermode/patterns/ios-factory/catalog.json";
 
   return {
     type: "ios_app_factory",
@@ -365,6 +369,11 @@ function buildFactoryContext(selection, args) {
       full_name: patternRepo,
       ref: patternRef,
       catalog_path: "catalog.json",
+    },
+    pattern_catalog: {
+      local_path: localPatternCatalog,
+      default_onboarding_pattern: "onboarding.focused-promise-steps",
+      default_paywall_pattern: "paywall.benefit-stack-packages",
     },
     required_flows: [
       "onboarding",
@@ -414,26 +423,50 @@ function buildFactoryContext(selection, args) {
     },
     pattern_sources: [
       {
+        kind: "local_catalog",
+        id: "ios-factory-local-pattern-catalog",
+        path: localPatternCatalog,
+        required: true,
+      },
+      {
+        kind: "local_pattern",
+        id: "onboarding.focused-promise-steps",
+        path: "packs/vibermode/patterns/ios-factory/onboarding/focused-promise-steps.md",
+        type: "onboarding",
+      },
+      {
+        kind: "local_pattern",
+        id: "paywall.benefit-stack-packages",
+        path: "packs/vibermode/patterns/ios-factory/paywall/benefit-stack-packages.md",
+        type: "paywall",
+      },
+      {
+        kind: "private_repo_pattern",
         id: "swiftui-value-carousel-onboarding",
         repo: patternRepo,
         ref: patternRef,
         path: "patterns/onboarding/swiftui-value-carousel",
+        required: false,
       },
       {
+        kind: "private_repo_pattern",
         id: "onboarding-core-paywall-state-machine",
         repo: patternRepo,
         ref: patternRef,
         path: "patterns/app-routing/onboarding-core-paywall-state-machine",
+        required: false,
       },
       {
+        kind: "private_repo_pattern",
         id: "swiftui-upgrade-paywall-shell",
         repo: patternRepo,
         ref: patternRef,
         path: "patterns/paywall/swiftui-upgrade-shell",
+        required: false,
       },
     ],
     implementation_notes: [
-      "Use the pattern repo as copy-and-adapt source material, not as a runtime dependency.",
+      "Use local and private pattern sources as copy-and-adapt source material, not as runtime dependencies.",
       "Keep generated app code self-contained after copying the relevant pattern files.",
       "Do not block TestFlight evaluation on real IAP. Keep paywall purchase actions honest when purchase infrastructure is not wired.",
       "After runtime validation, run the experience-hardening gate before final review.",
@@ -521,6 +554,7 @@ async function main() {
           workspace_path: factoryWorkspace.ios_workspace_path,
           repo_url: previewRepoUrl,
           product_idea: selection.product_idea,
+          launch_appeal: selection.launch_appeal || null,
           repo_mode: "greenfield",
           platform: selection.platform,
           stack: selection.stack,
@@ -607,6 +641,7 @@ async function main() {
       platform: selection.platform,
       stack: selection.stack,
       product_idea: selection.product_idea,
+      launch_appeal: selection.launch_appeal || null,
     },
     repository: repoResult,
     workspace: workspaceResult,
@@ -621,6 +656,7 @@ async function main() {
       workspace_path: workspaceResult.workspace_path,
       repo_url: repoResult.clone_url,
       product_idea: selection.product_idea,
+      launch_appeal: selection.launch_appeal || null,
       repo_mode: "greenfield",
       platform: selection.platform,
       stack: selection.stack,

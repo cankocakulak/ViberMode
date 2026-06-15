@@ -36,6 +36,8 @@ Do not use when:
 
 Read any provided artifact or file path before making recommendations.
 
+For iOS factory onboarding or paywall surfaces, also check the selected pattern reference under `packs/vibermode/patterns/ios-factory/` when the task, UX spec, or surface map names a pattern ID. Preserve the pattern's structural intent while improving motion, states, touch feel, layout fit, and accessibility.
+
 ## Output Contract
 
 ### Analysis

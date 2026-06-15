@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "project": "launch-appeal-gate",
+  "status": "complete",
+  "updated_at": "2026-06-14T00:00:00.000Z",
+  "completed_tasks": [
+    "task-1",
+    "task-2",
+    "task-3"
+  ],
+  "current_task": null
+}

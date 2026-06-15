@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "project": "public-app-scan",
+  "updated_at": "2026-06-14T00:00:00.000Z",
+  "phasePlan": {
+    "order": ["core"]
+  },
+  "tasks": [
+    {
+      "id": "task-1",
+      "phase": "core",
+      "title": "Add public-only app research runner",
+      "status": "complete",
+      "files": [
+        "scripts/research-public-app-scan.mjs",
+        "package.json"
+      ],
+      "validation": [
+        "node --check scripts/research-public-app-scan.mjs",
+        "npm run research:public-scan -- --output-dir $VIBERMODE_WORKSPACE_ROOT/app-factory-state/research-runs/2026-06-14/education-us-public-scan --theme education --market US --limit 10 --review-apps 5 --review-limit 20 --include-top-chart --chart-limit 25"
+      ]
+    },
+    {
+      "id": "task-2",
+      "phase": "core",
+      "title": "Wire public scan into the research workflow",
+      "status": "complete",
+      "files": [
+        "packs/vibermode/roles/product/app-researcher.md",
+        "packs/vibermode/workflows/app-opportunity-research.md",
+        "packs/vibermode/workflows/idea-research-backlog.md",
+        "docs/operations/app-factory-state.md",
+        "docs/operations/app-factory-automation-overview.md",
+        "docs/use-cases/app-opportunity-research.md",
+        "docs/research-source-contract.md"
+      ],
+      "validation": [
+        "node scripts/research-app-store-gap.mjs --research-dir $VIBERMODE_WORKSPACE_ROOT/app-factory-state/research-runs/2026-06-14/education-us-public-scan --cluster \"Language learning / vocabulary\" --market US --queries \"ielts speaking,pronunciation coach,vocabulary builder,english speaking\" --limit 10 --review-apps 5 --review-limit 20",
+        "npm run validate",
+        "node scripts/idea-backlog.mjs validate --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "platform": "ios",
+  "purpose": "Reusable copy-and-adapt surface patterns for generated iOS app foundation work.",
+  "usageRule": "Treat these as implementation references, not finished product screens. Every generated app must adapt copy, animation subject, benefits, CTA labels, package names, and routing to its PRD and UX.",
+  "patterns": [
+    {
+      "id": "onboarding.focused-promise-steps",
+      "type": "onboarding",
+      "platform": "ios",
+      "templateFile": "packs/vibermode/patterns/ios-factory/onboarding/focused-promise-steps.md",
+      "purpose": "Three-step onboarding that explains the promise, shows the product mechanic, and routes directly into first value.",
+      "useWhen": [
+        "The app needs a premium but lightweight first-launch flow.",
+        "The first-value moment can be reached within one clear action after onboarding.",
+        "The product differentiator is explainable through a short visual sequence."
+      ],
+      "requiredAdaptation": [
+        "Replace all copy with domain-specific promise, mechanic, and CTA text.",
+        "Replace the animation subject with an app-specific Lottie, SF Symbol animation, or native microinteraction.",
+        "Map the final CTA to the first-value entry point named in UX.",
+        "Use app-specific accessibility labels and stable UI test identifiers."
+      ],
+      "foundationSurfaces": [
+        "onboarding",
+        "first_value_entry",
+        "navigation_shell"
+      ],
+      "implementationNotes": [
+        "Keep onboarding to 2-3 cards unless the PRD explicitly requires setup.",
+        "Do not ask for accounts, notifications, or purchase decisions before first value unless required by the approved topology.",
+        "Persist completion locally and keep a reset route available for QA."
+      ]
+    },
+    {
+      "id": "paywall.benefit-stack-packages",
+      "type": "paywall",
+      "platform": "ios",
+      "templateFile": "packs/vibermode/patterns/ios-factory/paywall/benefit-stack-packages.md",
+      "purpose": "Upgrade shell with a focused headline, app-specific benefit stack, package selector, CTA, restore, and legal routes.",
+      "useWhen": [
+        "The first release needs an honest monetization shell before purchase integration is complete.",
+        "The app has a clear premium promise but RevenueCat or StoreKit wiring may be deferred.",
+        "The app needs screenshot-ready upgrade framing for experience review."
+      ],
+      "requiredAdaptation": [
+        "Name the premium outcome in the headline; do not use generic 'Go Pro' copy.",
+        "Use benefits that match implemented or explicitly deferred premium capabilities.",
+        "Mark packages as mock, disabled, or wired according to runtime topology.",
+        "Wire restore, terms, privacy, and close routes even when purchase is deferred."
+      ],
+      "foundationSurfaces": [
+        "upgrade_or_paywall_shell",
+        "navigation_shell"
+      ],
+      "implementationNotes": [
+        "The shell can be non-purchasing in foundation, but it must not look broken or dishonest.",
+        "If purchases are deferred, CTA copy must say what happens now, such as joining a waitlist or previewing premium.",
+        "Move real product identifiers and RevenueCat work into core or ops tasks only when approved by stories."
+      ]
+    }
+  ]
+}

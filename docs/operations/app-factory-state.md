@@ -55,10 +55,16 @@ sources/
 
 research-runs/
 └── 2026-05-27/
-    └── education-us/
-        ├── source-inventory.json
-        ├── normalized-apps.jsonl
-        ├── clusters.json
+        └── education-us/
+            ├── source-inventory.json
+            ├── normalized-apps.jsonl
+            ├── market-signals.jsonl
+            ├── market-source-summary-apptweak-keyword-ranking.json
+            ├── market-source-summary-apptweak-keyword-ranking.md
+            ├── public-scan-clusters.json
+            ├── public-scan-summary.json
+            ├── public-scan-summary.md
+            ├── clusters.json
         ├── opportunities.json
         ├── gap-research-plant-nature-id.json
         ├── gap-research-plant-nature-id.md
@@ -66,6 +72,32 @@ research-runs/
         ├── decision.md
         └── backlog-candidates.json
 ```
+
+Run a public-only scan when no paid source export is available:
+
+```bash
+npm run research:public-scan -- \
+  --output-dir $VIBERMODE_WORKSPACE_ROOT/app-factory-state/research-runs/2026-05-27/education-us \
+  --theme education \
+  --market US \
+  --include-top-chart
+```
+
+This uses public Apple Search, review RSS, and optional public chart RSS. It is a discovery pass and should be followed by gap research before any candidate is promoted.
+
+Ingest an AppTweak, Sensor Tower, data.ai, App Store chart, keyword ranking, or manual market note export:
+
+```bash
+npm run research:ingest -- \
+  --input "/path/to/source-export.csv" \
+  --output-dir $VIBERMODE_WORKSPACE_ROOT/app-factory-state/research-runs/2026-05-27/education-us \
+  --provider apptweak \
+  --report-type keyword-ranking \
+  --category Education \
+  --market US
+```
+
+This updates `source-inventory.json`, writes `market-signals.jsonl`, and creates a readable `market-source-summary-[source-id].md`. Imported signals are directional evidence and should be paired with competitor/review gap research before backlog promotion.
 
 Analyze a static App Store metric CSV:
 

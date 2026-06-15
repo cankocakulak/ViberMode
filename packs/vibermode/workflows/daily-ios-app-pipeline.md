@@ -36,10 +36,11 @@ Secrets stay in the automation runtime, not in ViberMode or generated repos.
 Reusable iOS implementation patterns:
 
 ```text
+ViberMode/packs/vibermode/patterns/ios-factory/catalog.json
 ViberBoyz/ios-factory-patterns
 ```
 
-This private repo stores copy-and-adapt SwiftUI patterns for onboarding, app routing, and paywall shells. It is referenced from the factory preparation run manifest and consumed during product-to-code.
+The local catalog is the default public baseline for onboarding and paywall shells. The private repo may extend it with richer SwiftUI examples, screenshots, or app-specific winners. Both are copy-and-adapt sources referenced from the factory preparation run manifest and consumed during product-to-code.
 
 ## Entry Contract
 
@@ -79,6 +80,7 @@ Output:
 - `app_name`
 - `bundle_id`
 - `product_idea`
+- optional `launch_appeal` with hook, first-value moment, signature interaction, visual direction, storefront angle, TestFlight demo path, and anti-generic rule
 
 Success Criteria:
 
@@ -153,6 +155,15 @@ Required input from run manifest:
   "workspace_path": "$VIBERMODE_WORKSPACE_ROOT/generated-products/ios-example-2026-05-27/ios-app",
   "repo_url": "https://github.com/ViberBoyz/ios-example-2026-05-27.git",
   "product_idea": "...",
+  "launch_appeal": {
+    "hook": "What a tester understands and wants within 10 seconds",
+    "first_value_moment": "The first useful or delightful action in the first session",
+    "signature_interaction": "The product-specific gesture, card, timer, canvas, drill, or loop",
+    "visual_direction": "The concrete UI feel to avoid generic template output",
+    "storefront_angle": "The screenshot and store pitch angle",
+    "testflight_demo_path": "The route a tester should follow during TestFlight review",
+    "anti_generic_rule": "What the implementation must not become"
+  },
   "repo_mode": "greenfield",
   "platform": "ios",
   "stack": "SwiftUI",
@@ -176,6 +187,19 @@ Required input from run manifest:
       "ref": "main",
       "catalog_path": "catalog.json"
     },
+    "pattern_sources": [
+      {
+        "kind": "local_catalog",
+        "path": "packs/vibermode/patterns/ios-factory/catalog.json"
+      },
+      {
+        "kind": "private_repo",
+        "full_name": "ViberBoyz/ios-factory-patterns",
+        "ref": "main",
+        "catalog_path": "catalog.json",
+        "required": false
+      }
+    ],
     "required_flows": [
       "onboarding",
       "first_value_moment",
@@ -215,14 +239,15 @@ For iOS factory runs, Stage 3 must treat `factory_context` as part of the produc
 
 - app-specific first-launch onboarding
 - a first-value/core loop the tester can reach without payment
+- the selected idea's launch appeal, especially hook, first-value moment, signature interaction, visual direction, and TestFlight demo path when present
 - an upgrade/paywall shell with honest mock or placeholder purchase handling when real IAP is not wired
-- reusable code copied and adapted from `ViberBoyz/ios-factory-patterns` when useful
+- reusable code copied and adapted from the local pattern catalog or `ViberBoyz/ios-factory-patterns` when useful
 - optional sibling repos under the same bundle root only when the spec requires them, for example `backend/` or a symlinked `ai-services/`
 
-Stage 3 uses `product-to-code`, whose implementation stage includes a subloop:
+Stage 3 uses `product-to-code`, whose implementation stage includes phase gates before review:
 
 ```text
-functional build -> runtime validation -> experience review -> polish remediation -> revalidation -> repeated experience review -> final review
+app foundation -> core feature build -> polish-ready pass -> runtime validation -> experience review -> polish remediation -> revalidation -> repeated experience review -> final review
 ```
 
 The experience review is still part of product-to-code. It is not the App Store/TestFlight stage.
@@ -241,8 +266,11 @@ Success Criteria:
 - run manifest is updated with validation and commit details
 - run manifest records structured experience evidence under `product_to_code_result.experience_review`
 - onboarding, first-value, and paywall shell coverage is visible in PRD, UX, stories, and tasks for iOS factory runs
+- `tasks.json` includes `phasePlan` and separates foundation, core, and polish work for iOS factory runs
+- `surface-map.json` or equivalent surface inventory exists before the experience review gate for user-facing generated apps
 - backend sibling repo is provisioned before bootstrap when approved runtime topology names a P0 backend trigger
 - onboarding, first-value/core loop, upgrade/paywall shell, keyboard behavior, and small-screen fit are checked before completion for iOS factory runs
+- if `launch_appeal` is present, PRD, UX, stories, implementation tasks, and experience review preserve it rather than replacing it with generic app-shell UI
 - actual screenshot or video files cover onboarding, first value, core loop, and upgrade/paywall shell; UI launch smoke alone is not enough
 - onboarding is at least three meaningful steps/screens and not a single plain `List` or form-style explanation
 

@@ -48,6 +48,15 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+function readJsonl(filePath) {
+  if (!fs.existsSync(filePath)) return [];
+  return fs.readFileSync(filePath, "utf8")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
@@ -156,6 +165,68 @@ function loadOpportunity(researchDir, clusterName) {
   }
 
   return opportunity;
+}
+
+function clusterTerms(clusterName) {
+  const normalized = String(clusterName || "").toLowerCase();
+  const terms = new Set(
+    normalized
+      .split(/[^a-z0-9]+/)
+      .map((term) => term.trim())
+      .filter((term) => term.length >= 4),
+  );
+
+  if (normalized.includes("language")) {
+    ["english", "speaking", "pronunciation", "vocabulary", "ielts", "language"].forEach((term) => terms.add(term));
+  }
+  if (normalized.includes("test prep") || normalized.includes("driving")) {
+    ["test", "prep", "exam", "practice", "dmv", "permit", "driving"].forEach((term) => terms.add(term));
+  }
+  if (normalized.includes("kids")) {
+    ["kids", "child", "reading", "school", "parent", "early"].forEach((term) => terms.add(term));
+  }
+  if (normalized.includes("music") || normalized.includes("creative")) {
+    ["music", "piano", "guitar", "drawing", "practice", "creative"].forEach((term) => terms.add(term));
+  }
+  if (normalized.includes("plant") || normalized.includes("nature")) {
+    ["plant", "care", "scanner", "identifier", "pet", "toxic"].forEach((term) => terms.add(term));
+  }
+
+  return [...terms];
+}
+
+function marketSignalMatchScore(signal, terms) {
+  const keywordText = `${signal.keyword || ""} ${signal.app_name || ""}`.toLowerCase();
+  const bodyText = `${signal.cluster || ""} ${signal.category || ""} ${signal.note || ""} ${signal.evidence || ""}`.toLowerCase();
+  let score = 0;
+  for (const term of terms) {
+    if (keywordText.includes(term)) score += 2;
+    if (bodyText.includes(term)) score += 1;
+  }
+  return score;
+}
+
+function loadMarketSignals(researchDir, clusterName) {
+  const signalPath = path.join(researchDir, "market-signals.jsonl");
+  const signals = readJsonl(signalPath);
+  if (signals.length === 0) return [];
+
+  const terms = clusterTerms(clusterName);
+  const scored = signals
+    .map((signal) => ({
+      ...signal,
+      match_score: marketSignalMatchScore(signal, terms),
+    }))
+    .filter((signal) => signal.match_score > 0);
+
+  const pool = scored.length > 0 ? scored : signals;
+  return pool
+    .sort((left, right) => {
+      const matchDiff = (right.match_score || 0) - (left.match_score || 0);
+      if (matchDiff !== 0) return matchDiff;
+      return (right.directional_score || 0) - (left.directional_score || 0);
+    })
+    .slice(0, 30);
 }
 
 function defaultQueriesForCluster(opportunity) {
@@ -282,11 +353,12 @@ function analyzeReviews(reviewSets) {
   };
 }
 
-function buildCandidates({ opportunity, apps, positioning, reviews, sources }) {
+function buildCandidates({ opportunity, apps, positioning, reviews, sources, marketSignals = [] }) {
   const cluster = opportunity.cluster;
   const metricSnapshot = opportunity.metric_snapshot;
   const competitors = apps.slice(0, 5).map((app) => app.app_name).filter(Boolean);
-  const evidenceSources = [...new Set([...(opportunity.evidence_sources || []), ...sources.map((source) => source.id)])];
+  const marketSignalSources = marketSignals.map((signal) => signal.source_id).filter(Boolean);
+  const evidenceSources = [...new Set([...(opportunity.evidence_sources || []), ...sources.map((source) => source.id), ...marketSignalSources])];
   const now = nowIso();
 
   if (cluster.toLowerCase().includes("plant")) {
@@ -515,11 +587,198 @@ function buildCandidates({ opportunity, apps, positioning, reviews, sources }) {
   ];
 }
 
+function isEducationCandidate(candidate) {
+  const text = `${candidate.category || ""} ${candidate.cluster || ""} ${candidate.title || ""}`.toLowerCase();
+  return [
+    "education",
+    "language",
+    "study",
+    "homework",
+    "test prep",
+    "ielts",
+    "pronunciation",
+    "vocabulary",
+    "kids learning",
+  ].some((term) => text.includes(term));
+}
+
+function explicitlyDefersAi(candidate) {
+  const text = `${candidate.product_idea || ""} ${candidate.mvp_wedge || ""}`.toLowerCase();
+  return [
+    "do not add ai",
+    "no ai",
+    "without ai",
+    "no backend ai",
+    "no ai dependency",
+  ].some((term) => text.includes(term));
+}
+
+function strategicAiBackendStrategy(candidate) {
+  const education = isEducationCandidate(candidate);
+  const defersAi = explicitlyDefersAi(candidate);
+
+  if (education && !defersAi) {
+    return {
+      mode: "ai-plus-backend",
+      recommended_for_mvp: true,
+      direct_app_allowed: false,
+      backend_shape: "thin-proxy",
+      reason: "B2C education products can be materially stronger when AI improves feedback, explanation, scenario generation, adaptive review, or assessment.",
+      backend_trigger: "Provider-hosted AI feedback or generation requires a server boundary for API key protection, abuse/rate limiting, and cost controls.",
+      ai_service_trigger: "Generate practice prompts, critique learner input, explain mistakes, and plan review sessions.",
+      fallback_without_ai: "Ship static prompt banks, self-check rubrics, local recording or notes, and deterministic review queues.",
+      cost_or_risk: "AI feedback quality, child/education safety posture, hallucinated instruction, latency, and per-user inference cost.",
+    };
+  }
+
+  return {
+    mode: defersAi ? "deferred" : "none",
+    recommended_for_mvp: false,
+    direct_app_allowed: true,
+    backend_shape: "none",
+    reason: defersAi
+      ? "The MVP deliberately avoids AI so it can validate the workflow before adding model cost or complexity."
+      : "The current wedge can be validated as a local B2C utility without AI or backend.",
+    backend_trigger: "none",
+    ai_service_trigger: "none",
+    fallback_without_ai: "The full MVP remains usable with local data, static content, deterministic calculations, reminders, or export.",
+    cost_or_risk: "Main risk is shallow differentiation if the local workflow does not create enough retention or willingness to pay.",
+  };
+}
+
+function buildMarketThesis(candidate) {
+  return {
+    user_pain_intensity: candidate.target_user
+      ? `${candidate.target_user} has a repeated, concrete job: ${candidate.mvp_wedge}`
+      : `The pain is grounded in this gap: ${candidate.specific_gap}`,
+    distribution_angle: `${candidate.cluster} App Store search, competitor review pain, and long-tail problem keywords should be validated before factory promotion.`,
+    willingness_to_pay: candidate.scores?.monetization
+      ? `Monetization confidence is ${candidate.scores.monetization}/10; verify against competitor IAP, subscription, or paid app posture.`
+      : "Willingness to pay needs validation through competitor pricing, keyword intent, and review urgency.",
+    incumbent_weakness: candidate.specific_gap,
+    why_now: candidate.why_now,
+  };
+}
+
+function buildDifferentiationThesis(candidate) {
+  const education = isEducationCandidate(candidate);
+  return {
+    why_not_generic: candidate.specific_gap,
+    ten_x_narrower_or_better: candidate.mvp_wedge,
+    hard_to_copy_detail: education
+      ? "A narrow learning loop with domain-specific prompts, feedback criteria, review cadence, and learner progress is harder to copy than a generic AI tutor shell."
+      : "A focused workflow, honest scope, and problem-specific capture/export loop should beat a broad CRUD clone.",
+  };
+}
+
+function buildLearningThesis(candidate) {
+  return {
+    learner_action: "The learner completes a narrow practice action such as answering, recording, sorting, recalling, or correcting within the app.",
+    feedback_loop: "Feedback should identify what was good, what was weak, and the next concrete improvement; AI may provide this when recommended.",
+    repetition_loop: "Weak prompts, missed items, or low-confidence attempts return through a review queue or sprint plan.",
+    progress_signal: "Progress should be visible through streaks, completed drills, confidence changes, weak-area reduction, or readiness milestones.",
+    content_strategy: "Use bundled high-quality seed content first, then AI-generated or AI-varied content only where it improves range and personalization.",
+    ai_role: candidate.ai_backend_strategy?.recommended_for_mvp
+      ? "AI should critique, personalize, generate variations, or explain mistakes; it should not be a vague chatbot."
+      : "AI is deferred; the MVP must still teach through static content, rubrics, and deterministic review.",
+  };
+}
+
+function buildLaunchAppeal(candidate) {
+  const education = isEducationCandidate(candidate);
+  if (education) {
+    return {
+      hook: `${candidate.app_name || candidate.title} should feel like a focused sprint, not a broad course catalog.`,
+      first_value_moment: "Within the first minute, the learner starts a real practice attempt, sees a prompt or drill, and gets a clear next action.",
+      signature_interaction: "A tactile practice card, timer, swipe/draw motion, or progress sprint interaction that is specific to the learning loop.",
+      visual_direction: "Confident, modern learning-tool UI with strong hierarchy, warm progress feedback, and no generic school-dashboard look.",
+      storefront_angle: "Show the narrow outcome in screenshots: timed practice, weak-area review, sprint progress, and visible improvement.",
+      testflight_demo_path: "Onboarding -> start sprint/practice -> complete one attempt -> see progress/weak area -> open upgrade shell.",
+      anti_generic_rule: "Do not ship a plain list of lessons, a generic chatbot, or a form-heavy tracker as the primary experience.",
+    };
+  }
+
+  return {
+    hook: `${candidate.app_name || candidate.title} should communicate its narrow job in the first screen without explanation text.`,
+    first_value_moment: "The user completes the core job once in the first session and sees saved progress or a useful result.",
+    signature_interaction: "Use one product-specific interaction rather than a generic CRUD list.",
+    visual_direction: "Quiet, polished, purpose-built UI with crisp states and restrained motion.",
+    storefront_angle: "Screenshots should show the exact problem, the core action, and the outcome.",
+    testflight_demo_path: "Onboarding -> first value -> core loop repeat -> saved state -> upgrade shell.",
+    anti_generic_rule: "Do not ship a plain settings/form/list wrapper as the main product.",
+  };
+}
+
+function applyStrategicResearchGate(candidate) {
+  candidate.market_thesis = candidate.market_thesis || buildMarketThesis(candidate);
+  candidate.ai_backend_strategy = candidate.ai_backend_strategy || strategicAiBackendStrategy(candidate);
+  candidate.differentiation_thesis = candidate.differentiation_thesis || buildDifferentiationThesis(candidate);
+  candidate.launch_appeal = candidate.launch_appeal || buildLaunchAppeal(candidate);
+
+  if (isEducationCandidate(candidate)) {
+    candidate.learning_thesis = candidate.learning_thesis || buildLearningThesis(candidate);
+  }
+
+  candidate.research = candidate.research || {};
+  candidate.research.quality_gate = "strategic-research-v3";
+  candidate.research.signals = Array.isArray(candidate.research.signals) ? candidate.research.signals : [];
+  if (!candidate.research.signals.some((signal) => signal.type === "strategic-thesis")) {
+    candidate.research.signals.push({
+      type: "strategic-thesis",
+      summary: `Market, AI/backend, and differentiation theses were generated for ${candidate.title}.`,
+      confidence: "medium",
+    });
+  }
+
+  return candidate;
+}
+
+function summarizeMarketSignals(marketSignals) {
+  const sourceIds = [...new Set(marketSignals.map((signal) => signal.source_id).filter(Boolean))];
+  const keywords = marketSignals
+    .filter((signal) => signal.keyword)
+    .slice()
+    .sort((left, right) => (right.directional_score || 0) - (left.directional_score || 0))
+    .slice(0, 5)
+    .map((signal) => signal.keyword);
+  const apps = marketSignals
+    .filter((signal) => signal.app_name)
+    .slice()
+    .sort((left, right) => (right.directional_score || 0) - (left.directional_score || 0))
+    .slice(0, 5)
+    .map((signal) => signal.app_name);
+
+  return {
+    sourceIds,
+    keywords: [...new Set(keywords)],
+    apps: [...new Set(apps)],
+  };
+}
+
+function attachMarketSignalResearch(candidate, marketSignals) {
+  if (marketSignals.length === 0) return candidate;
+
+  candidate.research = candidate.research || {};
+  candidate.research.signals = Array.isArray(candidate.research.signals) ? candidate.research.signals : [];
+  const summary = summarizeMarketSignals(marketSignals);
+  candidate.research.market_signal_sources = summary.sourceIds;
+
+  if (!candidate.research.signals.some((signal) => signal.type === "imported-market-source")) {
+    candidate.research.signals.push({
+      type: "imported-market-source",
+      summary: `${marketSignals.length} imported market signals were considered${summary.keywords.length ? `; top keywords include ${summary.keywords.slice(0, 3).join(", ")}` : ""}.`,
+      confidence: "medium",
+    });
+  }
+
+  return candidate;
+}
+
 function money(value) {
   return `$${Math.round(value || 0).toLocaleString("en-US")}`;
 }
 
-function renderMarkdown({ opportunity, apps, positioning, reviewAnalysis, candidates, sources, outputDir }) {
+function renderMarkdown({ opportunity, apps, positioning, reviewAnalysis, marketSignals, candidates, sources, outputDir }) {
   const lines = [
     `# Gap Research: ${opportunity.cluster}`,
     "",
@@ -549,6 +808,23 @@ function renderMarkdown({ opportunity, apps, positioning, reviewAnalysis, candid
     "",
     ...reviewAnalysis.themes.slice(0, 5).map((theme) => `- ${theme.theme}: ${theme.count} low-rating mentions`),
     "",
+    "## Imported Market Signals",
+    "",
+    marketSignals.length > 0
+      ? `Loaded ${marketSignals.length} relevant rows from market-signals.jsonl for this cluster.`
+      : "No imported market signals were found for this cluster.",
+    "",
+    ...(marketSignals.length > 0
+      ? [
+        "| Type | Source | Keyword/App | Rank | Volume | Score |",
+        "|---|---|---|---:|---:|---:|",
+        ...marketSignals.slice(0, 12).map((signal) => {
+          const label = signal.keyword || signal.app_name || signal.note || signal.evidence || "signal";
+          return `| ${escapePipe(signal.signal_type)} | ${escapePipe(signal.source_id)} | ${escapePipe(label)} | ${signal.rank ?? ""} | ${signal.search_volume ?? ""} | ${signal.directional_score ?? ""} |`;
+        }),
+        "",
+      ]
+      : []),
     "## Backlog Candidates",
     "",
     ...candidates.map((candidate) => [
@@ -661,6 +937,7 @@ async function main() {
   }
 
   const apps = dedupeApps(searchSets).slice(0, Number(args["max-apps"] || 30));
+  const marketSignals = loadMarketSignals(researchDir, opportunity.cluster);
   const reviewSets = [];
   for (const app of apps.slice(0, Number(args["review-apps"] || 5))) {
     const reviewResult = await fetchReviews(app.app_id, country, reviewLimit);
@@ -677,8 +954,10 @@ async function main() {
     ...searchSets.map((set) => set.source),
     ...reviewSets.map((set) => set.source),
   ];
-  const candidates = buildCandidates({ opportunity, apps, positioning, reviews: reviewAnalysis, sources });
+  const candidates = buildCandidates({ opportunity, apps, positioning, reviews: reviewAnalysis, sources, marketSignals });
   for (const candidate of candidates) {
+    applyStrategicResearchGate(candidate);
+    attachMarketSignalResearch(candidate, marketSignals);
     candidate.research.research_run = researchRunRef(researchDir);
   }
 
@@ -692,6 +971,7 @@ async function main() {
     opportunity,
     queries,
     sources,
+    market_signals: marketSignals,
     apps,
     positioning,
     review_analysis: reviewAnalysis,
@@ -701,7 +981,7 @@ async function main() {
   writeJson(path.join(researchDir, `${outputBase}.json`), gapResearch);
   fs.writeFileSync(
     path.join(researchDir, `${outputBase}.md`),
-    renderMarkdown({ opportunity, apps, positioning, reviewAnalysis, candidates, sources, outputDir: researchDir }),
+    renderMarkdown({ opportunity, apps, positioning, reviewAnalysis, marketSignals, candidates, sources, outputDir: researchDir }),
   );
   mergeBacklogCandidates(researchDir, candidates);
   updateSourceInventory(researchDir, sources);
@@ -714,6 +994,7 @@ async function main() {
         cluster: opportunity.cluster,
         query_count: queries.length,
         app_count: apps.length,
+        market_signal_count: marketSignals.length,
         review_count: reviewAnalysis.review_count,
         candidate_count: candidates.length,
         candidates: candidates.map((candidate) => ({

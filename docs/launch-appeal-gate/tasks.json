@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "project": "launch-appeal-gate",
+  "updated_at": "2026-06-14T00:00:00.000Z",
+  "phasePlan": {
+    "order": ["core", "ops"]
+  },
+  "tasks": [
+    {
+      "id": "task-1",
+      "phase": "core",
+      "title": "Add strategic-research-v3 launch appeal validation",
+      "status": "complete",
+      "files": [
+        "scripts/idea-backlog.mjs",
+        "scripts/research-app-store-gap.mjs"
+      ],
+      "validation": [
+        "node --check scripts/idea-backlog.mjs",
+        "node --check scripts/research-app-store-gap.mjs"
+      ]
+    },
+    {
+      "id": "task-2",
+      "phase": "core",
+      "title": "Carry launch appeal through research and factory docs",
+      "status": "complete",
+      "files": [
+        "packs/vibermode/roles/product/app-researcher.md",
+        "packs/vibermode/workflows/app-opportunity-research.md",
+        "packs/vibermode/workflows/idea-research-backlog.md",
+        "packs/vibermode/workflows/daily-ios-app-pipeline.md",
+        "packs/vibermode/workflows/product-to-code.md",
+        "docs/use-cases/ios-app-factory.md"
+      ],
+      "validation": [
+        "npm run validate"
+      ]
+    },
+    {
+      "id": "task-3",
+      "phase": "ops",
+      "title": "Upgrade Cue Card Sprint backlog idea",
+      "status": "complete",
+      "files": [
+        "$VIBERMODE_WORKSPACE_ROOT/app-factory-state/ideas/backlog.json"
+      ],
+      "validation": [
+        "node scripts/idea-backlog.mjs validate --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state",
+        "node scripts/idea-backlog.mjs select --state-root $VIBERMODE_WORKSPACE_ROOT/app-factory-state"
+      ]
+    }
+  ]
+}

@@ -69,6 +69,9 @@ idea or product slice
   -> product-to-spec
   -> bootstrap
   -> spec-to-code
+  -> app foundation when user-facing
+  -> core feature build
+  -> polish-ready pass
   -> experience-hardening when user-facing
   -> remediation-routing when validation or review fails
   -> reviewed code
@@ -86,6 +89,7 @@ docs/[project-name]/
 ├── bootstrap.md
 ├── tasks.json
 ├── run-state.json
+├── surface-map.json
 ├── validation-report.md
 ├── experience-review.md
 └── review.md

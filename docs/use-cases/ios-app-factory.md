@@ -17,6 +17,7 @@ ready private backlog idea
   -> daily-ios-app-pipeline
   -> ios-app-factory-prepare
   -> product-to-code in generated repo
+  -> app foundation + core build + polish-ready pass
   -> experience-hardening
   -> ios-submit-testflight
   -> private state + generated repo commit/push
@@ -78,6 +79,14 @@ Docs:
 - `docs/operations/ios-repo-factory-token.md`
 - `docs/operations/ios-testflight-submission-guidance.md`
 
+Pattern catalog:
+
+- `packs/vibermode/patterns/ios-factory/catalog.json`
+- `packs/vibermode/patterns/ios-factory/onboarding/focused-promise-steps.md`
+- `packs/vibermode/patterns/ios-factory/paywall/benefit-stack-packages.md`
+
+These are copy-and-adapt references for foundation tasks. UX selects pattern IDs, task planning carries them into onboarding/paywall tasks, and implementation must replace sample copy, animation subject, benefits, CTA routing, package state, and accessibility identifiers with app-specific details.
+
 ## Automation
 
 Codex automation:
@@ -119,7 +128,11 @@ Must not write:
 - one idea is selected and reserved
 - generated repo is created and cloned
 - product-to-code reaches complete
+- product-to-code separates app foundation, core feature build, and polish-ready work instead of relying on one late UX guardrail
+- selected onboarding/paywall pattern IDs are adapted into foundation tasks when factory patterns are used
+- `surface-map.json` or equivalent surface inventory exists before experience review
 - runtime validation, experience review, and final review pass
+- launch appeal from the selected idea is visible in PRD, UX, stories, implementation, and screenshots when present
 - generated repo commit is pushed
 - TestFlight preflight passes
 - internal TestFlight upload succeeds or is recorded as processing
@@ -133,6 +146,7 @@ Stop before the next mutation boundary when:
 - GitHub token cannot create or clone repos
 - product-to-code validation fails
 - experience review rejects the app after routed remediation
+- selected idea's launch appeal is not implemented or is replaced by generic template UI
 - TestFlight preflight reports missing Stage 3 evidence
 - Apple credentials, signing, App Store Connect, or build upload fail
 

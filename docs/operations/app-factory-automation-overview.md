@@ -23,10 +23,16 @@ ViberBoyz/ios-*
 Generated private iOS app repositories created from the template.
 
 ```text
+ViberMode/packs/vibermode/patterns/ios-factory/catalog.json
+```
+
+Public baseline copy-and-adapt pattern catalog for generated SwiftUI onboarding and paywall shells. Product-to-code can use this without private repo access.
+
+```text
 ViberBoyz/ios-factory-patterns
 ```
 
-Private copy-and-adapt pattern catalog for generated SwiftUI apps. It currently contains onboarding, paywall shell, and app-routing patterns distilled from existing apps.
+Private extension catalog for generated SwiftUI apps. It may contain richer onboarding, paywall shell, and app-routing patterns distilled from existing apps.
 
 ```text
 KantAkademi2/ios-boilerplate
@@ -68,6 +74,8 @@ Public ViberMode surfaces:
 - `packs/vibermode/roles/product/app-researcher.md`
 - `packs/vibermode/workflows/app-opportunity-research.md`
 - `packs/vibermode/workflows/idea-research-backlog.md`
+- `scripts/research-public-app-scan.mjs`
+- `scripts/ingest-market-source.mjs`
 - `scripts/analyze-app-store-csv.mjs`
 - `scripts/research-app-store-gap.mjs`
 - `scripts/idea-backlog.mjs`
@@ -78,6 +86,12 @@ Private state outputs:
 research-runs/YYYY-MM-DD/[category-or-theme]/
 ├── source-inventory.json
 ├── normalized-apps.jsonl
+├── market-signals.jsonl
+├── market-source-summary-[source-id].json
+├── market-source-summary-[source-id].md
+├── public-scan-clusters.json
+├── public-scan-summary.json
+├── public-scan-summary.md
 ├── clusters.json
 ├── opportunities.json
 ├── gap-research-[cluster].json
@@ -91,9 +105,11 @@ ideas/backlog.json
 
 Current behavior:
 
+- Public Apple search, review, and chart endpoints can seed a research pack when no paid export exists.
+- AppTweak, Sensor Tower, data.ai, App Store chart, keyword ranking, and manual source exports can be normalized into `market-signals.jsonl`.
 - Static App Store CSV exports are ingested as directional metric evidence.
 - Top clusters are scored by demand, revenue, growth, engagement, competition gap, buildability, novelty, and risk.
-- Live App Store/iTunes search and public review RSS are used as a first-pass gap probe.
+- Live App Store/iTunes search, public review RSS, and imported market signals are used as a first-pass gap probe.
 - `ready` candidates require category, cluster, sources, competitors, metric snapshot, specific gap, MVP wedge, why-now, and a product-to-code-ready prompt.
 - Research output can be committed without changing `ideas/backlog.json`; backlog upsert is a separate reviewed step.
 
@@ -163,6 +179,19 @@ For iOS ideas, `product_to_code_input` also includes `factory_context`:
     "ref": "main",
     "catalog_path": "catalog.json"
   },
+  "pattern_sources": [
+    {
+      "kind": "local_catalog",
+      "path": "packs/vibermode/patterns/ios-factory/catalog.json"
+    },
+    {
+      "kind": "private_repo",
+      "full_name": "ViberBoyz/ios-factory-patterns",
+      "ref": "main",
+      "catalog_path": "catalog.json",
+      "required": false
+    }
+  ],
   "required_flows": [
     "onboarding",
     "first_value_moment",
@@ -218,7 +247,7 @@ Expected outputs:
 - `factory/runs/[run-id].json` updated with build, validation, and commit details
 - `ideas/backlog.json` updated to reflect progress
 - runtime topology applied before bootstrap with `npm run workspace:topology`; this records a no-op checkpoint for app-only runs, verifies or attaches `ai-services`, and provisions `[workspace_bundle.root]/backend` only when approved runtime topology names a P0 backend trigger
-- iOS factory apps include onboarding, a testable first-value/core loop, and a paywall shell using `ViberBoyz/ios-factory-patterns` when useful
+- iOS factory apps include onboarding, a testable first-value/core loop, and a paywall shell using the local pattern catalog or `ViberBoyz/ios-factory-patterns` when useful
 - new factory runs should use bundle layout under `$VIBERMODE_WORKSPACE_ROOT/generated-products/[repo-name]/`, with the generated iOS repo at `ios-app/`
 - shared `ai-services` can be attached as a symlink at the bundle root when `VIBERMODE_AI_SERVICES_PATH` or `--ai-services-path` is provided
 
@@ -238,10 +267,10 @@ This step is still run when the approved Runtime Topology is app-only, local-onl
 Internal Stage 3 shape:
 
 ```text
-3A functional build -> 3B runtime validation -> 3C experience review -> 3D polish remediation loop -> 3E final review
+3A app foundation -> 3B core feature build -> 3C polish-ready pass -> 3D runtime validation -> 3E experience review -> 3F remediation loop -> 3G final review
 ```
 
-The experience review is a Stage 3 quality gate. It should catch default-looking onboarding, shallow paywall shells, missing keyboard dismissal, weak first-value flow, small-screen layout problems, and missing screenshot/video evidence before the generated repo is considered complete. UI launch smoke is not enough visual evidence for iOS factory completion.
+The foundation and polish-ready phases are Stage 3 quality gates before review. They should prevent generated apps from spending most of implementation as generic template shells, and they should produce surface inventory before experience review. The experience review still catches default-looking onboarding, shallow paywall shells, missing keyboard dismissal, weak first-value flow, small-screen layout problems, and missing screenshot/video evidence before the generated repo is considered complete. UI launch smoke is not enough visual evidence for iOS factory completion.
 
 Current status:
 This stage has been tested manually through generated repos. The manual factory automation is configured to continue to Stage 4 only after Stage 3 runtime validation, experience review, and final review gates pass.

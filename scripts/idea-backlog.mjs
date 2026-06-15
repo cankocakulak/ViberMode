@@ -210,12 +210,101 @@ function validateIdea(idea, index) {
     if (!idea.metric_snapshot || typeof idea.metric_snapshot !== "object") {
       throw new Error(`${prefix}.metric_snapshot is required before status can be ready`);
     }
+
+    if (requiresStrategicResearchGate(idea)) {
+      validateStrategicResearchGate(idea, prefix);
+    }
+
+    if (requiresLaunchAppealGate(idea)) {
+      validateLaunchAppealGate(idea, prefix);
+    }
   }
 
   idea.factory = idea.factory || {};
   idea.factory.status = idea.factory.status || "queued";
   if (!ALLOWED_FACTORY_STATUSES.has(idea.factory.status)) {
     throw new Error(`${prefix}.factory.status is invalid: ${idea.factory.status}`);
+  }
+}
+
+function requiresStrategicResearchGate(idea) {
+  if (boolValue(process.env.IDEA_BACKLOG_REQUIRE_STRATEGIC_RESEARCH, false)) return true;
+  const gate = idea.research?.quality_gate || idea.research?.gate_version || idea.quality_gate;
+  return gate === "strategic-research-v2" || gate === "strategic-research-v3";
+}
+
+function requiresLaunchAppealGate(idea) {
+  if (boolValue(process.env.IDEA_BACKLOG_REQUIRE_LAUNCH_APPEAL, false)) return true;
+  const gate = idea.research?.quality_gate || idea.research?.gate_version || idea.quality_gate;
+  return gate === "strategic-research-v3";
+}
+
+function requireObject(value, name) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${name} must be an object`);
+  }
+}
+
+function validateStrategicResearchGate(idea, prefix) {
+  requireObject(idea.market_thesis, `${prefix}.market_thesis`);
+  for (const field of [
+    "user_pain_intensity",
+    "distribution_angle",
+    "willingness_to_pay",
+    "incumbent_weakness",
+    "why_now",
+  ]) {
+    requireValue(`${prefix}.market_thesis.${field}`, idea.market_thesis[field]);
+  }
+
+  requireObject(idea.ai_backend_strategy, `${prefix}.ai_backend_strategy`);
+  for (const field of [
+    "mode",
+    "reason",
+    "backend_trigger",
+    "ai_service_trigger",
+    "fallback_without_ai",
+    "cost_or_risk",
+  ]) {
+    requireValue(`${prefix}.ai_backend_strategy.${field}`, idea.ai_backend_strategy[field]);
+  }
+
+  requireObject(idea.differentiation_thesis, `${prefix}.differentiation_thesis`);
+  for (const field of [
+    "why_not_generic",
+    "ten_x_narrower_or_better",
+    "hard_to_copy_detail",
+  ]) {
+    requireValue(`${prefix}.differentiation_thesis.${field}`, idea.differentiation_thesis[field]);
+  }
+
+  if (String(idea.category || "").toLowerCase().includes("education")) {
+    requireObject(idea.learning_thesis, `${prefix}.learning_thesis`);
+    for (const field of [
+      "learner_action",
+      "feedback_loop",
+      "repetition_loop",
+      "progress_signal",
+      "content_strategy",
+      "ai_role",
+    ]) {
+      requireValue(`${prefix}.learning_thesis.${field}`, idea.learning_thesis[field]);
+    }
+  }
+}
+
+function validateLaunchAppealGate(idea, prefix) {
+  requireObject(idea.launch_appeal, `${prefix}.launch_appeal`);
+  for (const field of [
+    "hook",
+    "first_value_moment",
+    "signature_interaction",
+    "visual_direction",
+    "storefront_angle",
+    "testflight_demo_path",
+    "anti_generic_rule",
+  ]) {
+    requireValue(`${prefix}.launch_appeal.${field}`, idea.launch_appeal[field]);
   }
 }
 
@@ -253,6 +342,7 @@ export function buildSelection(idea, options = {}) {
     platform: idea.platform || "ios",
     stack: idea.stack || "SwiftUI",
     product_idea: idea.product_idea,
+    launch_appeal: idea.launch_appeal || null,
     idea,
   };
 }

@@ -12,6 +12,18 @@
 - Do not mark an idea `ready` unless it has evidence, competitors, a specific gap, and a concrete MVP wedge.
 - Do not create repositories or write product-to-code specs.
 
+## Operator Strategy Defaults
+
+Unless the user overrides them, assume the operator is primarily looking for:
+
+- B2C iOS apps, especially Education and learning products
+- AI-assisted product advantages when they materially improve feedback, personalization, content generation, or assessment
+- Backend usage when it protects secrets, controls AI cost/abuse, supports cross-device or account state, or unlocks a materially better product
+- Thin backend/proxy patterns are acceptable even when no database is needed
+- Direct-from-app AI is acceptable only for on-device/platform-owned capabilities or flows that do not expose provider secrets, paid API keys, or abuse-prone endpoints
+
+For provider-hosted AI APIs, do not recommend shipping API keys in the mobile client. Treat backend or `ai-services` mediation as the default production posture, with local/demo mocks allowed only as an explicit prototype posture.
+
 ## Role
 
 You are a mobile app opportunity researcher. Your job is to identify high-signal app opportunities that are specific enough to build and differentiated enough to avoid generic clones.
@@ -44,6 +56,9 @@ Write a research pack under the private state repo:
 research-runs/YYYY-MM-DD/[category-or-theme]/
 ├── source-inventory.json
 ├── normalized-apps.jsonl
+├── market-signals.jsonl
+├── market-source-summary-[source-id].json
+├── market-source-summary-[source-id].md
 ├── clusters.json
 ├── opportunities.json
 ├── gap-research-[cluster].json
@@ -55,6 +70,18 @@ research-runs/YYYY-MM-DD/[category-or-theme]/
 
 When the run is small, `normalized-apps.jsonl` may include only rows derived from structured files. Web-only observations should live in `source-inventory.json` and `decision.md`.
 When a live App Store/iTunes positioning pass is run, write both the machine-readable `gap-research-[cluster].json` and the readable `gap-research-[cluster].md` before promoting a candidate to `ready`.
+
+When no paid market export is available, start with the public scan runner:
+
+```bash
+npm run research:public-scan -- \
+  --output-dir /path/to/research-runs/YYYY-MM-DD/category-market \
+  --theme education \
+  --market US \
+  --include-top-chart
+```
+
+This uses public Apple endpoints only and writes `source-inventory.json`, `market-signals.jsonl`, `normalized-apps.jsonl`, `public-scan-summary.md`, and public-only opportunities. Treat it as discovery evidence, not proof of revenue or downloads.
 
 ## Research Flow
 
@@ -87,6 +114,20 @@ For web sources:
   "notes": "Competitor positioning or review signal summary."
 }
 ```
+
+For AppTweak, Sensor Tower, data.ai, App Store chart, keyword ranking, or manual market note files, normalize the file first:
+
+```bash
+npm run research:ingest -- \
+  --input "/path/to/source-export.csv" \
+  --output-dir /path/to/research-runs/YYYY-MM-DD/category-market \
+  --provider apptweak \
+  --report-type keyword-ranking \
+  --category Education \
+  --market US
+```
+
+This updates `source-inventory.json`, writes `market-signals.jsonl`, and produces a readable `market-source-summary-[source-id].md`. Use these imported signals as directional evidence in the gap research stage; do not promote a candidate from a source export alone.
 
 ### 2. Normalize Signals
 
@@ -174,6 +215,9 @@ Capture:
 - which jobs are overbuilt
 - which jobs can be built as a narrow MVP
 - what keywords/search intent the app could target
+- whether AI changes the product from a generic utility into a stronger learning or decision loop
+- whether backend should be `none`, `thin-proxy`, `stateful-service`, or `ai-services-assisted`
+- what can safely be direct-from-app versus what requires a server boundary
 
 For App Store/iTunes passes, prefer the reusable script:
 
@@ -185,6 +229,7 @@ node scripts/research-app-store-gap.mjs \
 ```
 
 The script should be treated as a first-pass gap probe. If it finds a weak or generic angle, keep the candidate as `researching` or reject it instead of forcing backlog readiness.
+When `market-signals.jsonl` exists, the script includes relevant imported keyword/app/note signals in the gap report and candidate evidence sources.
 
 ### 6. Candidate Generation
 
@@ -202,6 +247,38 @@ Good candidate:
   "mvp_wedge": "Scan or search a plant, classify pet toxicity, save a pet-safe home list, and show care reminders.",
   "why_now": "Plant ID cluster has strong revenue and positive growth in the source export.",
   "product_idea": "Build a SwiftUI iOS app...",
+  "market_thesis": {
+    "user_pain_intensity": "Why this user feels the pain often or urgently",
+    "distribution_angle": "Search, App Store keyword, seasonal, creator, school, workplace, or community angle",
+    "willingness_to_pay": "Why this can monetize in B2C",
+    "incumbent_weakness": "Specific weakness in current apps",
+    "why_now": "Current timing signal"
+  },
+  "ai_backend_strategy": {
+    "mode": "none | deferred | ai-assisted | backend-backed | ai-plus-backend",
+    "recommended_for_mvp": true,
+    "direct_app_allowed": false,
+    "backend_shape": "none | thin-proxy | stateful-service",
+    "reason": "Why AI/backend is or is not part of the MVP",
+    "backend_trigger": "Concrete trigger that justifies creating a backend repo, or none",
+    "ai_service_trigger": "Concrete trigger that justifies using ai-services, or none",
+    "fallback_without_ai": "What still works if AI is unavailable",
+    "cost_or_risk": "Main cost, privacy, safety, or abuse risk"
+  },
+  "differentiation_thesis": {
+    "why_not_generic": "Why this is not just another app in the category",
+    "ten_x_narrower_or_better": "The narrow wedge or superior loop",
+    "hard_to_copy_detail": "Content, workflow, distribution, or feedback detail competitors under-serve"
+  },
+  "launch_appeal": {
+    "hook": "What a tester understands and wants within 10 seconds",
+    "first_value_moment": "The first useful or delightful action in the first session",
+    "signature_interaction": "The product-specific gesture, card, timer, canvas, drill, or loop",
+    "visual_direction": "The concrete UI feel to avoid generic template output",
+    "storefront_angle": "The screenshot and store pitch angle",
+    "testflight_demo_path": "The route a tester should follow during TestFlight review",
+    "anti_generic_rule": "What the implementation must not become"
+  },
   "evidence_sources": ["app-store-education-revenue-growth-2026-05-11"],
   "competitors": ["PictureThis", "PlantIn", "PlantSnap"]
 }
@@ -227,6 +304,11 @@ Only emit an idea into `backlog-candidates.json` with status `ready` when all ar
 - `mvp_wedge` is narrower than the broad category
 - `product_idea` is detailed enough for `product-to-code`
 - buildability is plausible under current factory constraints
+- `market_thesis` explains why the opportunity can be acquired and monetized as a B2C app
+- `ai_backend_strategy` explicitly chooses whether AI/backend is in MVP, deferred, or required
+- `differentiation_thesis` proves the idea is not just CRUD, reminders, export, or a generic category clone
+- `launch_appeal` names the hook, first-value moment, signature interaction, visual direction, storefront angle, TestFlight demo path, and anti-generic rule
+- Education candidates include a real learning loop: input/practice, feedback, repetition, progress, and content strategy
 
 Otherwise emit `researching` or put it in `rejected.json`.
 

@@ -44,6 +44,12 @@ research-runs/
     └── [category-or-theme]/
         ├── source-inventory.json
         ├── normalized-apps.jsonl
+        ├── market-signals.jsonl
+        ├── market-source-summary-[source-id].json
+        ├── market-source-summary-[source-id].md
+        ├── public-scan-clusters.json
+        ├── public-scan-summary.json
+        ├── public-scan-summary.md
         ├── clusters.json
         ├── opportunities.json
         ├── gap-research-[cluster].json
@@ -81,6 +87,38 @@ Minimum idea shape:
   "specific_gap": "Specific underserved angle supported by evidence.",
   "mvp_wedge": "Narrow MVP that is not a generic category clone.",
   "why_now": "Why current category signals make this worth testing.",
+  "market_thesis": {
+    "user_pain_intensity": "Why the user feels this pain often or urgently",
+    "distribution_angle": "Search, App Store keyword, school, creator, seasonal, community, or workplace acquisition angle",
+    "willingness_to_pay": "Why B2C users may pay",
+    "incumbent_weakness": "Specific weakness in current apps",
+    "why_now": "Current timing signal"
+  },
+  "ai_backend_strategy": {
+    "mode": "none | deferred | ai-assisted | backend-backed | ai-plus-backend",
+    "recommended_for_mvp": true,
+    "direct_app_allowed": false,
+    "backend_shape": "none | thin-proxy | stateful-service",
+    "reason": "Why AI/backend is or is not in the MVP",
+    "backend_trigger": "Concrete trigger for backend repo creation, or none",
+    "ai_service_trigger": "Concrete trigger for ai-services usage, or none",
+    "fallback_without_ai": "What still works without AI",
+    "cost_or_risk": "Main cost, privacy, safety, or abuse risk"
+  },
+  "differentiation_thesis": {
+    "why_not_generic": "Why this is not a generic category clone",
+    "ten_x_narrower_or_better": "Narrower wedge or stronger loop",
+    "hard_to_copy_detail": "Content, workflow, distribution, or feedback detail"
+  },
+  "launch_appeal": {
+    "hook": "What a tester understands and wants within 10 seconds",
+    "first_value_moment": "The first useful or delightful action in the first session",
+    "signature_interaction": "The product-specific gesture, card, timer, canvas, drill, or loop",
+    "visual_direction": "The concrete UI feel to avoid generic template output",
+    "storefront_angle": "The screenshot and store pitch angle",
+    "testflight_demo_path": "The route a tester should follow during TestFlight review",
+    "anti_generic_rule": "What the implementation must not become"
+  },
   "evidence_sources": ["app-store-education-revenue-growth-2026-05-11"],
   "competitors": ["Comparable App A", "Comparable App B"],
   "metric_snapshot": {
@@ -143,6 +181,7 @@ Rules:
 
 - Do not promote candidates directly from a single static CSV.
 - Prefer candidates backed by both structured metrics and competitor/gap research.
+- Public scan packs may seed opportunities, but public search/chart visibility alone is not enough to mark a candidate `ready`.
 - Treat `gap-research-[cluster].md` as the human review artifact before backlog upsert.
 - Keep raw and interpreted research in `research-runs/`, not in ViberMode.
 - Do not include credentials, private account identifiers, or paid-source exports unless the state repo access is explicitly approved for that material.
@@ -166,8 +205,21 @@ Each candidate must include:
 - specific gap
 - MVP wedge
 - why-now statement
+- market thesis
+- AI/backend strategy
+- differentiation thesis
+- launch appeal: hook, first-value moment, signature interaction, visual direction, storefront angle, demo path, and anti-generic rule
 - product idea prompt suitable for `product-to-code`
 - constraints for MVP scope
+
+For B2C Education ideas, include a learning-loop thesis:
+
+- learner input or practice action
+- feedback mechanism
+- repetition or review loop
+- progress signal
+- content strategy
+- AI role, if AI is recommended
 
 ## Stage 3 - Scoring and Ranking
 
@@ -230,6 +282,9 @@ node scripts/idea-backlog.mjs select \
 - At least one `ready` idea exists when the app factory is expected to run.
 - Ideas are ranked in intended priority order.
 - Every `ready` idea has evidence sources, competitors, metric snapshot, specific gap, MVP wedge, why-now, and a product idea prompt specific enough for `product-to-code`.
+- New `ready` ideas should use the `strategic-research-v2` quality gate with `market_thesis`, `ai_backend_strategy`, and `differentiation_thesis`.
+- New factory-bound `ready` ideas should use `strategic-research-v3` when possible; it adds `launch_appeal` so product-to-code has a concrete hook, first-value moment, visual direction, and TestFlight demo path.
+- Education ideas should not be promoted as generic "AI tutors"; they need a narrow learning loop and a clear AI role.
 - Research and backlog commits are pushed to the private state repo.
 
 ## Failure Routing

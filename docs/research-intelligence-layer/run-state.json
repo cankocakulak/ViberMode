@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "project": "research-intelligence-layer",
+  "status": "complete",
+  "updated_at": "2026-06-14T00:00:00.000Z",
+  "completed_tasks": [
+    "task-1",
+    "task-2",
+    "task-3"
+  ],
+  "current_task": null,
+  "notes": [
+    "The implementation is intentionally export-first rather than API-first.",
+    "Imported market signals are directional evidence and do not by themselves make an idea ready."
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "project": "research-intelligence-layer",
+  "updated_at": "2026-06-14T00:00:00.000Z",
+  "phasePlan": {
+    "order": ["core"]
+  },
+  "tasks": [
+    {
+      "id": "task-1",
+      "phase": "core",
+      "title": "Add generic market source ingestion",
+      "status": "complete",
+      "files": [
+        "scripts/ingest-market-source.mjs",
+        "package.json"
+      ],
+      "validation": [
+        "node --check scripts/ingest-market-source.mjs",
+        "npm run research:ingest -- --input /tmp/vibermode-research-ingest.jfK85D/keyword.csv --output-dir /tmp/vibermode-research-ingest.jfK85D/research-runs/2026-06-14/education-us --provider apptweak --report-type keyword-ranking --category Education --market US"
+      ]
+    },
+    {
+      "id": "task-2",
+      "phase": "core",
+      "title": "Feed imported source signals into gap research",
+      "status": "complete",
+      "files": [
+        "scripts/research-app-store-gap.mjs"
+      ],
+      "validation": [
+        "node --check scripts/research-app-store-gap.mjs",
+        "node scripts/research-app-store-gap.mjs --research-dir /tmp/vibermode-research-ingest.jfK85D/research-runs/2026-06-14/education-us --cluster \"Language learning / vocabulary\" --market US --queries \"ielts speaking,pronunciation coach\" --limit 3 --review-apps 0"
+      ]
+    },
+    {
+      "id": "task-3",
+      "phase": "core",
+      "title": "Document source contract and workflow usage",
+      "status": "complete",
+      "files": [
+        "docs/research-source-contract.md",
+        "packs/vibermode/roles/product/app-researcher.md",
+        "packs/vibermode/workflows/app-opportunity-research.md",
+        "packs/vibermode/workflows/idea-research-backlog.md",
+        "docs/operations/app-factory-state.md",
+        "docs/operations/app-factory-automation-overview.md",
+        "docs/use-cases/app-opportunity-research.md"
+      ],
+      "validation": [
+        "npm run validate"
+      ]
+    }
+  ]
+}

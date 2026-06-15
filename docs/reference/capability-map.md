@@ -524,6 +524,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 - Purpose: Run the full path from idea through implementation
 - Stages:
   - `product-to-spec -> bootstrap -> spec-to-code`
+  - user-facing implementation inside `spec-to-code`: `foundation -> core -> polish -> validation -> experience -> review`
 - Surfaces:
   - Codex: `viber-product-to-code`
   - Cursor: not currently projected

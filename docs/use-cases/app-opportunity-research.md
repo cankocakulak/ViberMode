@@ -33,6 +33,8 @@ Workflows:
 
 Scripts:
 
+- `scripts/research-public-app-scan.mjs`
+- `scripts/ingest-market-source.mjs`
 - `scripts/analyze-app-store-csv.mjs`
 - `scripts/research-app-store-gap.mjs`
 - `scripts/idea-backlog.mjs`
@@ -60,7 +62,9 @@ This is a manual runner. When resumed or fired, it should treat the invocation a
 Reads:
 
 - public ViberMode source
+- public Apple app search, chart, and review endpoints
 - optional App Store CSV/source data
+- optional AppTweak/Sensor Tower/data.ai/keyword/manual source exports
 - current private backlog state
 
 Writes:
