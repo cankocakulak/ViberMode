@@ -57,3 +57,31 @@ Avoid baking personal paths into reusable prompts unless the prompt is explicitl
 ## Secrets
 
 Secrets must stay outside public docs and committed state. Automation may load credentials from a local env file or OS credential store, but prompts and logs must not print token values.
+
+## GitHub Push Credentials
+
+Browser GitHub login is not a Git CLI credential. In local Codex/headless sessions, `git push` may still ask for a username even when the operator is logged into GitHub in the browser.
+
+For pushes to the public ViberMode framework repo, prefer the existing Git credential stored by macOS `osxkeychain` for `github.com`. Do not assume an app-factory token such as `GH_TOKEN` or a `viberboyz-*` Keychain token can push to `cankocakulak/ViberMode`; those tokens may be scoped for repo creation or generated app/state repos only.
+
+Check whether Git has a usable GitHub credential without printing the secret:
+
+```bash
+printf 'protocol=https\nhost=github.com\n\n' \
+  | git credential-osxkeychain get \
+  | awk -F= '{ if ($1=="password") print "password=<set>"; else print }'
+```
+
+If plain `git push origin main` fails in a headless session with `could not read Username for 'https://github.com'`, use the stored `osxkeychain` credential as an in-process Git extraheader. This keeps the token out of remotes, files, and logs:
+
+```bash
+CRED="$(printf 'protocol=https\nhost=github.com\n\n' | git credential-osxkeychain get)"
+USERNAME="$(printf '%s\n' "$CRED" | awk -F= '$1=="username"{print $2; exit}')"
+PASSWORD="$(printf '%s\n' "$CRED" | awk -F= '$1=="password"{sub(/^password=/,""); print; exit}')"
+BASIC="$(printf '%s:%s' "$USERNAME" "$PASSWORD" | base64)"
+
+git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $BASIC" \
+  push origin main
+```
+
+If this still returns `403`, the stored Git credential lacks write access to the target repository. Fix the GitHub credential or SSH key outside the repo; never commit a token or place it in a remote URL.
