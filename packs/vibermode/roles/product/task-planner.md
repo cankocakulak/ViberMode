@@ -56,6 +56,19 @@ The complete `tasks.json` content:
   "branchName": "[prefix]/[feature-name]",
   "description": "[Feature description from stories epic summary]",
   "docsPath": "docs/[project-name]",
+  "phasePlan": {
+    "order": ["foundation", "core", "polish", "release"],
+    "foundationGate": {
+      "requiredForUserFacingApps": true,
+      "requiredSurfaces": ["navigation_shell", "onboarding", "home", "first_value_entry", "upgrade_or_paywall_shell"],
+      "completionSignal": "Foundation phase is complete only when the app can launch into an app-specific shell with onboarding, a home/main surface, a first-value entry point, and an honest upgrade/paywall shell when monetization is in scope."
+    },
+    "polishReadyGate": {
+      "requiredForUserFacingApps": true,
+      "requiredSpecialtyPasses": ["design-engineer"],
+      "completionSignal": "Polish phase is ready only when surface map, screenshot targets, edge states, and routed design/UX hardening tasks are explicit."
+    }
+  },
   "bootstrapContext": {
     "workspacePath": "[absolute/path]",
     "workspaceBundle": null,
@@ -74,6 +87,8 @@ The complete `tasks.json` content:
       "id": "TASK-001",
       "parentStoryId": "FEATURE-001",
       "lineage": ["FEATURE-001"],
+      "phase": "foundation",
+      "specialtyRole": null,
       "title": "[Task title]",
       "description": "[Implementable task description]",
       "acceptanceCriteria": [
@@ -106,11 +121,25 @@ Rules:
 - Preserve lineage when a story is split
 - Carry dependencies, implementation boundaries, PRD refs, and UX refs into each task
 - Carry factory-context constraints and pattern-source references into task notes when provided
+- When UX names onboarding or paywall pattern IDs, carry those IDs into the relevant foundation task notes and acceptance criteria as copy-and-adapt references.
 - Carry `workspace_bundle` into `bootstrapContext.workspaceBundle` when provided
 - Carry runtime topology from PRD/UX/stories summaries into task notes or `bootstrapContext` when available
+- Every task must declare a `phase`: `foundation`, `core`, `polish`, `release`, or `ops`.
+- Include a top-level `phasePlan` object. Keep phases in the default order unless the stories explicitly justify a different dependency chain.
+- For user-facing apps, generate foundation tasks before core implementation tasks. Foundation tasks should establish app-specific shell quality: navigation, theme/tokens, onboarding, main/home surface, first-value entry point, upgrade/paywall shell, and baseline empty/error states where relevant.
+- For user-facing apps, keep app-shell construction and craft polish as separate task boundaries. A foundation task builds the skeleton and routeable surfaces; a later polish task uses `specialtyRole: "design-engineer"` to refine the implemented surfaces with motion, component states, touch feel, layout fit, and accessibility details.
+- For iOS factory apps, foundation onboarding and paywall tasks should reference selected local pattern IDs when available, such as `onboarding.focused-promise-steps` or `paywall.benefit-stack-packages`, while requiring app-specific copy, visuals, CTA routing, and accessibility identifiers.
+- Use `core` for domain logic, data/persistence, backend/API/AI-service integration, and the repeatable product loop.
+- Use `polish` for surface-map work, screenshot target readiness, keyboard/small-screen/accessibility fixes, design-engineering follow-ups, copy refinement, and edge-state hardening.
+- For user-facing factory apps, include a `polish` task that creates or updates `docs/[project-name]/surface-map.json` from `packs/vibermode/templates/surface-map-template.json` before runtime validation.
+- For user-facing factory apps, include a distinct `polish` task with `specialtyRole: "design-engineer"` after the shell exists. Its acceptance criteria must name the surfaces to polish, require app-specific visual hierarchy, press/focus/active states, reduced-motion handling where motion exists, and fresh screenshot targets for onboarding, home/first-value, and upgrade/paywall.
+- Use `release` for store/TestFlight/Play readiness tasks only when the source stories explicitly include release work. Do not put TestFlight upload itself into product implementation tasks unless the workflow asks for release orchestration.
+- Use `ops` only for cross-repo operational work such as backend or ai-services changes explicitly named by the approved topology.
+- Use `specialtyRole` only when the implementation run should explicitly load and follow a helper role. Supported first-class values are `design-engineer`, `ux-tweaker`, and `surface-hardener`; leave it `null` for ordinary tasks.
 - Default every task to the primary repo role. Only set another `repoRole` such as `backend` or `ai-services` when the source story explicitly requires cross-repo work.
 - When a task targets a sibling repo, include that repo's `workspacePath` and keep acceptance criteria scoped to that repo's contract.
 - Preserve experience-core ordering when present: foundation/data model first, then first-value/core loop, then onboarding or first-run experience, then upgrade/paywall or other quality-anchor surfaces
+- For iOS factory runs, prefer this task shape: foundation shell first, core loop second, polish-ready pass third. Do not let a domain-only first task cause the app to remain a generic template shell through most of implementation.
 - When `bootstrap_artifact` exists, carry forward the stable repo root, branch context, and validation baseline into `tasks.json`
 - Keep task ordering aligned with dependency chain
 - If a story is too large, split it without losing lineage to the parent story
@@ -139,6 +168,7 @@ Required. It must explicitly state:
 - Recommended Artifacts: `docs/[project-name]/prd.md`, `docs/[project-name]/ux.md`, `docs/[project-name]/stories.md`, `docs/[project-name]/bootstrap.md`, `docs/[project-name]/analysis.md`
 - Critical Inputs that must remain stable
 - Highest-priority task to start with
+- First phase to start with and the gate that must pass before the next phase
 - Any tasks that were split or reordered during conversion
 
 ## Conversion Rules
@@ -162,6 +192,7 @@ Each task must complete in ONE AI iteration. Split if:
 - Add derived dependencies only when required for execution order
 - A task may depend on another task, but must still keep its parent story lineage
 - If story order would implement polish before the core loop is runnable, reorder tasks and state the reason in the handoff.
+- If story order would implement core logic before a user-facing app shell exists, split or reorder tasks so the foundation phase creates the shell first. Preserve story lineage and explain the reorder in the handoff.
 
 ### Bootstrap Context
 

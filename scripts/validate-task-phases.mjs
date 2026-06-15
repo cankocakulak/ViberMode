@@ -94,6 +94,9 @@ function taskSearchText(task) {
     task.title,
     task.description,
     task.notes,
+    task.specialtyRole,
+    task.specialty?.agent,
+    task.specialtyContext?.agent,
     ...asArray(task.acceptanceCriteria),
     ...asArray(task.validation?.commands),
     ...asArray(task.validation?.miniScenarios),
@@ -102,6 +105,24 @@ function taskSearchText(task) {
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
+}
+
+function taskSpecialtyAgents(task) {
+  const agents = new Set();
+  const addAgent = (value) => {
+    if (!value) return;
+    agents.add(String(value).trim().toLowerCase());
+  };
+
+  addAgent(task.specialtyRole);
+  addAgent(task.specialty?.agent);
+  addAgent(task.specialtyContext?.agent);
+
+  for (const pass of asArray(task.qualityPasses)) addAgent(pass?.agent || pass);
+  for (const pass of asArray(task.quality_passes)) addAgent(pass?.agent || pass);
+  for (const pass of asArray(task.specialtyContext?.qualityPasses)) addAgent(pass?.agent || pass);
+
+  return agents;
 }
 
 function surfacePattern(surfaceName) {
@@ -247,6 +268,26 @@ function validateTaskFile(filePath) {
       const polishText = polishTasks.map(taskSearchText).join(" ");
       if (!/\bsurface[-_\s]?map\b/.test(polishText)) {
         result.errors.push("polish-ready gate requires a polish task that creates or updates surface-map.json");
+      }
+
+      const requiredSpecialtyPasses = new Set(asArray(polishGate?.requiredSpecialtyPasses)
+        .map((agent) => String(agent).trim().toLowerCase())
+        .filter(Boolean));
+      if (options.factoryIos) requiredSpecialtyPasses.add("design-engineer");
+
+      for (const agent of requiredSpecialtyPasses) {
+        const hasSpecialtyTask = polishTasks.some((task) => {
+          const agents = taskSpecialtyAgents(task);
+          if (agents.has(agent)) return true;
+          if (agent === "design-engineer") {
+            return /\bdesign[-_\s]?engineer(ing)?\b/.test(taskSearchText(task));
+          }
+          return taskSearchText(task).includes(agent);
+        });
+
+        if (!hasSpecialtyTask) {
+          result.errors.push(`polish-ready gate requires a polish task with specialtyRole '${agent}'`);
+        }
       }
     }
   }

@@ -10,6 +10,8 @@
 - When called standalone, `bootstrap.md` is optional only if the caller already provides a trusted target repo root and validation path.
 - Treat `tasks.json` as the first execution artifact and `run-state.json` as execution state only.
 - Start by generating `docs/[project-name]/tasks.json` with `task-planner`.
+- For user-facing apps, require phased tasks: `foundation` before `core`, and `polish` before final experience approval.
+- For user-facing apps, keep app-shell construction and craft polish as separate tasks: foundation builds the routeable skeleton, then a polish task with `specialtyRole: "design-engineer"` improves the implemented surfaces.
 - Use `implementation-runner` in a loop, but one task per run only.
 - Do not skip task-level validation while implementing.
 - When the target slice is ready, run `runtime-validator` for real build or smoke evidence.
@@ -21,7 +23,14 @@
 ## Pipeline
 
 ```text
-stories + bootstrap → task planning → task execution loop → runtime validation → experience hardening → review
+stories + bootstrap
+  → task planning with phase plan
+  → app foundation execution
+  → core feature execution
+  → polish-ready execution with specialty design-engineering pass
+  → runtime validation
+  → experience hardening
+  → review
 ```
 
 Implementation boundary:
@@ -57,6 +66,11 @@ Success Criteria:
 - story IDs and dependencies are preserved
 - task splits preserve lineage to parent stories
 - task ordering respects dependency chain
+- tasks include a `phase` value and top-level `phasePlan` when the slice is user-facing
+- for user-facing apps, foundation tasks come before core feature tasks and include app shell, onboarding, main surface, first-value entry, and upgrade/paywall shell when relevant
+- core tasks remain focused on domain behavior, persistence, service integration, and the repeatable product loop
+- polish tasks explicitly prepare the existing runnable app for experience hardening rather than mixing polish into every core task
+- user-facing factory tasks include at least one distinct polish task with `specialtyRole: "design-engineer"` after foundation/core surfaces exist
 - bootstrap handoff is reflected in branch or runtime execution context when available
 - `run-state.json` must reference tasks by `taskId` rather than duplicating task definitions
 - every task carries explicit validation requirements when the slice needs them
@@ -70,16 +84,17 @@ Workflow note:
 - `task-planner` belongs to `spec-to-code`, not `product-to-spec`
 - this is the boundary where the workflow moves from specification artifacts into implementation-planning and execution artifacts
 
-## Step 2 — Implementation Loop
+## Step 2 — Phased Implementation Loop
 
 Role:
 `packs/vibermode/roles/product/implementation-runner.md`
 
 Purpose:
-Implement one task at a time while preserving boundaries and updating structured run state.
+Implement one task at a time while preserving boundaries, respecting phase gates, and updating structured run state.
 
 This step is intentionally loop-shaped:
 - pick the highest-priority eligible task
+- stay in the earliest incomplete phase from `tasks.json.phasePlan.order`
 - implement only that task
 - run the task's declared validation checks
 - update `tasks.json`
@@ -104,7 +119,7 @@ Outputs:
 
 Success Criteria:
 - exactly one task is implemented per run
-- the selected task is the highest-priority pending task whose dependencies are satisfied
+- the selected task is the highest-priority pending task whose dependencies and phase gates are satisfied
 - task status is updated to `done`
 - run history is appended structurally
 - lineage and dependencies remain intact
@@ -127,6 +142,28 @@ Target slice readiness:
 - For a full `product-to-code` run, the target slice is ready only when every task in `tasks.json` is `done`.
 - For a scoped `spec-to-code` run, the target slice is ready when every task in the declared `scope` is `done` and no dependency outside the scope remains pending.
 - If any task is `pending`, `blocked`, or missing required validation evidence, runtime validation must return `SKIPPED_NOT_READY` or `SKIPPED_BLOCKED` rather than reviewing the slice.
+- For user-facing apps, runtime validation must not start while any `foundation`, `core`, or `polish` task remains pending.
+
+### Phase Contracts
+
+`foundation`:
+- Establishes app-specific visual and navigation shell before deep feature work.
+- Must cover theme/tokens, onboarding or first-run route, main/home surface, first-value entry point, and upgrade/paywall shell when monetization is in scope.
+- Should include enough selectors, copy, and baseline states for later runtime screenshots.
+
+`core`:
+- Implements the product's repeatable behavior: domain logic, storage, backend/API/AI-service wiring when approved, and the first-value/core loop.
+- Should not leave the app's primary surface as generic template UI while internals are complete.
+
+`polish`:
+- Makes the already-runnable app ready for product inspection.
+- Should cover surface map, screenshot target list, keyboard behavior, small-screen fit, accessibility basics, empty/loading/error/disabled states, and design-engineering follow-ups.
+- For factory apps, should create or update `docs/[project-name]/surface-map.json` using `packs/vibermode/templates/surface-map-template.json` as the starting shape.
+- For user-facing factory apps, should include a separate `specialtyRole: "design-engineer"` task that reads `packs/vibermode/roles/iterate/design-engineer.md` and applies craft-level improvements to onboarding, home/first-value, and upgrade/paywall surfaces before runtime validation.
+
+`release`:
+- Optional. Used only when the product implementation scope includes store/build/release preparation.
+- Internal TestFlight/Play upload remains owned by release workflows unless explicitly routed into this phase.
 
 ## Step 3 — Runtime Validation
 
@@ -179,7 +216,7 @@ Primary role:
 Purpose:
 Review the implemented product experience after runtime validation and route polish work back into tasks before final code review.
 
-This step exists because a slice can build, launch, and satisfy basic task checks while still feeling generic, unfinished, or unfit for real product testing.
+This step exists because a slice can build, launch, and satisfy basic task checks while still feeling generic, unfinished, or unfit for real product testing. After phased implementation, this gate should evaluate an already-shaped app; it should not be the first place where missing app shell, onboarding, or paywall structure is discovered.
 
 Inputs:
 - `docs/[project-name]/tasks.json`
@@ -189,6 +226,7 @@ Inputs:
 - `docs/[project-name]/ux.md`
 - `docs/[project-name]/stories.md`
 - `docs/[project-name]/validation-report.md`
+- optional: `docs/[project-name]/surface-map.json` or equivalent polish-phase surface inventory
 - optional: screenshots, simulator notes, or other runtime evidence
 - optional: `factory_context`
 - target repo root
@@ -203,6 +241,7 @@ Success Criteria:
 - verdict is explicit
 - runtime evidence is used rather than ignored
 - first-value path, interaction quality, visual/copy quality, edge states, and accessibility are assessed for user-facing slices
+- foundation and polish phases are checked for app-specific surfaces rather than generic template shell UI
 - every failing issue is routed as `reopen-task` or `create-followup-task`
 - for `factory_context.type = ios_app_factory`, onboarding, first-value/core loop, upgrade/paywall shell, keyboard dismissal, small-screen fit, and screenshot evidence are checked
 - for `factory_context.type = ios_app_factory`, visual evidence means actual screenshot/video files, not only a UI launch smoke result
@@ -284,6 +323,7 @@ docs/[project-name]/
 ├── bootstrap.md
 ├── tasks.json
 ├── run-state.json
+├── surface-map.json
 ├── validation-report.md
 ├── experience-review.md
 ├── remediation.md
@@ -295,6 +335,7 @@ Relationship note:
 - `tasks.json` is the source of truth for task definitions, dependencies, and lineage
 - `run-state.json` tracks execution state and run history, and should reference tasks by `taskId` instead of copying full task definitions
 - `validation-report.md` records executed build/launch/smoke evidence for the current slice
+- `surface-map.json`, when present, records the user-facing surfaces, screenshot targets, edge states, and polish follow-ups identified before experience review
 - `experience-review.md` checks user-facing product quality after runtime validation and before final review
 - `remediation.md` records routed validation, experience, or review findings when the loop must resume
 - `review.md` validates an implementation slice after execution work has accumulated; it does not replace per-task execution state in `run-state.json`
@@ -321,11 +362,13 @@ task-planner
   ↓
 tasks.json
   ↓
-implementation-runner (one task)
+implementation-runner (foundation tasks, one task per run)
   ↓
 run-state.json updated
   ↓
-implementation-runner again if tasks remain
+implementation-runner (core tasks, one task per run)
+  ↓
+implementation-runner (polish-ready tasks, one task per run)
   ↓
 runtime-validator when the slice is ready
   ↓

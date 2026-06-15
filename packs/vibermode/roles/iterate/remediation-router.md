@@ -79,6 +79,9 @@ Produce the artifact whenever project context is known.
 - `create-followup-task`
   - append the new task to `tasks.json`
   - preserve parentStoryId, lineage, dependencies, and priority if provided
+  - preserve or assign `phase` when tasks use phase planning: missing app shell issues go to `foundation`, product behavior regressions go to `core`, and visual/edge/accessibility/screenshot readiness issues go to `polish`
+  - preserve `specialtyRole` when the source follow-up task declares it
+  - when the source review includes `quality_passes` but the follow-up task has no `specialtyRole`, map `design-engineer`, `ux-tweaker`, or `surface-hardener` to the same-named `specialtyRole` on the created `polish` task
   - preserve specialty helper guidance such as `quality_passes` in task notes when the source review included it
 - `quality_passes`
   - do not execute helper agents in this role
@@ -86,6 +89,7 @@ Produce the artifact whenever project context is known.
 - blocked-but-not-routable findings
   - do not invent a task
   - record the blocker in `remediation.md`
+- When reopening a completed task, also update `run-state.json.phaseExecutionState` so the affected phase is no longer marked `complete`.
 
 ## Behavior Guidelines
 

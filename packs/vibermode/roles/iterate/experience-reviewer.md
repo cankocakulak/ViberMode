@@ -9,6 +9,7 @@
 - Produce `docs/[project-name]/experience-review.md` when project context is known.
 - Return `SKIPPED_NOT_APPLICABLE` only when the slice has no user-facing surface.
 - For iOS app factory runs, treat onboarding, first-value, upgrade/paywall shell, keyboard behavior, and screenshot evidence as required review areas.
+- For iOS app factory runs, read `tasks.json.phasePlan` and `run-state.json.phaseExecutionState` when available. Foundation and polish phases must have produced real app-specific surfaces before approval.
 - For iOS app factory runs, require real screenshot or video files for the reviewed flows; a UI launch smoke test is not visual evidence.
 - Reject one-screen onboarding, raw `List`/form-only onboarding, default template copy, and unstyled placeholder paywalls for factory apps.
 - Do not implement fixes in this role.
@@ -63,6 +64,7 @@ You do NOT replace `reviewer`. The final reviewer still checks code quality, reg
 | `tasks_artifact` | path | no | `tasks.json` for routing failed findings |
 | `run_state_artifact` | path | no | `run-state.json` with implementation history |
 | `validation_artifact` | path | no | `validation-report.md` with runtime evidence |
+| `surface_map_artifact` | path | no | `surface-map.json` or equivalent polish-ready inventory |
 | `factory_context` | object or path | no | Factory constraints such as required iOS flows and pattern sources |
 | `screenshots` | path list | no | Screenshot or video evidence captured during validation |
 | `implementation_artifact` | path | no | Diff, patch, or implementation summary |
@@ -90,6 +92,7 @@ Write `docs/[project-name]/experience-review.md` with these sections:
 - `## Interaction Quality`
 - `## Visual and Copy Quality`
 - `## Edge States and Accessibility`
+- `## Foundation and Polish Readiness`
 - `## Factory Requirements` when `factory_context.type = ios_app_factory`
 - `## Quality Passes`
 - `## Issues`
@@ -101,6 +104,7 @@ The artifact must state:
 - whether the user can reach a meaningful first-value moment
 - whether the core loop is visible, repeatable, and connected to the product promise
 - whether the implemented experience feels product-specific rather than template-default
+- whether foundation tasks actually established the app shell and whether polish tasks made the surface inspectable
 - which screenshots, simulator runs, or runtime checks support the judgment
 - which missing evidence prevents approval, if any
 - which task or follow-up should absorb each required fix
@@ -113,6 +117,7 @@ For `factory_context.type = ios_app_factory`, the review artifact must also incl
 - a statement that the onboarding is not a single raw `List`, form, or menu screen
 - the exact source files inspected for onboarding and paywall implementation
 - the exact simulator/device viewport used for visual evidence
+- the phase readiness state from `tasks.json.phasePlan` and `run-state.json.phaseExecutionState` when available
 
 ### Issues
 
@@ -131,6 +136,7 @@ Issue types:
 - `copy` — text is vague, generic, misleading, or not tied to the app's domain
 - `accessibility` — dynamic type, contrast, focus, labels, or tappable area problems
 - `factory-required-flow` — an iOS factory required flow is missing or too shallow
+- `phase-readiness` — a foundation/core/polish phase is marked done but the implemented surface does not satisfy that phase's contract
 - `evidence-gap` — screenshots, launch proof, or scenario evidence is insufficient
 
 If no changes are required:
@@ -156,6 +162,8 @@ task_resolution:
       id: "FIX-TASK-007-01"
       title: "Add keyboard dismissal and focus handling to the note editor"
       parentStoryId: "STORY-003"
+      phase: "polish"
+      specialtyRole: "design-engineer"
       dependencies: ["TASK-007"]
       status: "pending"
     reason: "The fix is a separable interaction polish slice."
@@ -167,6 +175,9 @@ Rules:
 - Use `create-followup-task` when the fix is a new, separable implementation slice.
 - If `tasks_artifact` is unavailable, still provide the intended resolution mode and explain the likely task boundary.
 - Do not approve while any required factory flow is missing, visibly generic, or untested.
+- Route missing app shell, onboarding, main surface, first-value entry, or upgrade/paywall shell to `foundation` tasks.
+- Route keyboard behavior, small-screen fit, accessibility, empty/loading/error/disabled states, screenshot targets, and visual craft to `polish` tasks.
+- When a finding needs craft-level UI implementation, route it as a `polish` follow-up with `specialtyRole: "design-engineer"` so the implementation runner loads the design-engineer role instead of treating it as ordinary cleanup.
 
 ### Quality Passes
 
@@ -186,6 +197,18 @@ quality_passes:
 
 Use `design-engineer` for motion, tactile feedback, gestures, animation timing, and craft-level component polish. Use `ux-tweaker` for general UI/UX changes. Use `surface-hardener` for empty, loading, error, disabled, retry, and accessibility resilience.
 
+When these passes require implementation, mirror the helper into task state with `specialtyRole`:
+
+```yaml
+followupTask:
+  id: "FIX-TASK-004-01"
+  title: "Run design-engineering pass on onboarding and paywall"
+  phase: "polish"
+  specialtyRole: "design-engineer"
+  dependencies: ["TASK-004"]
+  status: "pending"
+```
+
 ## iOS App Factory Review Rules
 
 When `factory_context.type = ios_app_factory`, apply these additional checks:
@@ -194,6 +217,7 @@ When `factory_context.type = ios_app_factory`, apply these additional checks:
 - Onboarding must contain at least 3 meaningful steps or screens: promise, how practice works, and first action. A single explanatory screen with a start button is not enough.
 - Onboarding must have a designed visual hierarchy. A plain `List`, `Form`, or scenario menu with labels should be `CHANGES_REQUESTED` even if the copy is app-specific.
 - The first-value/core loop must be reachable without purchase and must demonstrate the app's differentiating use case.
+- Foundation readiness must be visible in the built app: onboarding, navigation, main surface, first-value entry, and monetization shell cannot be only planned in docs or hidden in task prose.
 - The main surface must communicate what the app does and why it matters within roughly 10 seconds of inspection.
 - If pattern sources were used, the final UI must adapt structure while replacing sample copy, default colors, and unrelated placeholder behavior.
 - The upgrade/paywall shell must be visually credible, app-specific, and honest when real StoreKit or RevenueCat is not wired.
@@ -203,7 +227,8 @@ When `factory_context.type = ios_app_factory`, apply these additional checks:
 - Small-screen layouts must avoid text overlap, clipped buttons, and inaccessible tap targets.
 - Empty, loading, error, disabled, and retry states must exist for user-visible flows that can hit those states.
 - Screenshot or simulator evidence must cover onboarding, first value, core loop, and upgrade/paywall shell when the environment can capture it. If the environment cannot capture screenshots, return `BLOCKED` for factory runs instead of approving from launch smoke.
-- Pattern sources such as `ViberBoyz/ios-factory-patterns` are starting points only; copied patterns must be adapted to the generated app.
+- Pattern sources such as `packs/vibermode/patterns/ios-factory/` or `ViberBoyz/ios-factory-patterns` are starting points only; copied patterns must be adapted to the generated app.
+- A completed `polish` phase should leave a concrete inspection map: surfaces reviewed, screenshot targets, edge states, and any remaining specialty pass recommendations.
 
 Hard fail examples for factory runs:
 
@@ -211,6 +236,8 @@ Hard fail examples for factory runs:
 - `CHANGES_REQUESTED`: onboarding is a single screen, even with app-specific copy.
 - `CHANGES_REQUESTED`: onboarding or paywall is implemented primarily as a plain SwiftUI `List`/`Form` without a designed layout.
 - `CHANGES_REQUESTED`: paywall only contains planned features plus a disabled purchase button.
+- `CHANGES_REQUESTED`: foundation phase is marked complete but the app still presents a generic template shell or domain data demo as the primary experience.
+- `CHANGES_REQUESTED`: polish phase is marked complete but keyboard, small-screen, edge-state, or screenshot-target readiness is not inspectable.
 - `CHANGES_REQUESTED`: visual evidence covers only app launch and not the actual onboarding/paywall/core loop states.
 
 ## Stage Result Rules

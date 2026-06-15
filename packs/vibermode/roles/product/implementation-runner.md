@@ -48,16 +48,30 @@ Follow these steps exactly, in order.
 4. Read `bootstrap.md` if it exists or if `tasks.json` includes `bootstrapContext`
 5. Read each artifact's `## Summary (for downstream agents)` section first, then the full document where needed
 6. If `tasks.json.bootstrapContext.workspaceBundle` exists, identify the primary repo role and available sibling repo roles before choosing a working directory
+7. If `tasks.json.phasePlan` exists, read the phase order and gates before selecting work
+8. If the selected task later declares `specialtyRole`, read the matching helper role file before coding:
+   - `design-engineer` -> `packs/vibermode/roles/iterate/design-engineer.md`
+   - `ux-tweaker` -> `packs/vibermode/roles/iterate/ux-tweaker.md`
+   - `surface-hardener` -> `packs/vibermode/roles/iterate/surface-hardener.md`
 
 ### Step 2: Pick Task
 
-Find the highest-priority task whose `status` is `pending` and whose dependencies are satisfied. This is your one and only task.
+Find the highest-priority task whose `status` is `pending`, whose dependencies are satisfied, and whose phase is currently eligible. This is your one and only task.
+
+Phase selection rules:
+- If `tasks.json.phasePlan.order` exists, complete all eligible tasks in the earliest incomplete phase before moving to later phases.
+- If no `phase` is present on older tasks, treat the task as `core` for backward compatibility.
+- For user-facing apps, do not select `core`, `polish`, or `release` tasks while any `foundation` task is pending or blocked.
+- Do not select `release` tasks while `foundation`, `core`, or `polish` tasks are pending.
+- If all tasks in the current phase are blocked, stop and report the phase blocker instead of jumping to a later phase.
 
 Before doing any coding, emit one plain progress line that names the task:
 
 ```text
-STATUS — şu anda implementation yapıyorum: [Task ID] - [Task Title]
+STATUS — şu anda implementation yapıyorum: [Task ID] ([phase]) - [Task Title]
 ```
+
+If the selected task has `specialtyRole`, include that role in the working context and follow that role's output contract while still completing exactly one implementation task. For example, a task with `specialtyRole: "design-engineer"` should behave like a focused design-engineering pass over the already-built surface, not like a new foundation or product-requirements task.
 
 ### Step 3: Branch
 
@@ -78,6 +92,8 @@ If not on the correct branch, create or switch to it while preserving the bootst
 Implement the task. Follow these rules:
 - Read the acceptance criteria carefully
 - Read the task `notes` carefully for implementation boundary, lineage, PRD refs, and UX refs
+- Read the task `phase` carefully. Foundation tasks should establish product shell and navigation quality; core tasks should implement product logic and loop behavior; polish tasks should prepare the implemented app for evidence-backed experience hardening.
+- Read the task `specialtyRole` carefully when present. `design-engineer` polish tasks must apply craft-level implementation work to existing surfaces: motion/feedback, component states, touch feel, layout fit, accessibility, reduced-motion behavior, and screenshot readiness.
 - If task notes include factory pattern sources, use them as copy-and-adapt references and keep the generated app self-contained after copying relevant code
 - Read the task `validation` object before coding so the required check level is clear
 - Respect bootstrap context such as stable repo root, last known runnable command, and setup blockers
@@ -126,6 +142,12 @@ Create or update `run-state.json` with this shape:
 {
   "currentTask": null,
   "completedTasks": ["TASK-001"],
+  "phaseExecutionState": {
+    "foundation": {
+      "completedTaskIds": ["TASK-001"],
+      "status": "complete"
+    }
+  },
   "storyExecutionState": {
     "FEATURE-001": {
       "completedTaskIds": ["TASK-001"],
@@ -136,6 +158,8 @@ Create or update `run-state.json` with this shape:
     {
       "date": "YYYY-MM-DD",
       "taskId": "TASK-001",
+      "phase": "foundation",
+      "specialtyRole": null,
       "parentStoryId": "FEATURE-001",
       "summary": "What was implemented",
       "filesChanged": ["path/to/file.ext"],
@@ -162,9 +186,11 @@ Create or update `run-state.json` with this shape:
 Rules:
 - `currentTask` is the task currently being worked on, or `null` after completion
 - `completedTasks` is append-only
+- `phaseExecutionState` tracks per-phase progress when tasks include `phase`
 - `storyExecutionState` tracks per-story progress across split tasks
 - `runHistory` records one object per implementation run
 - `run-state.json` references tasks by `taskId` and `parentStoryId`; it should not duplicate full task definitions from `tasks.json`
+- `run-state.json.phaseExecutionState` should mark a phase `complete` only when every task in that phase is done
 - when bootstrap context exists, record whether bootstrap-provided commands or assumptions were reused during validation
 - always record the executed validation level, commands, pass/fail outcome, and any verified runtime scenarios
 - when `runtimeCritical=true`, record whether the mini smoke check ran and which `miniScenarios` were verified
@@ -181,7 +207,7 @@ COMPLETE — All tasks implemented.
 If tasks remain, reply:
 
 ```text
-DONE — [Task ID] complete. Next up: [Next Task ID] - [Next Task Title]
+DONE — [Task ID] complete. Next up: [Next Task ID] ([phase]) - [Next Task Title]
 ```
 
 Always include:
