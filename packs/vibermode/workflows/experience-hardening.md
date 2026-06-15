@@ -6,6 +6,10 @@
 
 - Use this after `runtime-validator` has produced `validation-report.md`.
 - This workflow belongs inside `spec-to-code`; it is not the top-level App Factory Stage 4.
+- For user-facing app factory runs, use this after the implementation pipeline has completed `foundation`, `core`, and `polish` phases. It should not be the first stage that creates onboarding, home, or paywall structure.
+- For iOS app factory runs, run the automated evidence gate before final approval:
+  `npm run factory:experience-gate -- --run-manifest <state-root>/factory/runs/<run-id>.json`.
+  This gate runs validation, captures onboarding/board/paywall screenshots on a fresh simulator, updates `surface-map.json`, appends `validation-report.md`, and writes structured gate state back to the run manifest.
 - Start with `experience-reviewer`.
 - If the experience review requests changes, route findings through `remediation-routing`, resume `implementation-runner`, then rerun `runtime-validator` and `experience-reviewer`.
 - Only continue to final `reviewer` after experience review returns `APPROVED` or `SKIPPED_NOT_APPLICABLE`.
@@ -41,6 +45,7 @@ Strongly preferred:
 - `docs/[project-name]/stories.md`
 - `docs/[project-name]/bootstrap.md`
 - `docs/[project-name]/run-state.json`
+- `docs/[project-name]/surface-map.json` or equivalent polish-ready surface inventory
 - screenshot or simulator evidence when the slice has UI
 - `factory_context` when the run comes from an app factory manifest
 
@@ -62,6 +67,7 @@ Success Criteria:
 - evidence reviewed is named
 - first-value path is assessed
 - interaction, visual, copy, edge-state, and accessibility issues are checked
+- foundation shell and polish-ready outputs are checked before approving; missing shell structure is a routed implementation failure, not a soft design note
 - iOS factory required flows are evaluated when `factory_context.type = ios_app_factory`
 - every issue has a task resolution mode
 - specialty quality passes are named when the remediation should involve `design-engineer`, `ux-tweaker`, or `surface-hardener`
@@ -102,6 +108,8 @@ Routing rules:
 - Reopen tasks when the original implemented slice failed its UX contract.
 - Create follow-up tasks for separable polish, screenshots, keyboard handling, or paywall/onboarding adaptation.
 - Preserve any `quality_passes` guidance from `experience-review.md` in the routed task notes so the implementation loop knows which helper role should be used.
+- Route missing app shell, onboarding, first-value entry, or upgrade/paywall shell back to `foundation` tasks when those surfaces were not actually implemented.
+- Route edge-state, layout, keyboard, accessibility, copy, screenshot target, and visual craft findings to `polish` tasks unless they require changing product intent.
 - Do not mutate PRD, UX, or story intent unless the experience review explicitly found a specification contradiction; route that back to planning/spec review instead.
 
 ## Step 3 - Polish Implementation Loop
@@ -138,6 +146,15 @@ Confirm that polish changes did not break the runnable slice and capture refresh
 Then rerun:
 `packs/vibermode/roles/iterate/experience-reviewer.md`
 
+For iOS factory runs, the revalidation pass must include:
+
+```bash
+npm run factory:experience-gate -- \
+  --run-manifest /path/to/app-factory-state/factory/runs/run-id.json
+```
+
+Use `--allow-pending-review` only when the command is being used to capture screenshots before the next `experience-reviewer` pass. The approval path must rerun it without `--allow-pending-review`, so a missing or non-approved `experience-review.md` fails closed.
+
 The experience hardening loop is complete only when the new review returns `APPROVED` or `SKIPPED_NOT_APPLICABLE`.
 
 Automation rule:
@@ -158,6 +175,7 @@ For `factory_context.type = ios_app_factory`, do not treat the app as factory-co
 - small-screen layouts do not clip or overlap important text/actions
 - screenshot or video files cover onboarding, first value, core loop, and upgrade shell when capture is available
 - copied pattern code has been adapted rather than left as sample copy or default colors
+- foundation tasks are not marked complete while the app still looks like a template shell, generic settings screen, or domain data demo
 
 ## Outputs
 
@@ -166,6 +184,7 @@ docs/[project-name]/
 ├── experience-review.md
 ├── remediation.md
 ├── validation-report.md
+├── surface-map.json
 ├── tasks.json
 └── run-state.json
 ```

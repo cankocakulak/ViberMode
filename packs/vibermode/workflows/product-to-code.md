@@ -37,6 +37,8 @@ Before starting, the orchestrator must resolve these inputs:
 - optional `factory_context` — orchestrator-provided delivery constraints for factory runs, such as required onboarding, first-value, paywall shell, or copy-and-adapt pattern sources
 - optional `analysis_artifact` — only when existing-codebase discovery has already run
 
+For `factory_context.type = ios_app_factory`, the default local pattern source is `packs/vibermode/patterns/ios-factory/catalog.json`. External or private pattern catalogs may override or extend it, but downstream UX and task planning must still record selected onboarding/paywall pattern IDs and the app-specific adaptations required before implementation.
+
 If `workspace_path` is not provided but `repo_url` is provided, Stage 0 must clone/acquire the primary repo and set `workspace_path` before Stage 1. If neither `workspace_path` nor `repo_url` can be derived safely, stop before Stage 1 and ask for the missing input. Do not let downstream stages infer different roots, stacks, or artifact folders independently.
 
 When `workspace_bundle` is present, `workspace_path` remains the primary repo path for backward compatibility. The bundle root is the local product workspace that may contain sibling repos such as `ios-app/`, `backend/`, or a symlinked `ai-services/` operations repo. Product artifacts still live in the primary repo by default unless a later workflow explicitly introduces cross-repo artifact storage.
@@ -97,7 +99,7 @@ Stage 2:
 
 Stage 3:
 - `packs/vibermode/workflows/spec-to-code.md`
-- includes task execution, runtime validation, experience hardening for user-facing slices, and final review
+- includes phased app foundation execution, core feature execution, polish-ready execution, runtime validation, experience hardening for user-facing slices, and final review
 
 Use `product-to-code` when you want the full path from idea to reviewed implementation.
 Use `product-to-spec` when you want to stop after specification artifacts are complete.
@@ -126,8 +128,10 @@ For existing-product work that requires codebase discovery, run `analyzer` first
 - When `workspace_bundle` is present, Stage 0 must also preserve one canonical `workspace_bundle.root`. Sibling repo paths must resolve under that root unless they are explicit symlink/reference entries such as shared `ai-services`.
 - Stage 1 must write `spec-review.md` and reach `APPROVED` before bootstrap can start.
 - Stage 1 must preserve and apply `factory_context` when provided. For user-facing apps, PRD, UX, and stories must name the first-value moment, core loop, product-specific differentiator, quality anchors, and deferred scope before spec review can approve.
+- Stage 1 must preserve `launch_appeal` when provided. PRD, UX, and stories must carry forward the hook, first-value moment, signature interaction, visual direction, storefront angle, TestFlight demo path, and anti-generic rule.
 - Stage 1 must define and preserve runtime topology before spec review can approve, including whether the first implementation is local-only, app-only, backend-backed, ai-services-assisted, third-party-services-only, or intentionally deferred-service.
 - For `factory_context.type = ios_app_factory`, PRD, UX, and stories must cover onboarding, first-value, core loop, upgrade/paywall shell, pattern adaptation, and runtime topology before spec review can approve.
+- For `factory_context.type = ios_app_factory`, UX must choose or explicitly reject onboarding/paywall patterns from the configured pattern sources. Task planning must carry chosen pattern IDs into foundation tasks so implementation has a concrete template reference without producing generic copied screens.
 - Backend repo creation must be justified by a named P0 backend trigger in PRD/stories; otherwise backend remains deferred even when the workspace bundle supports a future `backend` repo.
 - Stage 1.5 must run after approved spec review and before bootstrap whenever a `workspace_bundle` is present. It must record a provisioning checkpoint even when the result is `COMPLETE_NOOP`, so skipped backend creation is explicit rather than implicit.
 - When approved specs require a backend sibling repo, Stage 1.5 must provision it before bootstrap and update the run manifest or `workflow-status.json.workspaceBundle` with a `repo.role = "backend"` entry. Do not provision backend repos before spec review approval.
@@ -135,8 +139,13 @@ For existing-product work that requires codebase discovery, run `analyzer` first
 - If Stage 1 reaches `BLOCKED`, the composed workflow is blocked and later stages must not run.
 - Stage 2 must write `bootstrap.md` and establish one canonical workspace path plus a reusable runnable baseline before implementation begins. In `product-to-code`, bootstrap is required even when it only records that an existing baseline is already trusted.
 - If Stage 2 reaches `BLOCKED`, Stage 3 must not run.
+- Stage 3 task planning must produce phase-aware tasks for user-facing apps. `foundation` tasks establish app shell, onboarding, main surface, first-value entry, upgrade/paywall shell, and baseline states before `core` tasks dominate the run.
+- Stage 3 implementation must not advance from `foundation` to `core` while app-shell tasks are still pending or blocked. A generated app should stop early rather than spend most of the run as a generic template with hidden domain logic.
+- Stage 3 must include a `polish` phase before runtime validation for user-facing apps. This phase prepares surface maps, screenshot targets, keyboard/small-screen/accessibility checks, edge states, and design-engineering follow-ups so experience hardening can inspect a shaped product rather than invent the product shell after the fact.
 - Stage 3 must run experience hardening after runtime validation for user-facing slices. For `factory_context.type = ios_app_factory`, this gate must check onboarding, first-value/core loop, upgrade/paywall shell, keyboard behavior, small-screen fit, and screenshot/video evidence before final review can approve.
+- For `factory_context.type = ios_app_factory`, Stage 3 automation must run `npm run factory:experience-gate -- --run-manifest <run-manifest>` after runtime validation and before final factory completion. If the gate cannot capture onboarding, board, and paywall screenshots on a fresh simulator, or if `experience-review.md` is not approved, Stage 3 remains incomplete and must route through experience hardening.
 - For `factory_context.type = ios_app_factory`, Stage 3 must not complete when onboarding is one screen, onboarding is a raw `List`/form-style explanation, paywall is a disabled placeholder list, copied pattern code remains sample-like, the app's value is not understandable within 10 seconds of the main surface, or visual evidence is only a UI launch smoke test.
+- For `factory_context.type = ios_app_factory`, Stage 3 must not complete when provided `launch_appeal` is ignored or replaced with generic app-shell UI.
 - For factory automation, Stage 3 quality failures should automatically re-enter remediation for up to 3 passes before the workflow reports `BLOCKED`.
 - All stages must resolve artifacts relative to the same canonical target repo or workspace root.
 - Cross-repo work is allowed only when the task or artifact names the target `repo.role`; otherwise implementation, validation, and review default to the primary repo at `workspace_path`.
@@ -184,7 +193,15 @@ Minimum shape:
     "spec-to-code": {
       "status": "PENDING",
       "artifact": "docs/[project-name]/review.md",
-      "verdict": null
+      "verdict": null,
+      "phases": {
+        "foundation": "PENDING",
+        "core": "PENDING",
+        "polish": "PENDING",
+        "validation": "PENDING",
+        "experience": "PENDING",
+        "review": "PENDING"
+      }
     }
   },
   "blockers": [],
@@ -233,6 +250,7 @@ docs/[project-name]/
 ├── bootstrap.md
 ├── tasks.json
 ├── run-state.json
+├── surface-map.json
 ├── validation-report.md
 ├── experience-review.md
 ├── remediation.md

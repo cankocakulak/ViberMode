@@ -19,8 +19,11 @@
     "install:codex": "bash adapters/codex/install/install-skills.sh",
     "change-release:gate": "node scripts/change-release-gate-check.mjs",
     "app:resolve": "node scripts/app-autopilot-resolve.mjs",
+    "research:ingest": "node scripts/ingest-market-source.mjs",
+    "research:public-scan": "node scripts/research-public-app-scan.mjs",
     "workspace:topology": "node scripts/workspace-topology.mjs",
     "workspace:provision": "node scripts/workspace-bundle-provision.mjs",
+    "factory:experience-gate": "node scripts/ios-factory-experience-gate.mjs",
     "export:idea-to-testflight": "node scripts/export-idea-to-testflight-visual.mjs",
     "export:idea-to-testflight:png": "node scripts/export-idea-to-testflight-png.mjs",
     "export:idea-to-testflight:all": "npm run export:idea-to-testflight && npm run export:idea-to-testflight:png",
@@ -32,7 +35,8 @@
     "store-downloads:notion:android-backfill": "node scripts/store-downloads-to-notion.mjs --backfill-weeks 4 --skip-ios --allow-android-overwrite",
     "store-downloads:notion:overwrite": "node scripts/store-downloads-to-notion.mjs --backfill-weeks 4 --allow-overwrite",
     "validate:references": "node scripts/validate-reference-map.mjs",
-    "validate": "npm run validate:references"
+    "validate:task-phases": "node scripts/validate-task-phases.mjs",
+    "validate": "npm run validate:references && npm run validate:task-phases"
   },
   "keywords": [
     "ai",
