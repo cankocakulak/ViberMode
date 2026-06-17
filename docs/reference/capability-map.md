@@ -68,6 +68,9 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I want to upload a generated Android app to Google Play internal testing | `android-submit-play-internal` |
 | I want to know what Codex can read/write across RevenueCat, iOS, Android, store metadata, or reporting APIs | `docs/operations/codex-operational-capabilities.md` |
 | I want to analyze or safely manage Meta/Facebook/Instagram ads | `meta-ads-operator` |
+| I want to analyze or safely manage TikTok ads | `tiktok-ads-operator` |
+| I want to analyze or safely manage Google Ads | `google-ads-operator` |
+| I want Codex to choose reasoning depth automatically by task size | `reasoning-effort-router` |
 
 ## Product Agents
 
@@ -737,6 +740,58 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - Codex: `meta-ads-operator`
   - Cursor: not currently projected
   - Any tool: `meta-ads-operator` via `AGENTS.md`
+
+#### `tiktok-ads-operator`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Analyze TikTok Ads performance and safely plan or perform TikTok API for Business actions
+- Use when:
+  - the request mentions TikTok Ads, campaigns, ad groups, ads, creatives, CTR, CPC, CPM, conversions, ROAS, placements, budgets, pausing, duplication, or creative testing
+  - the user wants weekly TikTok ad performance tables or recurring TikTok Ads reporting
+  - the user wants campaign/ad group/ad/creative write plans with paused-by-default draft creation
+- Avoid when:
+  - the user wants generic marketing advice with no account/API context
+  - the requested write lacks approval and can affect live spend
+- Surfaces:
+  - Codex: `tiktok-ads-operator`
+  - Cursor: not currently projected
+  - Any tool: `tiktok-ads-operator` via `AGENTS.md`
+
+#### `google-ads-operator`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Analyze Google Ads performance and safely plan or perform Google Ads API actions
+- Use when:
+  - the request mentions Google Ads, campaigns, ad groups, ads, keywords, assets, CTR, CPC, CPM, conversions, ROAS, budgets, pausing, duplication, or creative testing
+  - the user wants weekly Google Ads performance tables or recurring Google Ads reporting
+  - the user wants campaign/ad group/ad/keyword write plans with paused-by-default draft creation
+- Avoid when:
+  - the user wants generic marketing advice with no account/API context
+  - the requested write lacks approval and can affect live spend
+- Surfaces:
+  - Codex: `google-ads-operator`
+  - Cursor: not currently projected
+  - Any tool: `google-ads-operator` via `AGENTS.md`
+
+#### `reasoning-effort-router`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Choose an appropriate Codex reasoning depth profile from task size, uncertainty, risk, and validation needs
+- Use when:
+  - the user asks Codex to adjust reasoning level, reasoning effort, thinking budget, deep/quick mode, or automatic task-size based reasoning
+  - a coding, debugging, planning, review, research, or release task should select low/medium/high work depth before starting
+- Avoid when:
+  - the user asks a trivial direct question and no workflow routing is needed
+  - the runtime does not expose a real hidden reasoning control and the user expects a guaranteed model setting change; in that case, apply the profile through workflow depth and state the limitation if relevant
+- Surfaces:
+  - Codex: `reasoning-effort-router`
+  - Cursor: not currently projected
 
 ## Surface Notes
 

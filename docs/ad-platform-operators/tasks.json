@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "project": "ad-platform-operators",
+  "updated": "2026-06-16",
+  "phasePlan": {
+    "order": ["core", "ops"]
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Add TikTok Ads operator skill and report CLI",
+      "status": "complete",
+      "phase": "core",
+      "validation": [
+        "node --check adapters/codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs",
+        "node adapters/codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs --check-keychain"
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Add Google Ads operator skill and report CLI",
+      "status": "complete",
+      "phase": "core",
+      "validation": [
+        "node --check adapters/codex/skills/google-ads-operator/scripts/google_ads_report.mjs",
+        "node adapters/codex/skills/google-ads-operator/scripts/google_ads_report.mjs --check-keychain"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Wire new operators into repository docs and env examples",
+      "status": "complete",
+      "phase": "core",
+      "validation": [
+        "npm run validate"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Install new operators into local Codex skills",
+      "status": "complete",
+      "phase": "ops",
+      "validation": [
+        "npm run install:codex",
+        "node --check ~/.codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs",
+        "node --check ~/.codex/skills/google-ads-operator/scripts/google_ads_report.mjs"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Run live TikTok and Google Ads API smoke reports",
+      "status": "blocked",
+      "phase": "ops",
+      "blocker": "Required TikTok and Google Ads credentials are not present in env or Keychain."
+    }
+  ]
+}

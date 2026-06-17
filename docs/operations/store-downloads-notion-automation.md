@@ -24,6 +24,37 @@ When `--date` is omitted, the script targets the last completed week before the 
 
 The public repo must not contain live app identifiers, bucket IDs, vendor numbers, database IDs, or secrets. Copy `.vibermode-automation.env.example` to `.vibermode-automation.env` and fill values locally.
 
+## Fresh Clone Setup
+
+For someone who just cloned ViberMode, the shortest working path is:
+
+1. Copy `.vibermode-automation.env.example` to `.vibermode-automation.env`.
+2. Fill App Store Connect values:
+   - `ASC_KEY_ID`
+   - `ASC_ISSUER_ID`
+   - `ASC_API_KEY_P8_B64`
+   - `ASC_VENDOR_NUMBERS`
+3. Fill Google Play values:
+   - `GOOGLE_PLAY_BUCKET`
+   - one of `GOOGLE_PLAY_SERVICE_ACCOUNT_PATH`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, or `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_B64`
+4. Fill tracked app mapping through:
+   - `STORE_DOWNLOADS_TRACKED_APPS_JSON`, or
+   - `STORE_DOWNLOADS_TRACKED_APPS_FILE`
+5. Fill Notion values:
+   - `NOTION_API_KEY`
+   - `NOTION_APP_DOWNLOADS_DATABASE_ID`
+6. Run a read-only smoke check first:
+
+```sh
+npm run store-downloads:notion -- --skip-notion --dry-run
+```
+
+7. If the output looks right, run the normal writer:
+
+```sh
+npm run store-downloads:notion:manual
+```
+
 The script requires app matching config through one of:
 
 ```sh
@@ -34,11 +65,40 @@ STORE_DOWNLOADS_TRACKED_APPS_FILE=/absolute/path/to/private-app-config.json
 The script can run without Notion credentials to produce a JSON report, but direct Notion writes require:
 
 ```sh
-NOTION_API_KEY=secret_...
+NOTION_API_KEY=ntn_...
 NOTION_APP_DOWNLOADS_DATABASE_ID=...
 ```
 
 Store credentials in `.vibermode-automation.env` or the automation runtime. Do not commit live secrets.
+
+## Notion Access Mode
+
+Prefer a Notion Personal Access Token for this workflow.
+
+- A PAT uses the permissions of the human user who created it.
+- An internal integration behaves like a separate bot and often requires manually sharing the target database/page with that integration.
+- If the script says it cannot find the database even though the ID is correct, the token usually belongs to an integration that does not have access to that database.
+
+Recommended setup:
+
+1. Create a PAT in Notion.
+2. Put it in `NOTION_API_KEY`.
+3. Open the target database in Notion and confirm the same human account can already access it.
+4. Copy the database ID from the page URL or keep using the existing known ID in `NOTION_APP_DOWNLOADS_DATABASE_ID`.
+
+The script also supports a Keychain fallback for Notion tokens. If `NOTION_API_KEY` and `NOTION_TOKEN` are unset, it will check:
+
+- `NOTION_KEYCHAIN_SERVICE`
+- `NOTION_API_KEY_KEYCHAIN_SERVICE`
+- `viberboyz-notion-api-key`
+- `vibermode-notion-api-key`
+- `notion-api-key`
+- `NOTION_TOKEN_KEYCHAIN_SERVICE`
+- `viberboyz-notion-token`
+- `vibermode-notion-token`
+- `notion-token`
+
+If you want a local Keychain-backed setup instead of an env file, store the token under one of those service names or set a custom `NOTION_KEYCHAIN_SERVICE`.
 
 For Android, set `STORE_DOWNLOADS_ANDROID_METRIC` to the Play Console metric you want to mirror. Use `daily_device_installs` for the Statistics saved view metric usually shown as New device acquisitions.
 

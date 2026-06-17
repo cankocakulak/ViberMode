@@ -1,0 +1,4 @@
+agent:
+  display_name: "Google Ads Operator"
+  short_description: "Safe Google Ads reporting and actions"
+  default_prompt: "Use $google-ads-operator to analyze my Google Ads customer and recommend safe next actions."

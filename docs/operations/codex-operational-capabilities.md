@@ -59,6 +59,8 @@ Default posture:
 | Mobile store model | Understand the shared iOS/Android release adapter boundary | `docs/operations/mobile-store-submission-model.md` | platform-specific scripts |
 | Store downloads to Notion | Read App Store Connect and Google Play download/install reports and optionally upsert Notion weekly rows | `docs/operations/store-downloads-notion-automation.md` | `scripts/store-downloads-to-notion.mjs` |
 | Meta Ads reporting and draft operations | Read Meta/Facebook/Instagram Ads performance; produce weekly campaign/ad/creative reports; plan paused draft campaign actions after approval | `docs/operations/meta-ads-codex-setup.md` | `adapters/codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs` |
+| TikTok Ads reporting and draft operations | Read TikTok Ads performance; produce weekly campaign/ad group/ad reports; plan paused draft TikTok API for Business actions after approval | `docs/operations/tiktok-ads-codex-setup.md` | `adapters/codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs` |
+| Google Ads reporting and draft operations | Read Google Ads performance through GoogleAdsService SearchStream; produce weekly campaign reports; plan paused draft Google Ads API actions after approval | `docs/operations/google-ads-codex-setup.md` | `adapters/codex/skills/google-ads-operator/scripts/google_ads_report.mjs` |
 | App factory state | Understand private backlog and run-state boundaries | `docs/operations/app-factory-state.md` | state-specific scripts |
 | GitHub repo creation | Create generated app repos from factory selections when token setup is complete | `docs/operations/ios-repo-factory-token.md` | `scripts/github-create-template-repo.mjs` |
 
@@ -93,6 +95,7 @@ Preferred storage:
 | Apple team/API/Fastlane credentials | macOS Keychain |
 | Google Play service account JSON | macOS Keychain as base64, or a local ignored file for one-off manual EAS setup |
 | RevenueCat keys | macOS Keychain profile services or local env vars |
+| Ads platform tokens and service account JSON | macOS Keychain as token/string or base64 JSON |
 | Notion API key | `.vibermode-automation.env` or automation runtime |
 | GitHub token | macOS Keychain or local env var, never committed |
 
@@ -122,6 +125,14 @@ Run the weekly store downloads report for last week and write the Notion rows on
 
 ```text
 Use $meta-ads-operator to run a read-only last_7d Meta Ads report and recommend next actions.
+```
+
+```text
+Use $tiktok-ads-operator to run a read-only last_7d TikTok Ads report and recommend next actions.
+```
+
+```text
+Use $google-ads-operator to run a read-only LAST_7_DAYS Google Ads report and recommend next actions.
 ```
 
 ```text

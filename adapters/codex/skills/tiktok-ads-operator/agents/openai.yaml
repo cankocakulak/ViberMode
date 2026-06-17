@@ -1,0 +1,4 @@
+agent:
+  display_name: "TikTok Ads Operator"
+  short_description: "Safe TikTok Ads reporting and actions"
+  default_prompt: "Use $tiktok-ads-operator to analyze my TikTok Ads advertiser and recommend safe next actions."

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import crypto from "node:crypto";
+import childProcess from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -625,6 +626,88 @@ function notionToken(args) {
   return args["notion-token"] || process.env.NOTION_API_KEY || process.env.NOTION_TOKEN || "";
 }
 
+function keychainRead(service) {
+  if (!service) return "";
+  try {
+    return childProcess.execFileSync(
+      "security",
+      ["find-generic-password", "-s", service, "-w"],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    ).trim();
+  } catch {
+    return "";
+  }
+}
+
+function notionKeychainServices(args) {
+  return [
+    args["notion-keychain-service"],
+    process.env.NOTION_KEYCHAIN_SERVICE,
+    process.env.NOTION_API_KEY_KEYCHAIN_SERVICE,
+    "viberboyz-notion-api-key",
+    "vibermode-notion-api-key",
+    "notion-api-key",
+    process.env.NOTION_TOKEN_KEYCHAIN_SERVICE,
+    "viberboyz-notion-token",
+    "vibermode-notion-token",
+    "notion-token",
+  ].filter((value, index, list) => value && list.indexOf(value) === index);
+}
+
+function notionTokenState(args) {
+  const cliToken = args["notion-token"];
+  if (cliToken) {
+    return {
+      token: cliToken,
+      reason: null,
+      message: null,
+    };
+  }
+
+  const apiKeyPresent = Object.prototype.hasOwnProperty.call(process.env, "NOTION_API_KEY");
+  const tokenPresent = Object.prototype.hasOwnProperty.call(process.env, "NOTION_TOKEN");
+  const apiKeyValue = process.env.NOTION_API_KEY || "";
+  const tokenValue = process.env.NOTION_TOKEN || "";
+  const resolvedToken = apiKeyValue || tokenValue;
+
+  if (resolvedToken) {
+    return {
+      token: resolvedToken,
+      reason: null,
+      message: null,
+    };
+  }
+
+  for (const service of notionKeychainServices(args)) {
+    const keychainToken = keychainRead(service);
+    if (keychainToken) {
+      return {
+        token: keychainToken,
+        reason: null,
+        message: null,
+      };
+    }
+  }
+
+  if (apiKeyPresent || tokenPresent) {
+    const emptyKeys = [
+      apiKeyPresent ? "NOTION_API_KEY" : null,
+      tokenPresent ? "NOTION_TOKEN" : null,
+    ].filter(Boolean);
+    return {
+      token: "",
+      reason: "empty_notion_token",
+      message: `${emptyKeys.join(" / ")} ${emptyKeys.length > 1 ? "are" : "is"} present but empty. Set one to a non-empty value to write directly to Notion.`,
+    };
+  }
+
+  return {
+    token: "",
+    reason: "missing_notion_token",
+    message: "Set NOTION_API_KEY or NOTION_TOKEN to write directly to Notion.",
+  };
+}
+
 function notionDatabaseId(args) {
   return requireValue(
     "--notion-database-id or NOTION_APP_DOWNLOADS_DATABASE_ID/NOTION_DATABASE_ID",
@@ -759,14 +842,15 @@ async function findExistingNotionRow({ token, databaseId, row }) {
 }
 
 async function upsertNotionRows({ args, rows }) {
-  const token = notionToken(args);
-  if (!token) {
+  const tokenState = notionTokenState(args);
+  if (!tokenState.token) {
     return {
       status: "skipped",
-      reason: "missing_notion_token",
-      message: "Set NOTION_API_KEY or NOTION_TOKEN to write directly to Notion.",
+      reason: tokenState.reason,
+      message: tokenState.message,
     };
   }
+  const token = tokenState.token;
 
   const databaseId = notionDatabaseId(args);
   const dryRun = boolValue(args["dry-run"], false);

@@ -553,6 +553,42 @@ capabilities:
       any_tool_agent: meta-ads-operator
       canonical_workflow: docs/operations/meta-ads-codex-setup.md
 
+  - id: tiktok-ads-operator
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: analyze TikTok Ads performance and safely plan or perform TikTok API for Business actions
+    surfaces:
+      codex_skill: tiktok-ads-operator
+      cursor_command: null
+      any_tool_agent: tiktok-ads-operator
+      canonical_workflow: docs/operations/tiktok-ads-codex-setup.md
+
+  - id: google-ads-operator
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: analyze Google Ads performance and safely plan or perform Google Ads API actions
+    surfaces:
+      codex_skill: google-ads-operator
+      cursor_command: null
+      any_tool_agent: google-ads-operator
+      canonical_workflow: docs/operations/google-ads-codex-setup.md
+
+  - id: reasoning-effort-router
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: codex
+    purpose: choose an appropriate Codex reasoning depth profile from task size, uncertainty, risk, and validation needs
+    surfaces:
+      codex_skill: reasoning-effort-router
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: docs/operations/codex-operational-capabilities.md
+
   - id: bootstrap-workflow
     kind: workflow
     callability: artifact-aware

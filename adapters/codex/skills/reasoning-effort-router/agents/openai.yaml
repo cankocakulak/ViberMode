@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reasoning Effort Router"
+  short_description: "Choose reasoning depth by task size"
+  default_prompt: "Use $reasoning-effort-router to choose an appropriate reasoning effort before starting this task."
