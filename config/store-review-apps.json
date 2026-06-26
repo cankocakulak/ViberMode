@@ -1,0 +1,120 @@
+{
+  "defaults": {
+    "supportEmail": "bilgi@kantakademi.com",
+    "keychainPrefix": "viberboyz",
+    "googlePlayServiceAccountKeychainName": "google-play-service-account-json-b64",
+    "appStoreConnect": {
+      "keyIdName": "asc-key-id",
+      "issuerIdName": "asc-issuer-id",
+      "p8KeyName": "asc-api-key-p8-b64"
+    }
+  },
+  "slack": {
+    "channelName": "co-founders",
+    "channelId": "C0B89DMC41Y"
+  },
+  "apps": [
+    {
+      "id": "tercih-sihirbazi",
+      "displayName": "Tercih Sihirbazı",
+      "repoPath": "/Users/mcan/kant-akademi/tercih-sihirbazi",
+      "supportEmail": "bilgi@kantakademi.com",
+      "freeTierDescriptionTr": "Temel tercih planlama akışı ücretsiz kullanılabilir.",
+      "paidTierDescriptionTr": "Pro erişim ek tercih planlama özelliklerini açar.",
+      "freeTierDescriptionEn": "The core preference-planning flow can be used for free.",
+      "paidTierDescriptionEn": "Pro unlocks additional preference-planning features.",
+      "recentFixTr": "Android sürümündeki açılma/donma sorunu yeni güncellemede düzeltildi.",
+      "recentFixEn": "The Android launch/freezing issue has been fixed in the latest update.",
+      "platforms": {
+        "android": {
+          "packageName": "com.kantakademi.tercihsihirbazi",
+          "translationLanguage": "tr"
+        },
+        "ios": {
+          "appStoreConnectId": "6777955939",
+          "bundleId": "com.kantakademi.tercihsihirbazi"
+        }
+      }
+    },
+    {
+      "id": "kant-akademi",
+      "displayName": "Kant Akademi",
+      "repoPath": "/Users/mcan/kant-akademi/kant-akademi-backend",
+      "supportEmail": "bilgi@kantakademi.com",
+      "freeTierDescriptionTr": "Kant Akademi içinde sınav takibi ve temel çalışma akışları kullanılabilir.",
+      "paidTierDescriptionTr": "Koçluk ve ek paketler satın alınan hizmet kapsamına göre açılır.",
+      "freeTierDescriptionEn": "Kant Akademi includes exam tracking and core study workflows.",
+      "paidTierDescriptionEn": "Coaching and extra packages depend on the purchased service.",
+      "platforms": {
+        "android": {
+          "packageName": "com.kantakademi.mobileapp",
+          "translationLanguage": "tr"
+        },
+        "ios": {
+          "appStoreConnectId": "6743700077",
+          "bundleId": "com.kantakademi.mobile.app"
+        }
+      }
+    },
+    {
+      "id": "ozard",
+      "displayName": "Ozard",
+      "repoPath": null,
+      "supportEmail": "bilgi@kantakademi.com",
+      "freeTierDescriptionTr": "Yeni kullanıcılar deneme süresiyle uygulamayı test edebilir.",
+      "paidTierDescriptionTr": "Ozard abonelik tabanlı bir yapay zeka çalışma asistanıdır.",
+      "freeTierDescriptionEn": "New users can try the app with the trial period.",
+      "paidTierDescriptionEn": "Ozard is a subscription-based AI study companion.",
+      "platforms": {
+        "android": {
+          "packageName": "com.kantakademi.sorucozucu",
+          "translationLanguage": "tr"
+        },
+        "ios": {
+          "appStoreConnectId": "6753729850",
+          "bundleId": "com.kantakademi.sorucozucu"
+        }
+      }
+    },
+    {
+      "id": "sinav-oyunlari",
+      "displayName": "Sınav Oyunları / Exam Games",
+      "repoPath": null,
+      "supportEmail": "bilgi@kantakademi.com",
+      "freeTierDescriptionTr": "Kısa oyunlarla konu pekiştirme akışı kullanılabilir.",
+      "paidTierDescriptionTr": "Ek içerik ve premium erişim paket kapsamına göre açılır.",
+      "freeTierDescriptionEn": "Short games help students practice exam topics.",
+      "paidTierDescriptionEn": "Extra content and premium access depend on the active package.",
+      "platforms": {
+        "android": {
+          "packageName": "com.kantakademi.yks.ant",
+          "translationLanguage": "tr"
+        },
+        "ios": {
+          "appStoreConnectId": "6753917874",
+          "bundleId": "com.kantakademi.yks.ant"
+        }
+      }
+    },
+    {
+      "id": "studybud",
+      "displayName": "Studybud",
+      "repoPath": null,
+      "supportEmail": "bilgi@kantakademi.com",
+      "freeTierDescriptionTr": "Studybud aynı sınav hedefindeki öğrencileri eşleştirmeye odaklanır.",
+      "paidTierDescriptionTr": "Premium özellikler aktif paket kapsamına göre açılır.",
+      "freeTierDescriptionEn": "Studybud helps students match with others who share the same exam goal.",
+      "paidTierDescriptionEn": "Premium features depend on the active package.",
+      "platforms": {
+        "android": {
+          "packageName": "com.kantllc.Studybud",
+          "translationLanguage": "tr"
+        },
+        "ios": {
+          "appStoreConnectId": "6757382624",
+          "bundleId": "com.kantllc.Studybud"
+        }
+      }
+    }
+  ]
+}

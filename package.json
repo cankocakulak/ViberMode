@@ -34,6 +34,8 @@
     "store-downloads:notion:manual": "node scripts/store-downloads-to-notion.mjs --backfill-weeks 4",
     "store-downloads:notion:android-backfill": "node scripts/store-downloads-to-notion.mjs --backfill-weeks 4 --skip-ios --allow-android-overwrite",
     "store-downloads:notion:overwrite": "node scripts/store-downloads-to-notion.mjs --backfill-weeks 4 --allow-overwrite",
+    "reviews:stores": "node scripts/store-review-ops.mjs",
+    "reviews:stores:reply": "node scripts/store-review-ops.mjs --reply",
     "validate:references": "node scripts/validate-reference-map.mjs",
     "validate:task-phases": "node scripts/validate-task-phases.mjs",
     "validate": "npm run validate:references && npm run validate:task-phases"
