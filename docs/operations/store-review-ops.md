@@ -25,6 +25,13 @@ Send replies:
 npm run reviews:stores:reply
 ```
 
+First cleanup / backlog mode:
+
+```bash
+npm run reviews:stores:backlog
+npm run reviews:stores:reply:backlog
+```
+
 Limit the run:
 
 ```bash
@@ -70,10 +77,10 @@ store-review-reply-ops
 It is a paused heartbeat automation attached to the Codex chat. When manually run from Codex, it runs:
 
 ```bash
-npm run reviews:stores:reply -- --max-results 50
+npm run reviews:stores:reply:backlog
 ```
 
-The automation reports the run summary back into the same Codex chat and posts the Slack-ready summary to `#co-founders`. It should not add `--include-backlog` or `--update-existing`; those flags are reserved for explicit one-off cleanup runs.
+The automation reports the run summary back into the same Codex chat and posts the Slack-ready summary to `#co-founders`. Backlog mode includes older unanswered reviews but still does not update existing replies unless `--update-existing` is explicitly passed.
 
 ## Credentials
 

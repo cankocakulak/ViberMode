@@ -346,18 +346,22 @@ function classifyReview(review) {
   const includes = (...terms) => terms.some((term) => text.includes(term));
   const matches = (...patterns) => patterns.some((pattern) => pattern.test(text));
 
-  if (review.rating >= 4 && includes("teşekkür", "güzel", "iyi", "great", "thanks", "love", "efsane", "harika", "beğend", "begend", "memnun", "kaliteli", "mükemmel", "mukemmel", "kazandır")) return "positive";
-  if (includes("gelmeli", "ekleyin", "eklemelisiniz", "istiyoruz", "öneri", "oneri", "bekliyoruz", "feature request")) return "feature_request";
+  if (includes("hesabımı sil", "hesabimi sil", "verilerim", "silinmesini", "delete account", "delete my account", "data deletion")) return "data_delete";
+  if (includes("premium ald", "premium aldim", "satın aldım", "satin aldim", "ödeme bile yaptım", "odeme bile yaptim", "para verdim", "boşuna mı para", "bosuna mi para", "plan hala", "geri yükle", "geri yukle", "restore purchase", "purchase did not", "premium olmama rağmen", "premium olmama ragmen", "pro kullanmama rağmen", "pro kullanmama ragmen", "iade", "refund")) return "purchase_issue";
+  if (includes("giriş", "giris", "login", "hesap", "account", "şifre", "sifre", "password", "e mail", "e-mail", "email", "gmail", "kayıt", "kayit", "kod gelmedi")) return "account";
+  if (includes("can hakk", "can süresi", "can suresi", "canlar", "can olayı", "can olayi")) return "feature_request";
   if (
-    includes("açılm", "donuyor", "dondu", "kasıyor", "kasiyor", "crash", "freeze", "bug", "hata", "bozuk", "sıralama", "hesapla", "ana menüye", "ana menuye", "atıyor", "atiyor", "takılı", "takili", "ilerlemiyor")
+    includes("yanlış", "yanlis", "gerçeklikten uzak", "hatalı", "hatali", "çözüm yanlış", "cozum yanlis", "doğru çözümlemiyor", "dogru cozumlemiyor", "soruyu doğru", "soruyu dogru", "yanlış çıkıyor", "yanlis cikiyor", "matematik çözümleri", "matematik cozumleri", "yapay zeka", "wrong answer", "incorrect")
+    || matches(/\bai\b/, /\baı\b/)
+  ) return "ai_quality";
+  if (
+    includes("açılm", "acilm", "donuyor", "dondu", "kasıyor", "kasiyor", "crash", "freeze", "bug", "hata", "error", "aror", "arror", "bozuk", "sıralama", "siralam", "hesapla", "ana menüye", "ana menuye", "atıyor", "atiyor", "takılı", "takili", "takili", "ilerlemiyor", "giremiyorum", "seçim yapılamıyor", "secim yapilamiyor", "seçemiyorum", "secemiyorum", "şıklar sadece", "siklar sadece", "cevap yok", "not çıkarmıyor", "not cikarmiyor", "not çıkartmıyor", "not cikartmiyor", "hata olduğunu söylüyor", "hata oldugunu soyluyor", "klavyesi bozuk", "yüklenmiyor", "yuklenmiyor")
     || matches(/\bçalışm(ıyor|iyor|adi|adı|adi|adi|az|az)\b/, /\bcalism(iyor|adi|az)\b/, /\bnot work/, /\bdoesn'?t work/)
   ) return "app_issue";
-  if (includes("hesabımı sil", "hesabimi sil", "verilerim", "silinmesini", "delete account", "delete my account", "data deletion")) return "data_delete";
-  if (includes("premium ald", "satın ald", "satin ald", "plan hala", "geri yükle", "restore purchase", "purchase did not")) return "purchase_issue";
-  if (includes("para", "premium", "pro", "abonelik", "ücret", "pahalı", "subscription", "trial", "refund", "iade", "satın") || matches(/\btl\b/, /\d+\s*tl\b/)) return "pricing";
-  if (includes("yanlış", "gerçeklikten uzak", "hatalı", "çözüm yanlış", "yapay zeka", "wrong answer", "incorrect") || matches(/\bai\b/, /\baı\b/)) return "ai_quality";
+  if (includes("gelmeli", "gelsin", "ekleyin", "eklemelisiniz", "istiyoruz", "öneri", "oneri", "bekliyoruz", "feature request", "keşke", "keske", "lütfen geliştir", "lutfen gelistir", "geliştirilsin", "gelistirilsin", "daha fazla", "daha çok", "daha cok", "1 saat", "bir saat", "süresiz", "suresiz", "ayarlayın", "ayarlayin", "ünite atlama", "unite atlama", "dönemlere", "donemlere", "biyoloji", "geometri", "organik kimya", "lgs", "görüntülü çalışma", "goruntulu calisma", "ödül sistemi", "odul sistemi", "reklam koy", "reklam izley")) return "feature_request";
+  if (includes("para", "para ödemek", "para odemek", "abonelik", "ücretli", "ucretli", "ücreti", "ucreti", "ücretlendirme", "ucretlendirme", "pahalı", "pahali", "fiyat", "makul", "subscription", "trial", "satın", "satin", "kilit", "haftalık", "haftalik", "premium versiyonu", "premium vesaire") || matches(/\btl\b/, /\d+\s*tl\b/)) return "pricing";
   if (includes("virüs", "virus", "güvenlik", "zararlı", "security", "malware")) return "safety";
-  if (includes("giriş", "login", "hesap", "account", "şifre", "password")) return "account";
+  if (review.rating >= 4 && includes("teşekkür", "tesekkur", "güzel", "guzel", "iyi", "great", "thanks", "love", "efsane", "harika", "beğend", "begend", "memnun", "kaliteli", "mükemmel", "mukemmel", "kazandır", "kazandir", "faydal", "başarılı", "basarili", "tavsiye", "yardımcı", "yardimci", "öğretici", "ogretici", "mantıklı", "mantikli", "pratik")) return "positive";
   return "generic";
 }
 
@@ -381,17 +385,19 @@ function buildReply(app, review) {
     } else if (category === "pricing") {
       reply = `Merhaba, geri bildiriminiz için teşekkür ederiz. ${freeTier || "Uygulamanın bazı akışları ücretsiz kullanılabilir."} ${paidTier || "Premium özellikler ek erişim sağlar."} Yanlış işlem olduğunu düşünüyorsanız ${email}'a yazabilirsiniz.`;
     } else if (category === "purchase_issue") {
-      reply = `Merhaba, satın alma store tarafında tamamlandıysa uygulamayı güncelleyip satın alımı geri yüklemeyi deneyebilirsiniz. Devam ederse işlem ekranıyla ${email}'a yazabilirsiniz.`;
+      reply = `Merhaba, ödeme/erişim sorununu hızlıca kontrol edebiliriz. Lütfen uygulamayı güncelleyip satın alımı geri yüklemeyi deneyin; iade veya dekont detayı için ${email}'a yazabilirsiniz.`;
     } else if (category === "feature_request") {
       reply = `Merhaba, öneriniz için teşekkür ederiz. Bu isteği ürün notlarımıza ekliyoruz; yeni içerik ve özellikleri güncellemelerle kademeli olarak yayınlıyoruz.`;
     } else if (category === "data_delete") {
       reply = `Merhaba, hesap ve veri silme talebinizi işleme almak için bize kayıtlı e-posta adresinizle ${email} üzerinden ulaşabilirsiniz. Ekibimiz talebinizi hızlıca kontrol edecektir.`;
     } else if (category === "ai_quality") {
-      reply = `Merhaba, geri bildiriminiz için teşekkür ederiz. Hatalı gördüğünüz örnekleri incelemek isteriz; ekran görüntüsü veya konu detayıyla ${email}'a yazarsanız hızlıca kontrol edebiliriz.`;
+      reply = `Merhaba, geri bildiriminiz için teşekkür ederiz. Hatalı gördüğünüz soru, çözüm veya yanıt örneklerini incelemek isteriz; ekran görüntüsüyle ${email}'a yazabilirsiniz.`;
     } else if (category === "safety") {
       reply = `Merhaba, güvenlik endişeniz için üzgünüz. Uygulama resmi ${storeName} dağıtımı üzerinden çalışır ve zararlı içerik içermez. Sorun sürerse ${email}'a yazabilirsiniz.`;
     } else if (category === "account") {
       reply = `Merhaba, hesap/giriş sorununu hızlıca inceleyebiliriz. Uygulamayı güncelledikten sonra sorun devam ederse kayıtlı e-posta ve cihaz bilgisiyle ${email}'a yazabilirsiniz.`;
+    } else if (review.rating >= 4) {
+      reply = `Merhaba, geri bildiriminiz için teşekkür ederiz. Uygulamayı geliştirmeye devam ediyoruz; öneriniz olursa ${email} üzerinden bize yazabilirsiniz.`;
     } else {
       reply = `Merhaba, geri bildiriminiz için teşekkür ederiz. Deneyiminizi iyileştirmek isteriz; detay paylaşırsanız ${email} üzerinden hızlıca inceleyebiliriz.`;
     }
@@ -403,17 +409,19 @@ function buildReply(app, review) {
   } else if (category === "pricing") {
     reply = `Hi, thanks for the feedback. ${freeTier || "Some core flows are available for free."} ${paidTier || "Premium features are optional."} If something looks wrong, please contact us at ${email}.`;
   } else if (category === "purchase_issue") {
-    reply = `Hi, if the purchase was completed by the store, please update the app and try restoring purchases. If it continues, send the receipt details to ${email}.`;
+    reply = `Hi, we can review the payment/access issue quickly. Please update the app and try restoring purchases; for refund or receipt details, contact ${email}.`;
   } else if (category === "feature_request") {
     reply = "Hi, thanks for the suggestion. We are adding this to our product notes and will keep releasing new content and features through updates.";
   } else if (category === "data_delete") {
     reply = `Hi, to process your account and data deletion request, please contact us from your registered email address at ${email}. Our team will review it quickly.`;
   } else if (category === "ai_quality") {
-    reply = `Hi, thanks for the feedback. We would like to review the examples that looked incorrect; please send a screenshot or details to ${email}.`;
+    reply = `Hi, thanks for the feedback. We would like to review the question, solution, or answer examples that looked incorrect; please send screenshots to ${email}.`;
   } else if (category === "safety") {
     reply = `Hi, sorry for the concern. The app is distributed through the official ${storeName} and does not contain harmful content. If the issue continues, contact us at ${email}.`;
   } else if (category === "account") {
     reply = `Hi, we can review the account/login issue quickly. Please update the app first; if it continues, send your device details to ${email}.`;
+  } else if (review.rating >= 4) {
+    reply = `Hi, thanks for the feedback. We keep improving the app; if you have suggestions, you can reach us at ${email}.`;
   } else {
     reply = `Hi, thanks for the feedback. We would like to improve your experience; please send more details to ${email} and we will review it.`;
   }
@@ -551,6 +559,7 @@ function buildMarkdownReport(report) {
   lines.push(`- Reviews scanned: ${report.totals.reviews}`);
   lines.push(`- Reply candidates: ${report.totals.replyCandidates}`);
   lines.push(`- Replies sent: ${report.totals.sent}`);
+  lines.push(`- Skipped by window: ${report.totals.skippedByWindow || 0}`);
   lines.push(`- Errors: ${report.totals.errors}`);
   lines.push("");
   lines.push(`## Apps`);
@@ -569,7 +578,7 @@ function buildMarkdownReport(report) {
     lines.push("");
     for (const item of report.replyCandidates) {
       lines.push(`### ${item.review.appName} / ${item.review.platform} / ${item.review.rating || "?"} star`);
-      lines.push(`Review: ${item.review.body || item.review.title || "(no text)"}`);
+      lines.push(`Review: ${reviewTextForReport(item.review)}`);
       lines.push(`Category: ${item.reply.category}`);
       lines.push(`Reply: ${item.reply.text}`);
       const result = report.results.find((candidate) => candidate.review.reviewId === item.review.reviewId && candidate.review.platform === item.review.platform);
@@ -588,10 +597,15 @@ function buildMarkdownReport(report) {
   return `${lines.join("\n").trim()}\n`;
 }
 
+function reviewTextForReport(review) {
+  if (review.title && review.body) return `${review.title}: ${review.body}`;
+  return review.body || review.title || "(no text)";
+}
+
 function buildSlackMessage(report) {
   const lines = [];
   lines.push(`**Store review ops** (${report.run.mode})`);
-  lines.push(`Scanned ${report.totals.reviews} reviews, ${report.totals.replyCandidates} need reply, ${report.totals.sent} sent, ${report.totals.errors} errors.`);
+  lines.push(`Scanned ${report.totals.reviews} reviews, ${report.totals.replyCandidates} need reply, ${report.totals.sent} sent, ${report.totals.skippedByWindow || 0} skipped by window, ${report.totals.errors} errors.`);
   for (const app of report.apps) {
     if (app.needsReply || app.sent || app.byPlatform.android.errors || app.byPlatform.ios.errors) {
       lines.push(`- **${app.displayName}**: ${app.needsReply} candidates, ${app.sent} sent`);
@@ -671,6 +685,9 @@ async function main() {
   const candidateReviews = reviews
     .filter(isRecentEnough)
     .filter((review) => review.needsReply);
+  const skippedByWindow = reviews
+    .filter((review) => review.needsReply)
+    .filter((review) => !isRecentEnough(review));
 
   const replyCandidates = candidateReviews.map((review) => {
     const app = selectedApps.find((candidate) => candidate.id === review.appId);
@@ -712,6 +729,7 @@ async function main() {
       reviews: reviews.length,
       replyCandidates: replyCandidates.length,
       sent: results.filter((result) => result.status === "sent").length,
+      skippedByWindow: skippedByWindow.length,
       errors: errors.length,
     },
     repoStates,
