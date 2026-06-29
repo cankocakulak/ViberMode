@@ -66,6 +66,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I want to run the iOS app factory | `daily-ios-app-pipeline` |
 | I want to upload a generated iOS app to internal TestFlight | `ios-submit-testflight` |
 | I want to upload a generated Android app to Google Play internal testing | `android-submit-play-internal` |
+| I want to add or audit ethical mobile rating/review prompts | `mobile-rating-review-integrator` |
 | I want to know what Codex can read/write across RevenueCat, iOS, Android, store metadata, or reporting APIs | `docs/operations/codex-operational-capabilities.md` |
 | I want to analyze or safely manage Meta/Facebook/Instagram ads | `meta-ads-operator` |
 | I want to analyze or safely manage TikTok ads | `tiktok-ads-operator` |
@@ -254,6 +255,24 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - Codex: `viber-android-submitter`
   - Cursor: not currently projected
   - Any tool: `android-submitter`
+
+#### `mobile-rating-review-integrator`
+
+- Kind: `product-agent`
+- Callability: `artifact-aware`
+- Tier: `support`
+- Purpose: Design, audit, or implement compliant mobile rating/review flows for Kant Akademi apps
+- Use when:
+  - adding native iOS/Android review prompts, store review links, cooldowns, analytics, or internal feedback routing
+  - auditing whether rating/review triggers are ethical and platform-compliant
+- App discovery sources:
+  - `config/store-review-apps.json` for app IDs, bundle/package IDs, support email, and app-specific feedback context
+  - `docs/operations/store-review-ops.md` and `npm run reviews:stores` for existing store review operations
+  - `scripts/store-review-ops.mjs` for the executable source of current review triage/reply behavior
+- Surfaces:
+  - Codex: `viber-mobile-rating-review-integrator`
+  - Cursor: not currently projected
+  - Any tool: `mobile-rating-review-integrator`
 
 ### Legacy aliases
 

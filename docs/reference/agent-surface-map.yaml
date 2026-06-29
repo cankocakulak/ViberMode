@@ -144,6 +144,18 @@ capabilities:
       any_tool_agent: android-submitter
       canonical_role: packs/vibermode/roles/product/android-submitter.md
 
+  - id: mobile-rating-review-integrator
+    kind: product-agent
+    callability: artifact-aware
+    tier: support
+    family: operations
+    purpose: design, retrofit, audit, or validate ethical mobile rating and review integrations
+    surfaces:
+      codex_skill: viber-mobile-rating-review-integrator
+      cursor_command: null
+      any_tool_agent: mobile-rating-review-integrator
+      canonical_role: packs/vibermode/roles/product/mobile-rating-review-integrator.md
+
   - id: ralph-converter
     kind: legacy-alias
     tier: legacy

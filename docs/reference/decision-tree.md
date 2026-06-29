@@ -175,6 +175,12 @@ If you do not yet understand how the workflows combine into higher-level service
 - Note:
   - Android requires Play Console bootstrap before API-controlled upload
 
+### I need rating/review prompts or store feedback integration
+
+- Use `mobile-rating-review-integrator`.
+- During App Discovery, use `config/store-review-apps.json`, `docs/operations/store-review-ops.md`, `scripts/store-review-ops.mjs`, and `npm run reviews:stores` as the source for app IDs, support email, current review operations, and store feedback context.
+- Keep native store prompts separate from internal feedback and support routes.
+
 ### I need Codex to read or operate a connected service
 
 - Start with `docs/operations/codex-operational-capabilities.md`

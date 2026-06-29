@@ -29,6 +29,10 @@ If a repo is available, inspect code first. Ask only for missing product context
 Find:
 
 - app name, bundle/package IDs, platforms
+- existing store review app record in `config/store-review-apps.json`
+- current store review ops context from `docs/operations/store-review-ops.md`
+- current review triage/reply behavior in `scripts/store-review-ops.mjs` or `npm run reviews:stores`
+- support email and app-specific feedback details from the store review config before inventing new values
 - user roles: student, parent, mentor, coach, teacher, internal team
 - main promise and core workflows
 - navigation and post-success screens

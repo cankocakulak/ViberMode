@@ -19,6 +19,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **implementation-runner** | `packs/vibermode/roles/product/implementation-runner.md` | Implements one task per session from `tasks.json` |
 | **ios-submitter** | `packs/vibermode/roles/product/ios-submitter.md` | Uploads completed generated iOS apps to internal TestFlight |
 | **android-submitter** | `packs/vibermode/roles/product/android-submitter.md` | Uploads completed generated Android apps to Google Play internal testing |
+| **mobile-rating-review-integrator** | `packs/vibermode/roles/product/mobile-rating-review-integrator.md` | Designs, audits, or implements compliant mobile rating/review flows |
 
 ### Legacy Product Aliases
 
@@ -72,6 +73,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **implementation-runner** agent" → Read `packs/vibermode/roles/product/implementation-runner.md`
 - "Use the **ios-submitter** agent" → Read `packs/vibermode/roles/product/ios-submitter.md`
 - "Use the **android-submitter** agent" → Read `packs/vibermode/roles/product/android-submitter.md`
+- "Use the **mobile-rating-review-integrator** agent" → Read `packs/vibermode/roles/product/mobile-rating-review-integrator.md`
 - "Use the **ralph-converter** agent" → Read `packs/vibermode/roles/product/ralph-converter.md`
 - "Use the **ralph-runner** agent" → Read `packs/vibermode/roles/product/ralph-runner.md`
 - "Use the **scout** agent" → Read `packs/vibermode/roles/iterate/scout.md`
