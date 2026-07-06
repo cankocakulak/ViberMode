@@ -36,6 +36,18 @@ capabilities:
       any_tool_agent: app-researcher
       canonical_role: packs/vibermode/roles/product/app-researcher.md
 
+  - id: mobile-rating-review-integrator
+    kind: product-agent
+    callability: artifact-aware
+    tier: support
+    family: product
+    purpose: design, retrofit, audit, and validate compliant mobile app rating/review flows
+    surfaces:
+      codex_skill: viber-mobile-rating-review-integrator
+      cursor_command: null
+      any_tool_agent: mobile-rating-review-integrator
+      canonical_role: packs/vibermode/roles/product/mobile-rating-review-integrator.md
+
   - id: brainstormer
     kind: product-agent
     callability: always-callable

@@ -59,6 +59,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I already have specs and want implementation execution | `spec-to-code` |
 | I want the full idea-to-code path | `product-to-code` |
 | I want to name an app and have Codex improve, prepare, or submit it | `app-autopilot` |
+| I want to add or audit compliant mobile app rating/review prompts | `mobile-rating-review-integrator` |
 | I want to optimize app paywall timing, onboarding monetization, or review prompts | `paywall-review-optimizer` |
 | I want to create or replace a mobile paywall from a reusable template | `paywall-creator` |
 | I want to produce a new fuller playable game with 20 levels, character design, progression, and iteration evidence | `game-full-production-pass` |
@@ -111,6 +112,24 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - Codex: `viber-analyzer`
   - Cursor: `/analyzer`
   - Any tool: `analyzer` via `AGENTS.md`
+
+#### `mobile-rating-review-integrator`
+
+- Kind: `product-agent`
+- Callability: `artifact-aware`
+- Tier: `support`
+- Purpose: Design, retrofit, audit, and validate compliant mobile app rating/review flows
+- Use when:
+  - an app needs native iOS/Android review prompts, trigger selection, cooldowns, or internal feedback separation
+  - rating/review behavior needs a policy-safe audit before release
+- Avoid when:
+  - the request is only App Store or Google Play listing metadata
+- Typical outputs:
+  - `docs/[project-name]/rating-review-integration.md`
+- Surfaces:
+  - Codex: `viber-mobile-rating-review-integrator`
+  - Cursor: not currently projected
+  - Any tool: `mobile-rating-review-integrator`
 
 #### `brainstormer`
 
