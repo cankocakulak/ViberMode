@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mobile Competitor Teardown"
+  short_description: "Benchmark app onboarding, paywalls, and monetization"
+  default_prompt: "Use $mobile-competitor-teardown to benchmark iOS education apps and build a paywall/onboarding research pack."
