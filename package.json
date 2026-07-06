@@ -21,6 +21,7 @@
     "app:resolve": "node scripts/app-autopilot-resolve.mjs",
     "research:ingest": "node scripts/ingest-market-source.mjs",
     "research:public-scan": "node scripts/research-public-app-scan.mjs",
+    "research:competitor-teardown": "node scripts/mobile-competitor-teardown.mjs",
     "workspace:topology": "node scripts/workspace-topology.mjs",
     "workspace:provision": "node scripts/workspace-bundle-provision.mjs",
     "factory:experience-gate": "node scripts/ios-factory-experience-gate.mjs",

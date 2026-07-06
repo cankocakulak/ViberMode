@@ -541,6 +541,18 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: docs/operations/codex-operational-capabilities.md
 
+  - id: mobile-competitor-teardown
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: build competitor research packs for app onboarding, paywalls, pricing, monetization, and review prompt patterns
+    surfaces:
+      codex_skill: mobile-competitor-teardown
+      cursor_command: null
+      any_tool_agent: mobile-competitor-teardown
+      canonical_workflow: packs/vibermode/workflows/mobile-competitor-teardown.md
+
   - id: meta-ads-operator
     kind: workflow
     callability: always-callable
