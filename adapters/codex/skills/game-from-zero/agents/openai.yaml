@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viber Game From Zero"
+  short_description: "Bootstrap a new game lab, then create a signature prototype."
+  default_prompt: "Use $viber-game-from-zero against the target repo."

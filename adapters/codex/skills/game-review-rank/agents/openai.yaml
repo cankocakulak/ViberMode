@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Review Rank"
+  short_description: "Rank playable prototypes and choose next passes."
+  default_prompt: "Use $viber-game-review-rank against /Users/mcan/game-with-water."

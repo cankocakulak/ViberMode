@@ -23,6 +23,7 @@ If you do not yet understand how the workflows combine into higher-level service
 ### 2. Are you working inside an existing repository?
 
 - Yes:
+  - Use a focused game workflow when the user wants playable game work inside an existing game/prototype repo. Use `game-full-production-pass` for new game production or one-button full game work, `game-quality-scorecard` for "is this actually good", `game-visual-novelty-audit` for samey/generic visuals, `game-grow-best` for existing-game improvement, `game-review-rank` for comparison, `game-level-pack` for progression, `game-design-character` for identity, `game-feature-experiment` for one mechanic test, `game-bugfix-polish` for blockers, and `game-night-loop` only for advanced portfolio batches. Use `game-new-prototype` or `game-signature-prototype` only as internal/explicit fast-generation building blocks.
   - Use `app-autopilot` when the user names a known app and wants "improve it", "self-improve", "release-only", TestFlight, or Google Play internal submission without spelling out repo paths
   - Use `change-to-release` when the requested changes should be validated and optionally released or deployed
   - Use `repo-change` for broad repo iteration work without release orchestration
@@ -31,6 +32,24 @@ If you do not yet understand how the workflows combine into higher-level service
   - Use `bootstrap` or `product-to-spec` depending on whether you need repo prep or spec generation first
 
 ## Existing Repo Paths
+
+### I need to build or grow a game prototype
+
+- Use one focused game workflow:
+  - `game-full-production-pass` for new game production or one-button full game work with core logic, character design, guided progression, 20 levels, iteration, and validation
+  - `game-quality-scorecard` for objective scoring and anti-handwave quality gates
+  - `game-visual-novelty-audit` for repeated visual language, generic layouts, or weak identity
+  - `game-grow-best` for polishing or extending a selected existing prototype
+  - `game-review-rank` for ranking, QA, or deciding the next pass
+  - `game-level-pack` for levels, stars, goals, and difficulty curve work
+  - `game-design-character` for visual identity, character, animation, and game feel
+  - `game-feature-experiment` for one mechanic, power-up, hazard, combo, or retention test
+  - `game-bugfix-polish` for clicking, transitions, modals, result screens, validation, or smoke blockers
+  - `game-night-loop` only for advanced portfolio batches across several focused passes
+- Note:
+  - `game-new-prototype` and `game-signature-prototype` are internal/explicit fast-generation building blocks. Do not make them the default Play surface for new games.
+  - `game-prototype-lab` is a legacy router only. Prefer the focused workflows above for new automations.
+  - Game With Water is a prototype lab/app shell name, not a water-theme requirement.
 
 ### I have several feedback notes, bugs, or release-facing requests
 
@@ -152,6 +171,15 @@ If you do not yet understand how the workflows combine into higher-level service
 ### Existing product feature with proper artifact trail
 
 - `analyzer -> product-to-spec -> bootstrap -> spec-to-code`
+
+### Existing game prototype lab
+
+- `game-full-production-pass -> game-review-rank -> game-signature-prototype -> game-design-character -> game-level-pack(level_count=20) -> game-quality-scorecard -> game-visual-novelty-audit -> game-bugfix-polish -> final validation`
+- Internal fast path only: `game-signature-prototype -> game-new-prototype -> game-visual-novelty-audit -> game-review-rank -> game-design-character -> game-level-pack -> game-quality-scorecard -> game-bugfix-polish`
+- `game-grow-best -> game-design-level-hardener -> game-prototype-review-grower`
+- `game-review-rank -> recommended next focused game workflow`
+- Advanced batch only: `game-night-loop -> game-review-rank -> game-grow-best -> game-level-pack/design-character -> game-quality-scorecard -> final validation`
+- Future greenfield only: `game-from-zero -> game-lab-bootstrap -> game-signature-prototype -> game-quality-scorecard`
 
 ### Existing repo feedback to release
 

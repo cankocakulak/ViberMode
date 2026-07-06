@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Design Character"
+  short_description: "Add visual identity, character, and game feel."
+  default_prompt: "Use $viber-game-design-character against /Users/mcan/game-with-water."

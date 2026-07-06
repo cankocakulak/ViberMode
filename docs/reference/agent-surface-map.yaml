@@ -144,6 +144,42 @@ capabilities:
       any_tool_agent: android-submitter
       canonical_role: packs/vibermode/roles/product/android-submitter.md
 
+  - id: game-prototype-builder
+    kind: product-agent
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: research and build a playable game prototype inside an existing repo for focused game workflows
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: game-prototype-builder
+      canonical_role: packs/vibermode/roles/game/game-prototype-builder.md
+
+  - id: game-design-level-hardener
+    kind: iterate-agent
+    callability: artifact-aware
+    tier: primary
+    family: game
+    purpose: harden a playable game prototype's visual language, game feel, level curve, shell, and readability
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: game-design-level-hardener
+      canonical_role: packs/vibermode/roles/game/game-design-level-hardener.md
+
+  - id: game-prototype-review-grower
+    kind: iterate-agent
+    callability: artifact-aware
+    tier: primary
+    family: game
+    purpose: review playable prototypes or apply one bounded growth pass within focused game workflows
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: game-prototype-review-grower
+      canonical_role: packs/vibermode/roles/game/game-prototype-review-grower.md
+
   - id: ralph-converter
     kind: legacy-alias
     tier: legacy
@@ -409,6 +445,222 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/product-to-code.md
 
+  - id: game-new-prototype
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: game
+    purpose: internal fast path to research and add one fresh playable game prototype inside an existing game/prototype repo without creating a new repo
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: game-new-prototype
+      canonical_workflow: packs/vibermode/workflows/game/new-prototype.md
+
+  - id: game-signature-prototype
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: game
+    purpose: internal composition layer for a fresh playable prototype plus audit, design, level, polish, and validation passes
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: game-signature-prototype
+      canonical_workflow: packs/vibermode/workflows/game/signature-prototype.md
+
+  - id: game-full-production-pass
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: build one new fuller playable game with core logic, characterful design, guided progression, 20 meaningful levels, iteration evidence, and validation
+    surfaces:
+      codex_skill: viber-game-full-production-pass
+      cursor_command: null
+      any_tool_agent: game-full-production-pass
+      canonical_workflow: packs/vibermode/workflows/game/full-production-pass.md
+
+  - id: game-quality-scorecard
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: score playable game prototypes with a concrete hyper-casual quality rubric and route next focused workflows
+    surfaces:
+      codex_skill: viber-game-quality-scorecard
+      cursor_command: null
+      any_tool_agent: game-quality-scorecard
+      canonical_workflow: packs/vibermode/workflows/game/quality-scorecard.md
+
+  - id: game-visual-novelty-audit
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: audit whether a game prototype repeats prior visual language, layout, object semantics, or feedback rhythm
+    surfaces:
+      codex_skill: viber-game-visual-novelty-audit
+      cursor_command: null
+      any_tool_agent: game-visual-novelty-audit
+      canonical_workflow: packs/vibermode/workflows/game/visual-novelty-audit.md
+
+  - id: game-grow-best
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: improve the highest-ROI or named existing game prototype with one bounded growth pass
+    surfaces:
+      codex_skill: viber-game-grow-best
+      cursor_command: null
+      any_tool_agent: game-grow-best
+      canonical_workflow: packs/vibermode/workflows/game/grow-best.md
+
+  - id: game-review-rank
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: review, compare, rank, and recommend next passes for playable game prototypes
+    surfaces:
+      codex_skill: viber-game-review-rank
+      cursor_command: null
+      any_tool_agent: game-review-rank
+      canonical_workflow: packs/vibermode/workflows/game/review-rank.md
+
+  - id: game-level-pack
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: add or tune level packs, goals, stars, and difficulty progression for an existing game prototype
+    surfaces:
+      codex_skill: viber-game-level-pack
+      cursor_command: null
+      any_tool_agent: game-level-pack
+      canonical_workflow: packs/vibermode/workflows/game/level-pack.md
+
+  - id: game-design-character
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: establish stronger game identity, character/world language, motion, feedback, and visual polish
+    surfaces:
+      codex_skill: viber-game-design-character
+      cursor_command: null
+      any_tool_agent: game-design-character
+      canonical_workflow: packs/vibermode/workflows/game/design-character.md
+
+  - id: game-feature-experiment
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: add one bounded mechanic, special object, power-up, hazard, combo, or retention experiment
+    surfaces:
+      codex_skill: viber-game-feature-experiment
+      cursor_command: null
+      any_tool_agent: game-feature-experiment
+      canonical_workflow: packs/vibermode/workflows/game/feature-experiment.md
+
+  - id: game-bugfix-polish
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: game
+    purpose: fix blockers, transitions, result screens, dashboard wiring, persistence issues, smoke failures, and basic polish
+    surfaces:
+      codex_skill: viber-game-bugfix-polish
+      cursor_command: null
+      any_tool_agent: game-bugfix-polish
+      canonical_workflow: packs/vibermode/workflows/game/bugfix-polish.md
+
+  - id: game-night-loop
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: game
+    purpose: run several focused game workflows sequentially as one advanced portfolio-maintenance batch
+    surfaces:
+      codex_skill: null
+      cursor_command: null
+      any_tool_agent: game-night-loop
+      canonical_workflow: packs/vibermode/workflows/game/night-loop.md
+
+  - id: game-template-kit
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: game
+    purpose: maintain reusable game prototype templates and conventions without centralizing visual identity
+    surfaces:
+      codex_skill: viber-game-template-kit
+      cursor_command: null
+      any_tool_agent: game-template-kit
+      canonical_workflow: packs/vibermode/workflows/game/template-kit.md
+
+  - id: game-retention-meta
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: game
+    purpose: add one light retention or replay meta layer after core gameplay quality passes
+    surfaces:
+      codex_skill: viber-game-retention-meta
+      cursor_command: null
+      any_tool_agent: game-retention-meta
+      canonical_workflow: packs/vibermode/workflows/game/retention-meta.md
+
+  - id: game-store-readiness
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: game
+    purpose: audit a game prototype for store-facing or internal-testing readiness after gameplay quality passes
+    surfaces:
+      codex_skill: viber-game-store-readiness
+      cursor_command: null
+      any_tool_agent: game-store-readiness
+      canonical_workflow: packs/vibermode/workflows/game/store-readiness.md
+
+  - id: game-lab-bootstrap
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: game
+    purpose: prepare a new or empty repo to become a modular game prototype lab
+    surfaces:
+      codex_skill: viber-game-lab-bootstrap
+      cursor_command: null
+      any_tool_agent: game-lab-bootstrap
+      canonical_workflow: packs/vibermode/workflows/game/lab-bootstrap.md
+
+  - id: game-from-zero
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: game
+    purpose: bootstrap a new game lab and create a first signature-quality prototype
+    surfaces:
+      codex_skill: viber-game-from-zero
+      cursor_command: null
+      any_tool_agent: game-from-zero
+      canonical_workflow: packs/vibermode/workflows/game/from-zero.md
+
+  - id: game-prototype-lab
+    kind: workflow
+    callability: always-callable
+    tier: legacy
+    family: game
+    purpose: compatibility router for older combined game prototype lab prompts
+    surfaces:
+      codex_skill: viber-game-prototype-lab
+      cursor_command: null
+      any_tool_agent: game-prototype-lab
+      canonical_workflow: packs/vibermode/workflows/game/prototype-lab.md
+
   - id: repo-change
     kind: workflow
     callability: always-callable
@@ -540,6 +792,30 @@ capabilities:
       cursor_command: null
       any_tool_agent: null
       canonical_workflow: docs/operations/codex-operational-capabilities.md
+
+  - id: paywall-review-optimizer
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: audit and improve paywall timing, onboarding-to-value monetization, and native review prompt strategy
+    surfaces:
+      codex_skill: paywall-review-optimizer
+      cursor_command: null
+      any_tool_agent: paywall-review-optimizer
+      canonical_workflow: packs/vibermode/workflows/paywall-review-optimizer.md
+
+  - id: paywall-creator
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: create or adapt template-based mobile paywall surfaces without owning store product or entitlement setup
+    surfaces:
+      codex_skill: paywall-creator
+      cursor_command: null
+      any_tool_agent: paywall-creator
+      canonical_workflow: packs/vibermode/workflows/paywall-creator.md
 
   - id: meta-ads-operator
     kind: workflow

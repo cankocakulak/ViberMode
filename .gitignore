@@ -14,12 +14,17 @@ build/
 .env
 .env.local
 .env.*.local
+.ads.env
+.ads.env.local
 .vibermode-automation.env
 .store-downloads-apps*.json
 reports/store-reviews/
 docs/operations/app-registry.local.json
 .vibermode-state/
 .vibermode-generated-ios-apps/
+output/
+.playwright-mcp/
+tiktok-qr-login.png
 
 # Store credentials
 *-play-publisher-*.json

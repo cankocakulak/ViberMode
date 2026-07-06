@@ -1,0 +1,105 @@
+{
+  "updatedAt": "2026-07-05",
+  "usage": "Seed references for ViberMode game-reference-benchmark artifacts. Refresh with current store/chart research during each serious game pass.",
+  "references": [
+    {
+      "id": "snake-clash",
+      "name": "Snake Clash!",
+      "category": "io-arcade-growth",
+      "sourceUrls": [
+        "https://apps.apple.com/us/app/snake-clash/id6449243946",
+        "https://play.google.com/store/apps/details?hl=en_US&id=io.supercent.linkedcubic"
+      ],
+      "signals": [
+        "App Store listing observed 724K ratings, 4.7 score, and Chart #17 Simulation on 2026-07-05.",
+        "Google Play listing observed 100M+ downloads, 4.3 star, and 1M+ reviews on 2026-07-05."
+      ],
+      "coreVerb": "Slither, eat, grow, and survive against rivals.",
+      "firstTenSeconds": "Player should understand movement, food collection, rival avoidance, and growth immediately.",
+      "pressure": "Bigger rivals, arena competition, boss/milestone pressure, short-session survival.",
+      "visualHook": "Large readable snake body, growth scale, arena field, collectible food, skin identity.",
+      "feedbackHook": "Eating creates visible growth, stronger presence, opponent defeat, reward/currency feedback.",
+      "progressionPromise": "Skins, upgrades, bosses, seasonal events, rankings, offline/online modes.",
+      "doNotCopy": "Do not clone snake IP, fake multiplayer presentation, ad pressure, or exact arena/skin treatment.",
+      "benchmarkUse": "Use for growth-loop clarity, body/silhouette identity, and instant eat-grow feedback."
+    },
+    {
+      "id": "block-blast",
+      "name": "Block Blast!",
+      "category": "block-puzzle",
+      "sourceUrls": [
+        "https://apps.apple.com/us/app/block-blast/id1617391485",
+        "https://www.blockblast.com/"
+      ],
+      "signals": [
+        "App Store listing observed 2.6M ratings, 4.9 score, and Chart #5 Casual on 2026-07-05.",
+        "Official site claims 70M daily active users and 300M monthly active users on 2026-07-05."
+      ],
+      "coreVerb": "Drag blocks, place them on a grid, clear lines, chase high score.",
+      "firstTenSeconds": "Player should see grid, draggable pieces, and row/column clearing affordance.",
+      "pressure": "Spatial scarcity, future-piece planning, no-move failure, daily puzzle goals.",
+      "visualHook": "Bright cube materials, 8x8 grid, satisfying block crush and color burst.",
+      "feedbackHook": "Line clears explode, cascades reward good placement, score/high-score loop reinforces mastery.",
+      "progressionPromise": "Daily puzzles, endless high-score chase, adventure or mode variety.",
+      "doNotCopy": "Do not copy exact block shapes, board art, branding, or puzzle layout.",
+      "benchmarkUse": "Use for board readability, immediate puzzle affordance, and satisfying clear feedback."
+    },
+    {
+      "id": "pizza-ready",
+      "name": "Pizza Ready!",
+      "category": "restaurant-idle-sim",
+      "sourceUrls": [
+        "https://apps.apple.com/us/app/pizza-ready/id6450917563"
+      ],
+      "signals": [
+        "App Store listing observed 325K ratings, 4.6 score, and Chart #22 Simulation on 2026-07-05."
+      ],
+      "coreVerb": "Cook, serve, clean, upgrade, and expand a restaurant.",
+      "firstTenSeconds": "Player should understand the station, customer queue, serving route, and upgrade loop.",
+      "pressure": "Customer demand, service speed, staff capacity, station throughput, expansion goals.",
+      "visualHook": "Readable restaurant stations, food production line, customers, staff, upgradeable space.",
+      "feedbackHook": "Serving converts to cash/progress, upgrades visibly speed or expand operations.",
+      "progressionPromise": "Counter plus drive-thru, staff hiring, decoration, chain expansion, events.",
+      "doNotCopy": "Do not copy restaurant theme, pizza assets, store layout, or idle economy tuning.",
+      "benchmarkUse": "Use for cozy operational loops, object-world clarity, and visible upgrade surfaces."
+    },
+    {
+      "id": "hole-io",
+      "name": "Hole.io",
+      "category": "satisfying-absorb",
+      "sourceUrls": [
+        "https://apps.apple.com/us/app/hole-io/id1389111413"
+      ],
+      "signals": [
+        "App Store listing observed 2M ratings and 4.6 score on 2026-07-05."
+      ],
+      "coreVerb": "Glide a hole, swallow objects, grow, and clear the map.",
+      "firstTenSeconds": "Player should see a controllable hole, nearby small objects, and size-gated targets.",
+      "pressure": "Object size gating, map timer/clear pressure, rival scale in competitive variants.",
+      "visualHook": "Black hole silhouette, city/object scale contrast, growing radius, object collapse.",
+      "feedbackHook": "Swallowing objects creates crunch, disappearance, growth, and map-clearing satisfaction.",
+      "progressionPromise": "New maps, collections, clearer UI, map progress, object variety.",
+      "doNotCopy": "Do not copy black-hole theme, city maps, or exact swallow mechanic.",
+      "benchmarkUse": "Use for single-object screenshot read, satisfying scale progression, and tactile destruction feedback."
+    },
+    {
+      "id": "going-balls",
+      "name": "Going Balls",
+      "category": "runner-balance",
+      "sourceUrls": [
+        "https://apps.apple.com/us/app/going-balls/id1499081620"
+      ],
+      "signals": [
+        "App Store listing describes a fast-paced rolling-ball track game; refresh chart/rating data during use."
+      ],
+      "coreVerb": "Guide a rolling ball across tracks to the finish.",
+      "firstTenSeconds": "Player should understand swipe/tilt control, track path, finish direction, and falling risk.",
+      "pressure": "Narrow tracks, obstacles, physics, speed, precision, level completion.",
+      "visualHook": "Shiny ball, elevated track, obstacle silhouettes, forward camera momentum.",
+      "feedbackHook": "Rolling speed, collision, fall/retry, finish celebration, level progression.",
+      "progressionPromise": "Increasingly difficult tracks, skins, obstacle variety, mastery runs.",
+      "doNotCopy": "Do not copy track layouts, ball skins, or exact physics presentation.",
+      "benchmarkUse": "Use for one-object control feel, obstacle readability, and level-by-level skill pressure."
+    }
+  ]
+}

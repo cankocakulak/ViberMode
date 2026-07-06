@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Feature Experiment"
+  short_description: "Add one bounded mechanic experiment."
+  default_prompt: "Use $viber-game-feature-experiment against /Users/mcan/game-with-water."

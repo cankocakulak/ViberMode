@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viber Game Retention Meta"
+  short_description: "Add light retention systems after the core game works."
+  default_prompt: "Use $viber-game-retention-meta against /Users/mcan/game-with-water."

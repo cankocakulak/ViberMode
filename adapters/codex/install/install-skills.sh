@@ -19,6 +19,16 @@ echo "Installing ViberMode skills to $CODEX_SKILLS..."
 
 mkdir -p "$CODEX_SKILLS"
 
+# Remove ViberMode skills that used to be public Codex entry points but are now
+# internal workflow docs. This keeps the Codex skill picker aligned with the
+# curated source directory after a cleanup.
+for stale_skill in game-new-prototype game-signature-prototype game-night-loop; do
+  if [ -d "$CODEX_SKILLS/$stale_skill" ] && [ ! -d "$SKILLS_SOURCE/$stale_skill" ]; then
+    echo "  Removing stale: $stale_skill"
+    rm -rf "$CODEX_SKILLS/$stale_skill"
+  fi
+done
+
 echo "Installing shared ViberMode support bundle..."
 rm -rf "$SUPPORT_BUNDLE"
 mkdir -p "$SUPPORT_BUNDLE/packs" "$SUPPORT_BUNDLE/docs"

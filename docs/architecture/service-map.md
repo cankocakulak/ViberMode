@@ -17,6 +17,7 @@ Roles are the workers. Workflows are the operating procedures. Services are the 
 | Service | Outcome | Main Entry Workflow | Supporting Workflows |
 |---------|---------|---------------------|----------------------|
 | App Autopilot | Resolve a known app by alias, then improve, change, prepare, or submit it through existing gates | `app-autopilot` | `change-to-release`, `experience-hardening`, `ios-submit-testflight`, `android-submit-play-internal` |
+| Paywall and Review Optimization | Improve subscription paywall timing, paywall surface quality, onboarding-to-value, and native review prompt timing inside an existing app | `paywall-review-optimizer` | `paywall-creator`, `mobile-monetization-operator`, `revenuecat-operator`, `design-engineer`, `integration-auditor`, `runtime-validator` |
 | Product to Code | Turn a raw idea or product slice into reviewed code in a repo | `product-to-code` | `product-to-spec`, `bootstrap`, `spec-to-code`, `experience-hardening`, `remediation-routing` |
 | Existing Repo Change to Release | Turn feedback or requested changes into validated changes, optionally released | `change-to-release` | `change-triager`, `repo-change`, `experience-hardening`, `ios-submit-testflight` or `android-submit-play-internal` when applicable |
 | iOS App Factory | Research app ideas, create an iOS repo, implement it, and prepare TestFlight delivery | `daily-ios-app-pipeline` | `app-opportunity-research`, `idea-research-backlog`, `product-to-code`, `ios-submit-testflight` |
@@ -59,6 +60,37 @@ Canonical docs:
 - `packs/vibermode/workflows/app-autopilot.md`
 - `docs/use-cases/app-autopilot.md`
 - `docs/operations/app-registry.md`
+
+## Paywall And Review Optimization Service
+
+Use this when an existing app needs better subscription conversion or better-timed native rating prompts without turning the work into a broad product redesign.
+
+```text
+target app
+  -> paywall-review-optimizer
+  -> journey and trigger audit
+  -> bounded code changes or specialist route
+  -> paywall-creator when a replacement paywall surface is needed
+  -> mobile-monetization-operator or revenuecat-operator when store/RevenueCat state is the blocker
+  -> runtime validation for changed user-facing flows
+```
+
+Boundary:
+
+- `paywall-review-optimizer` owns diagnosis, timing, trigger logic, compliance checks, and orchestration.
+- `paywall-creator` owns template-based paywall UI generation and adaptation.
+- `mobile-monetization-operator` owns store products, RevenueCat mapping, entitlement wiring, and purchase readiness.
+- Existing quality gates still apply when the change is release-bound.
+
+Canonical docs:
+
+- `packs/vibermode/workflows/paywall-review-optimizer.md`
+- `packs/vibermode/workflows/paywall-creator.md`
+
+Codex projections:
+
+- `adapters/codex/skills/paywall-review-optimizer/SKILL.md`
+- `adapters/codex/skills/paywall-creator/SKILL.md`
 
 ## Product To Code Service
 

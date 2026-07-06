@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Level Pack"
+  short_description: "Add or tune a focused level pack."
+  default_prompt: "Use $viber-game-level-pack against /Users/mcan/game-with-water."

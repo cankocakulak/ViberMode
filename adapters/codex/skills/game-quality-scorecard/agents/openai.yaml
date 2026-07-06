@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viber Game Quality Scorecard"
+  short_description: "Score prototype quality with a concrete game rubric."
+  default_prompt: "Use $viber-game-quality-scorecard against /Users/mcan/game-with-water."

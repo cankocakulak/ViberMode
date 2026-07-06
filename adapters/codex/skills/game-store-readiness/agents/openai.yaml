@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viber Game Store Readiness"
+  short_description: "Audit a game prototype for store-facing readiness."
+  default_prompt: "Use $viber-game-store-readiness against /Users/mcan/game-with-water."

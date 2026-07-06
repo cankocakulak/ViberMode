@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viber Game Full Production Pass"
+  short_description: "Build one fuller playable game with 20 levels."
+  default_prompt: "Use $viber-game-full-production-pass against /Users/mcan/game-with-water."

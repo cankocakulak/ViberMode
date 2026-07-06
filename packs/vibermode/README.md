@@ -19,6 +19,8 @@ Current canonical workflow set includes:
 - `repo-change`
 - `experience-hardening`
 - `change-to-release`
+- `paywall-review-optimizer`
+- `paywall-creator`
 - `ios-submit-testflight`
 - `android-submit-play-internal`
 - `product-to-code` as the composed top-level flow

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Grow Best"
+  short_description: "Improve the highest-ROI existing game."
+  default_prompt: "Use $viber-game-grow-best against /Users/mcan/game-with-water."

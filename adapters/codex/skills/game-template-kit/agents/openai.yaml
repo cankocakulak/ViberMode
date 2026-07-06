@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viber Game Template Kit"
+  short_description: "Maintain reusable game prototype templates."
+  default_prompt: "Use $viber-game-template-kit against /Users/mcan/game-with-water."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paywall Creator"
+  short_description: "Create template-based paywall surfaces"
+  default_prompt: "Use $paywall-creator to adapt a template paywall for this app and wire it into the existing flow."

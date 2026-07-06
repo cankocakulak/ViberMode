@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viber Game Visual Novelty Audit"
+  short_description: "Check whether a prototype looks and feels too samey."
+  default_prompt: "Use $viber-game-visual-novelty-audit against /Users/mcan/game-with-water."

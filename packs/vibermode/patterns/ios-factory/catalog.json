@@ -58,6 +58,34 @@
         "If purchases are deferred, CTA copy must say what happens now, such as joining a waitlist or previewing premium.",
         "Move real product identifiers and RevenueCat work into core or ops tasks only when approved by stories."
       ]
+    },
+    {
+      "id": "paywall.swiftui-template",
+      "type": "paywall-template",
+      "platform": "ios",
+      "templateFile": "packs/vibermode/patterns/ios-factory/paywall/paywall-template.swift",
+      "purpose": "Concrete SwiftUI starter component for a subscription paywall with benefit stack, package cards, CTA, restore, legal, close, loading, and disabled states.",
+      "useWhen": [
+        "A generated or existing iOS app needs a paywall component copied and adapted from a known-good structure.",
+        "The purchase topology is known as live, existing handler, preview shell, disabled owner action, or blocked.",
+        "The implementation should start from a stable component instead of creating a paywall from scratch."
+      ],
+      "requiredAdaptation": [
+        "Rename all template types and identifiers to match the target app.",
+        "Replace preview copy, benefits, prices, package IDs, trial text, and legal disclosure with approved app-specific values.",
+        "Wire CTA, restore, terms, privacy, and close handlers to real routes or honest disabled states.",
+        "Match the target app's design system before release-facing validation."
+      ],
+      "foundationSurfaces": [
+        "upgrade_or_paywall_shell",
+        "premium_action_gate",
+        "onboarding_paywall"
+      ],
+      "implementationNotes": [
+        "Do not ship the template with placeholder preview values.",
+        "Do not show a live purchase CTA unless purchase wiring is actually live.",
+        "Use this template through the paywall-creator workflow when the app context is not already fully specified."
+      ]
     }
   ]
 }

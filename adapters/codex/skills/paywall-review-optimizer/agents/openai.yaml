@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paywall Review Optimizer"
+  short_description: "Audit and improve paywall/review timing"
+  default_prompt: "Use $paywall-review-optimizer to audit this app's paywall and review prompt timing, then implement a bounded improvement plan."

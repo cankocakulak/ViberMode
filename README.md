@@ -6,6 +6,7 @@ It is not just a list of agents. The useful unit is a **service**:
 
 - research app opportunities
 - turn a product idea into reviewed code
+- research, add, grow, and review game prototypes inside an existing prototype lab repo
 - change an existing repo and validate the result
 - generate an iOS app from a ready idea and push it toward TestFlight
 - upload completed generated mobile apps to internal tester channels
@@ -21,6 +22,7 @@ The canonical definitions live in `packs/`. Tool-specific wrappers live in `adap
 | Pick the right agent or workflow | `docs/reference/decision-tree.md` | situation -> capability |
 | See every role/workflow surface | `docs/reference/capability-map.md` | capability -> Codex/Cursor/AGENTS surface |
 | Research app ideas without creating repos | `docs/use-cases/app-opportunity-research.md` | app research -> ranked candidates |
+| Run the game prototype machine inside an existing repo | `packs/vibermode/workflows/game/prototype-lab.md` | router -> focused game workflow -> validation |
 | Run idea-to-TestFlight factory flow | `docs/use-cases/ios-app-factory.md` | ready idea -> repo -> code -> TestFlight |
 | Operate on a known app by name | `docs/use-cases/app-autopilot.md` | app alias -> improve/change/growth/submit |
 | Change an existing repo and maybe release | `docs/use-cases/existing-repo-change-to-release.md` | change notes -> validation -> release adapter |
@@ -95,7 +97,54 @@ Automation:
 
 - `viber-idea-research` in `docs/operations/codex-automations.md`
 
-### 2. iOS App Factory: Idea To TestFlight
+### 2. Game Prototype Machine
+
+Use this when you want Codex to keep an existing game/prototype repo moving: create one full game candidate, grow the best ones, add levels, establish a design language, test mechanics, fix blockers, or run an advanced portfolio batch. Game With Water is treated as a prototype lab/app shell, not a water-theme constraint.
+
+```text
+existing game repo
+  -> game/full-production-pass for new game production
+  -> focused workflow for growth / levels / design / feature / bugfix / review
+  -> final validation and handoff
+```
+
+Primary:
+
+- `docs/reference/game-automation-prompt-library.md`
+- `packs/vibermode/workflows/game/full-production-pass.md`
+- `packs/vibermode/workflows/game/quality-scorecard.md`
+- `packs/vibermode/workflows/game/visual-novelty-audit.md`
+- `packs/vibermode/workflows/game/grow-best.md`
+- `packs/vibermode/workflows/game/review-rank.md`
+- `packs/vibermode/workflows/game/level-pack.md`
+- `packs/vibermode/workflows/game/design-character.md`
+- `packs/vibermode/workflows/game/feature-experiment.md`
+- `packs/vibermode/workflows/game/bugfix-polish.md`
+
+Support/advanced:
+
+- `packs/vibermode/workflows/game/new-prototype.md`
+- `packs/vibermode/workflows/game/signature-prototype.md`
+- `packs/vibermode/workflows/game/night-loop.md`
+- `packs/vibermode/workflows/game/prototype-lab.md`
+- future/secondary: `packs/vibermode/workflows/game/lab-bootstrap.md`, `packs/vibermode/workflows/game/from-zero.md`, `packs/vibermode/workflows/game/template-kit.md`, `packs/vibermode/workflows/game/retention-meta.md`, `packs/vibermode/workflows/game/store-readiness.md`
+- `packs/vibermode/roles/game/game-prototype-builder.md`
+- `packs/vibermode/roles/game/game-design-level-hardener.md`
+- `packs/vibermode/roles/game/game-prototype-review-grower.md`
+
+Automation:
+
+- `manual-viber-game-full-production-pass`
+- `manual-viber-game-quality-scorecard`
+- `manual-viber-game-visual-novelty-audit`
+- `manual-viber-game-grow-best`
+- `manual-viber-game-review`
+- `manual-viber-game-level-pack`
+- `manual-viber-game-design-character`
+- `manual-viber-game-feature-experiment`
+- `manual-viber-game-bugfix-polish`
+
+### 3. iOS App Factory: Idea To TestFlight
 
 Use this when a private backlog idea is already ready and the goal is to produce a generated iOS app repo, implement it, harden the experience, and upload an internal TestFlight build.
 
@@ -137,7 +186,7 @@ Regenerate:
 npm run export:idea-to-testflight:all
 ```
 
-### 3. Product To Code
+### 4. Product To Code
 
 Use this when the starting point is a raw idea or product slice, not a fully specified implementation task.
 
@@ -181,7 +230,7 @@ docs/[project-name]/
   review.md
 ```
 
-### 4. Existing Repo Change To Release
+### 5. Existing Repo Change To Release
 
 Use this when the repo already exists and the input is feedback, bug notes, polish requests, or release-facing changes.
 
@@ -212,7 +261,7 @@ Automation:
 
 - `manual-plant-routine-change-to-testflight` in `docs/operations/codex-automations.md`
 
-### 5. Mobile Internal Release
+### 6. Mobile Internal Release
 
 Use this after implementation, runtime validation, experience review, and final review have passed. It is not the place to fix product quality; it is the release adapter stage.
 
@@ -238,7 +287,7 @@ Surfaces:
 - `packs/vibermode/roles/product/ios-submitter.md`
 - `packs/vibermode/roles/product/android-submitter.md`
 
-### 6. Standalone Repo Toolkit
+### 7. Standalone Repo Toolkit
 
 Use these when a full product pipeline is too heavy.
 

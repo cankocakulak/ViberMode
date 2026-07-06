@@ -12,6 +12,8 @@ Research snapshot: checked on 2026-06-16 against the official Google Ads API qui
 4. Start or open a Codex chat and ask it to use `$google-ads-operator`.
 5. Run read-only reporting first. Do not perform write actions until explicitly approved.
 
+For a single-file teammate handoff across Meta, Google Ads, and TikTok Ads, use `docs/operations/ads-env-handoff.md` and `.ads.env.example`.
+
 ## 1. Install The Skills
 
 From the repository root:

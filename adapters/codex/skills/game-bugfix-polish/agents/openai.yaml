@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Bugfix Polish"
+  short_description: "Fix game-lab blockers and transitions."
+  default_prompt: "Use $viber-game-bugfix-polish against /Users/mcan/game-with-water."

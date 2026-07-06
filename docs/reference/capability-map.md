@@ -59,6 +59,23 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I already have specs and want implementation execution | `spec-to-code` |
 | I want the full idea-to-code path | `product-to-code` |
 | I want to name an app and have Codex improve, prepare, or submit it | `app-autopilot` |
+| I want to optimize app paywall timing, onboarding monetization, or review prompts | `paywall-review-optimizer` |
+| I want to create or replace a mobile paywall from a reusable template | `paywall-creator` |
+| I want to produce a new fuller playable game with 20 levels, character design, progression, and iteration evidence | `game-full-production-pass` |
+| I want to know whether a game prototype is actually good enough | `game-quality-scorecard` |
+| I want to catch repeated or generic visual language across games | `game-visual-novelty-audit` |
+| I want to improve the best or named existing game prototype | `game-grow-best` |
+| I want to add/tune levels, stars, goals, or difficulty curves | `game-level-pack` |
+| I want to give a game stronger visual identity, character, and motion | `game-design-character` |
+| I want to test one new game mechanic or feature | `game-feature-experiment` |
+| I want to fix game blockers, transitions, smoke issues, or basic polish | `game-bugfix-polish` |
+| I want to review and rank existing game prototypes | `game-review-rank` |
+| I explicitly want an advanced portfolio batch across several existing-game passes | `game-night-loop` |
+| I want to maintain reusable prototype templates without making every game look the same | `game-template-kit` |
+| I want to add a light retention/meta layer after core gameplay works | `game-retention-meta` |
+| I want to audit a game for store/internal-testing readiness | `game-store-readiness` |
+| I want to prepare a new repo as a game prototype lab | `game-lab-bootstrap` |
+| I want to build a game lab and first signature prototype from zero | `game-from-zero` |
 | I want to work inside an existing repo without the full greenfield flow | `repo-change` |
 | I have mixed feedback, bug notes, or release-facing changes to organize | `change-triager` |
 | I want existing-repo changes validated and optionally released | `change-to-release` |
@@ -532,6 +549,267 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
   - Codex: `viber-product-to-code`
   - Cursor: not currently projected
 
+#### Game prototype machine
+
+Use focused workflows as the primary surface. `game-prototype-lab` remains as a legacy router for older prompts.
+
+#### `game-new-prototype`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Research and add one fast fresh playable prototype inside an existing game/prototype repo without creating a new repo
+- Use when:
+  - a higher-level workflow needs a fast raw playable prototype
+  - the user explicitly asks for high-volume ideation over quality
+- Distinction:
+  - Not a default Play runner.
+  - Use `game-full-production-pass` for normal new game production.
+  - Existing prototypes are architecture references only.
+  - Do not improve an existing prototype as the main deliverable.
+- Surfaces:
+  - Codex: not exposed as a first-phase skill
+  - Cursor: not currently projected
+
+#### `game-signature-prototype`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Internal composition layer that creates one fresh playable prototype, then runs a first-play audit, distinct design/character pass, level/progression pass when applicable, optional mechanic experiment, bugfix/polish pass, and validation
+- Use when:
+  - `game-full-production-pass` needs its new-prototype child path
+  - the user explicitly asks for the lighter signature path instead of full production
+- Distinction:
+  - Not a default Play runner.
+  - Use `game-full-production-pass` for normal new game production.
+  - This is an upper support workflow that composes focused game workflows.
+  - Keep improving `game-design-character`, `game-level-pack`, or `game-feature-experiment` when those individual layers need to become smarter.
+- Surfaces:
+  - Codex: not exposed as a first-phase skill
+  - Cursor: not currently projected
+
+#### `game-full-production-pass`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Create one new playable hyper-casual game until it has a real core loop, characterful design language, guided progression, 20 meaningful levels, iteration evidence, and validation
+- Use when:
+  - the user wants a one-button new full game production run rather than a quick prototype
+  - the target output should include core logic, character design, level map/progression, result shell, score/star goals, and quality gates
+- Distinction:
+  - This is the heaviest first-phase new-game workflow.
+  - Do not use it to upgrade an existing game; use the existing-game upgrade prompt library or focused workflows instead.
+  - It composes signature, design, level, scorecard, novelty, feature, and bugfix workflows; improve those child workflows when a layer is weak.
+- Surfaces:
+  - Codex: `viber-game-full-production-pass`
+  - Cursor: not currently projected
+
+#### `game-quality-scorecard`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Score one or more playable prototypes with a concrete hyper-casual quality rubric and exact next workflow prompts
+- Use when:
+  - the user asks whether a game is actually good enough
+  - a signature/growth/night-loop pass needs a quality gate
+  - Codex output feels handwavy or prematurely "done"
+- Distinction:
+  - Produces scoring and routing, not broad implementation.
+- Surfaces:
+  - Codex: `viber-game-quality-scorecard`
+  - Cursor: not currently projected
+
+#### `game-visual-novelty-audit`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Audit whether a prototype repeats prior visual language, layout, result shells, motion rhythm, or object semantics
+- Use when:
+  - generated games feel samey, generic, or visually flat
+  - `game-design-character` needs a sharper target
+  - a new game needs novelty proof before more levels or meta work
+- Distinction:
+  - Does not change core rules; routes visual fixes to `game-design-character`.
+- Surfaces:
+  - Codex: `viber-game-visual-novelty-audit`
+  - Cursor: not currently projected
+
+#### `game-grow-best`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Improve one named or highest-ROI existing game prototype with a bounded growth pass
+- Use when:
+  - the user asks to continue, improve, polish, or grow an existing game
+  - the user asks Codex to pick the best existing candidate and improve it
+- Distinction:
+  - Do not add a separate new prototype unless explicitly requested.
+- Surfaces:
+  - Codex: `viber-game-grow-best`
+  - Cursor: not currently projected
+
+#### `game-review-rank`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Review, compare, rank, and recommend next passes for playable prototypes
+- Use when:
+  - the user asks what is working, what to grow, or which prototype to keep
+  - a batch needs QA before further automation
+- Surfaces:
+  - Codex: `viber-game-review-rank`
+  - Cursor: not currently projected
+
+#### `game-level-pack`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Add or tune level packs, score goals, stars, progression, and difficulty curves for an existing prototype
+- Use when:
+  - the prototype needs more levels, better progression, easier/harder tuning, or solvability checks
+- Surfaces:
+  - Codex: `viber-game-level-pack`
+  - Cursor: not currently projected
+
+#### `game-design-character`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Establish a stronger game-specific design language, character/world identity, motion, and feedback system
+- Use when:
+  - the game feels generic, simple, visually flat, or lacks personality
+- Surfaces:
+  - Codex: `viber-game-design-character`
+  - Cursor: not currently projected
+
+#### `game-feature-experiment`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Add one bounded mechanic, special object, power-up, hazard, combo, or retention experiment with a clear hypothesis
+- Use when:
+  - the core loop needs one testable feature rather than a broad redesign
+- Surfaces:
+  - Codex: `viber-game-feature-experiment`
+  - Cursor: not currently projected
+
+#### `game-bugfix-polish`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Fix blockers, transitions, result screens, map/dashboard wiring, persistence issues, smoke failures, and basic polish
+- Use when:
+  - the game is broken or hard to judge because flow, clicking, navigation, or validation fails
+- Surfaces:
+  - Codex: `viber-game-bugfix-polish`
+  - Cursor: not currently projected
+
+#### `game-night-loop`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Run several focused game workflows sequentially as one advanced portfolio-maintenance batch
+- Use when:
+  - the user explicitly wants multiple existing-game passes in one queue
+  - the portfolio needs review, growth, levels, design, scorecard, and blocker cleanup in sequence
+- Distinction:
+  - Not a default Play runner.
+  - Use `game-full-production-pass` for one-button new game production.
+  - Runs focused workflows sequentially and records batch state.
+  - Does not replace final validation for each pass.
+- Surfaces:
+  - Codex: not exposed as a first-phase skill
+  - Cursor: not currently projected
+
+#### `game-template-kit`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Maintain reusable game prototype templates, helpers, or conventions without centralizing visual identity
+- Use when:
+  - repeated scaffolding slows down prototype creation
+  - model/viewmodel/level/progress/test patterns should be reusable
+- Surfaces:
+  - Codex: `viber-game-template-kit`
+  - Cursor: not currently projected
+
+#### `game-retention-meta`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Add one light retention or replay meta layer after core gameplay quality passes
+- Use when:
+  - a prototype already has a clear loop, levels, result flow, and quality evidence
+- Surfaces:
+  - Codex: `viber-game-retention-meta`
+  - Cursor: not currently projected
+
+#### `game-store-readiness`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Audit store-facing or internal-testing readiness after gameplay quality passes
+- Use when:
+  - a game prototype is moving toward TestFlight, Play internal testing, or store metadata work
+- Surfaces:
+  - Codex: `viber-game-store-readiness`
+  - Cursor: not currently projected
+
+#### `game-lab-bootstrap`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Future greenfield setup for a new repo or empty repo to become a modular game prototype lab
+- Use when:
+  - the user explicitly asks to create or prepare a new game-lab repo
+- Distinction:
+  - Not the default first-phase path; existing app work should use the focused game workflows above.
+- Surfaces:
+  - Codex: `viber-game-lab-bootstrap`
+  - Cursor: not currently projected
+
+#### `game-from-zero`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Future upper workflow that composes game-lab bootstrap, first signature prototype, quality scorecard, and review
+- Use when:
+  - the user explicitly asks for a new game repo/app from zero
+- Distinction:
+  - Do not use for existing Game With Water prototype growth.
+- Surfaces:
+  - Codex: `viber-game-from-zero`
+  - Cursor: not currently projected
+
+#### `game-prototype-lab`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `legacy`
+- Purpose: Compatibility router for older combined game-lab prompts
+- Use when:
+  - an old prompt names `game-prototype-lab`
+  - the correct focused game workflow is ambiguous and must be routed first
+- Surfaces:
+  - Codex: `viber-game-prototype-lab`
+  - Cursor: not currently projected
+
 #### `repo-change`
 
 - Kind: `workflow`
@@ -722,6 +1000,42 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 - Surfaces:
   - Codex: `viber-mobile-monetization-operator`
   - Cursor: not currently projected
+
+#### `paywall-review-optimizer`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Audit and improve mobile app paywall timing, onboarding-to-value, subscription conversion flow, and native review prompt strategy
+- Use when:
+  - a known app's paywall appears too early, too late, too generic, or poorly wired into first value
+  - review prompts are being shown at weak or risky moments
+  - the request asks for monetization/review improvements that may require bounded app-code changes
+- Distinction:
+  - Use this for strategy, timing, journey audit, trigger logic, and orchestration.
+  - Use `mobile-monetization-operator` for store products, RevenueCat offerings, entitlements, and purchase setup.
+  - Use `paywall-creator` when the primary need is a replacement paywall component from a template.
+- Surfaces:
+  - Codex: `paywall-review-optimizer`
+  - Cursor: not currently projected
+  - Any tool: `paywall-review-optimizer` via `AGENTS.md`
+
+#### `paywall-creator`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Create or adapt template-based mobile paywall surfaces with honest pricing/trial/legal/restore slots and app-specific premium messaging
+- Use when:
+  - a paywall component should be created, replaced, or adapted from a reusable template
+  - the paywall design/copy is the main issue and purchase topology is already known
+- Distinction:
+  - It creates the paywall surface; it does not decide global paywall timing or review prompt logic.
+  - It must not invent live pricing, product IDs, trials, or entitlement behavior.
+- Surfaces:
+  - Codex: `paywall-creator`
+  - Cursor: not currently projected
+  - Any tool: `paywall-creator` via `AGENTS.md`
 
 #### `meta-ads-operator`
 

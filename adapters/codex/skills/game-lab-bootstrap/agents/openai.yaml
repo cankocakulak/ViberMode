@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viber Game Lab Bootstrap"
+  short_description: "Prepare a new repo as a modular game prototype lab."
+  default_prompt: "Use $viber-game-lab-bootstrap against the target repo."
