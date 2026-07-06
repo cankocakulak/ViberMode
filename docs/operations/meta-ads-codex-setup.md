@@ -10,7 +10,7 @@ This document is for a developer or Codex agent setting up the Meta Ads operator
 4. Start or open a Codex chat and ask it to use `$meta-ads-operator`.
 5. Run read-only reporting first. Do not perform write actions until explicitly approved.
 
-For a single-file teammate handoff across Meta, Google Ads, and TikTok Ads, use `docs/operations/ads-env-handoff.md` and `.ads.env.example`.
+For a teammate handoff across Meta, Google Ads, and TikTok Ads, use `docs/operations/ads-env-handoff.md` and the ignored local `.vibermode-automation.env` file.
 
 ## 1. Install The Skills
 

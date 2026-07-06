@@ -1,36 +1,38 @@
 # Ads Env Handoff
 
-This runbook is for handing Meta, Google Ads, and TikTok Ads reporting access to another ViberMode operator with a single local env file.
+This runbook is for handing Meta, Google Ads, and TikTok Ads reporting access to another ViberMode operator with the standard local ViberMode env file.
 
 ## Current Status
 
-Checked on 2026-07-05.
+Checked on 2026-07-07.
 
 | Platform | Status | What Is Still Needed |
 | --- | --- | --- |
 | Meta Ads | Existing operator pattern is ready when `META_ACCESS_TOKEN` and `META_AD_ACCOUNT_ID` are present. | Fill the live Meta env values. |
-| Google Ads | Customer listing works for `7826540166`; reporting is blocked by `403` until Basic Access is approved. Ticket: `[4-5207000041605]`. | After Google approval, use the approved developer token plus service-account or OAuth auth values. |
-| TikTok Ads | Advertiser id `7332897087052627970` is known. Developer profile is under review with `https://kantakademi.com/` and `Reporting`. | After TikTok approval, fill access token, app id, and app secret. |
+| Google Ads | Approved for Standard Access. `customers/7826540166` lists correctly and the read-only `LAST_7_DAYS` report succeeds. MCC: `4901176544`. | Teammate needs the same developer token and service-account or OAuth auth values in local env/Keychain. |
+| TikTok Ads | Advertiser id `7332897087052627970` is known. Developer profile is under review with `https://kantakademi.com/` and `Reporting`; app credentials are not available yet. | After TikTok approval, fill access token, app id, and app secret. |
 
 ## Handoff File
 
-Use the focused template:
+Use the standard local automation env:
 
 ```bash
-cp .ads.env.example .ads.env
+cp .vibermode-automation.env.example .vibermode-automation.env
+chmod 600 .vibermode-automation.env
 ```
 
-Fill `.ads.env` with the live values. The repository ignores `.ads.env`, so it is intended to remain local.
+Fill `.vibermode-automation.env` with live values only on the local machine. The repository ignores this file, so it is intended to remain local.
 
-The scripts also load `.vibermode-automation.env` by default. For a clean teammate handoff, prefer `.ads.env` and pass it explicitly with `--env-file .ads.env`.
+The report scripts load `.vibermode-automation.env` automatically. They also fall back to the standard macOS Keychain service names documented in the platform setup files.
 
-Blank secret values in `.ads.env.example` are intentional. Do not replace them with literal placeholders such as `REPLACE_ME`; the scripts treat any non-empty value as real input.
+Blank secret values are intentional. Do not replace them with literal placeholders such as `REPLACE_ME`; the scripts treat any non-empty value as real input.
 
 ## Variables
 
 ```bash
 # Meta Ads
 META_API_VERSION=v21.0
+META_KEYCHAIN_PREFIX=viberboyz-meta
 META_AD_ACCOUNT_ID=
 META_ACCESS_TOKEN=
 META_APP_ID=
@@ -38,6 +40,7 @@ META_APP_SECRET=
 
 # Google Ads
 GOOGLE_ADS_API_VERSION=v24
+GOOGLE_ADS_KEYCHAIN_PREFIX=viberboyz-google-ads
 GOOGLE_ADS_CUSTOMER_ID=7826540166
 GOOGLE_ADS_LOGIN_CUSTOMER_ID=
 GOOGLE_ADS_DEVELOPER_TOKEN=
@@ -49,6 +52,7 @@ GOOGLE_ADS_REFRESH_TOKEN=
 
 # TikTok Ads
 TIKTOK_API_VERSION=v1.3
+TIKTOK_KEYCHAIN_PREFIX=viberboyz-tiktok
 TIKTOK_ADVERTISER_ID=7332897087052627970
 TIKTOK_ACCESS_TOKEN=
 TIKTOK_APP_ID=
@@ -65,26 +69,24 @@ From the repository root:
 
 ```bash
 npm run install:codex
-cp .ads.env.example .ads.env
+cp .vibermode-automation.env.example .vibermode-automation.env
+chmod 600 .vibermode-automation.env
 ```
 
-Fill `.ads.env`, then validate without printing secret values:
+Fill `.vibermode-automation.env` or the documented Keychain services, then validate without printing secret values:
 
 ```bash
 node adapters/codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs \
-  --env-file .ads.env \
   --check-keychain
 
 node adapters/codex/skills/google-ads-operator/scripts/google_ads_report.mjs \
-  --env-file .ads.env \
   --check-keychain
 
 node adapters/codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs \
-  --env-file .ads.env \
   --check-keychain
 ```
 
-`--check-keychain` also reports whether direct env variables were loaded from `.ads.env`.
+`--check-keychain` reports whether direct env variables and Keychain-backed values are present without printing secret values.
 
 Presence checks do not prove the token is approved or scoped correctly; the read-only smoke reports below are the real verification.
 
@@ -94,7 +96,6 @@ Meta:
 
 ```bash
 node adapters/codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs \
-  --env-file .ads.env \
   --date-preset last_7d \
   --format markdown
 ```
@@ -103,11 +104,9 @@ Google Ads:
 
 ```bash
 node adapters/codex/skills/google-ads-operator/scripts/google_ads_report.mjs \
-  --env-file .ads.env \
   --list-customers
 
 node adapters/codex/skills/google-ads-operator/scripts/google_ads_report.mjs \
-  --env-file .ads.env \
   --date-preset LAST_7_DAYS \
   --format markdown
 ```
@@ -116,21 +115,20 @@ TikTok Ads:
 
 ```bash
 node adapters/codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs \
-  --env-file .ads.env \
   --date-preset last_7d \
   --format markdown
 ```
 
 ## Expected Temporary Failures
 
-- Google Ads weekly report can return `403 Forbidden` until Basic Access is approved.
 - TikTok Ads weekly report will fail with missing token/app credentials until TikTok approves the developer profile/app.
+- Google Ads is no longer approval-blocked. If it returns `403 Forbidden`, check the local developer token, customer id, service-account/OAuth auth mode, and manager access rather than waiting for Basic Access.
 - Meta should run as soon as the live Meta access token and ad account id are filled.
 
 ## Codex Prompt For The Teammate
 
 ```text
-Use the ad platform operator docs in docs/operations/ads-env-handoff.md. Load credentials from .ads.env with --env-file .ads.env. Validate Meta, Google Ads, and TikTok Ads without printing secrets. Run read-only weekly reports only. Do not create, activate, pause, delete, or change budgets without explicit approval.
+Use the ad platform operator docs in docs/operations/ads-env-handoff.md. Load local credentials from .vibermode-automation.env and the documented Keychain services. Validate Meta, Google Ads, and TikTok Ads without printing secrets. Google Ads Standard Access is approved, so run the read-only LAST_7_DAYS Google Ads report for customer 7826540166. Run Meta read-only last_7d if Meta credentials are present. TikTok is still expected to be pending until developer profile/app approval; if TIKTOK_ACCESS_TOKEN or app credentials are missing, report that clearly instead of trying write actions. Do not create, activate, pause, delete, upload audiences, or change budgets without explicit approval.
 ```
 
 Platform-specific setup details live in:

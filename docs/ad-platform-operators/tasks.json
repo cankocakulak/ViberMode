@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project": "ad-platform-operators",
-  "updated": "2026-06-16",
+  "updated": "2026-07-07",
   "phasePlan": {
     "order": ["core", "ops"]
   },
@@ -51,7 +51,11 @@
       "title": "Run live TikTok and Google Ads API smoke reports",
       "status": "blocked",
       "phase": "ops",
-      "blocker": "Required TikTok and Google Ads credentials are not present in env or Keychain."
+      "validation": [
+        "node adapters/codex/skills/google-ads-operator/scripts/google_ads_report.mjs --list-customers",
+        "node adapters/codex/skills/google-ads-operator/scripts/google_ads_report.mjs"
+      ],
+      "blocker": "Google Ads live read-only smoke report is complete. TikTok remains blocked until developer profile/app approval and token/app credentials are available."
     }
   ]
 }

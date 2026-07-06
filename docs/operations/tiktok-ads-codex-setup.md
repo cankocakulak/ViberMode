@@ -12,7 +12,16 @@ Research snapshot: checked on 2026-06-16 against TikTok API for Business portal 
 4. Start or open a Codex chat and ask it to use `$tiktok-ads-operator`.
 5. Run read-only reporting first. Do not perform write actions until explicitly approved.
 
-For a single-file teammate handoff across Meta, Google Ads, and TikTok Ads, use `docs/operations/ads-env-handoff.md` and `.ads.env.example`.
+For a teammate handoff across Meta, Google Ads, and TikTok Ads, use `docs/operations/ads-env-handoff.md` and the ignored local `.vibermode-automation.env` file.
+
+## Current ViberMode Account State
+
+Checked on 2026-07-07:
+
+- `TIKTOK_ADVERTISER_ID=7332897087052627970` is the known advertiser id.
+- Developer profile is still under review for `https://kantakademi.com/` with the `Reporting` use case.
+- App credentials are not available until TikTok profile/app approval completes.
+- A weekly report is expected to fail with missing `TIKTOK_ACCESS_TOKEN` until approval and token issuance are complete.
 
 ## 1. Install The Skills
 

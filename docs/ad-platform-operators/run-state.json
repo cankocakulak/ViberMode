@@ -1,11 +1,14 @@
 {
   "project": "ad-platform-operators",
-  "updated": "2026-06-16",
+  "updated": "2026-07-07",
   "completed_tasks": ["T1", "T2", "T3", "T4"],
   "blocked_tasks": ["T5"],
   "blockers": [
-    "TikTok Keychain services viberboyz-tiktok-access-token and viberboyz-tiktok-advertiser-id are not present.",
-    "Google Ads Keychain services viberboyz-google-ads-developer-token, viberboyz-google-ads-customer-id, and an auth mode are not present."
+    "TikTok developer profile/app approval is still pending, so access token/app credentials are not available yet."
   ],
-  "next_step": "Store platform credentials in Keychain, then run the read-only smoke report commands from docs/operations/tiktok-ads-codex-setup.md and docs/operations/google-ads-codex-setup.md."
+  "notes": [
+    "Google Ads Standard Access is approved for Manager Account 490-117-6544.",
+    "Google Ads customer 7826540166 lists successfully and the read-only LAST_7_DAYS report succeeds."
+  ],
+  "next_step": "When TikTok approval completes, store TikTok credentials in Keychain or .vibermode-automation.env, then run the read-only smoke report command from docs/operations/tiktok-ads-codex-setup.md."
 }

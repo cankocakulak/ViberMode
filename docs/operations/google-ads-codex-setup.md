@@ -12,7 +12,16 @@ Research snapshot: checked on 2026-06-16 against the official Google Ads API qui
 4. Start or open a Codex chat and ask it to use `$google-ads-operator`.
 5. Run read-only reporting first. Do not perform write actions until explicitly approved.
 
-For a single-file teammate handoff across Meta, Google Ads, and TikTok Ads, use `docs/operations/ads-env-handoff.md` and `.ads.env.example`.
+For a teammate handoff across Meta, Google Ads, and TikTok Ads, use `docs/operations/ads-env-handoff.md` and the ignored local `.vibermode-automation.env` file.
+
+## Current ViberMode Account State
+
+Verified on 2026-07-07:
+
+- The developer token attached to Manager Account `490-117-6544` is approved for Google Ads API Standard Access.
+- `--list-customers` returns `customers/7826540166`.
+- The read-only `LAST_7_DAYS` campaign report succeeds for `GOOGLE_ADS_CUSTOMER_ID=7826540166`.
+- `GOOGLE_ADS_LOGIN_CUSTOMER_ID` can stay blank unless a manager-access error appears.
 
 ## 1. Install The Skills
 
