@@ -21,6 +21,7 @@ build/
 reports/store-reviews/
 docs/operations/app-registry.local.json
 .vibermode-state/
+.codex/slack-codex-operator/
 .vibermode-generated-ios-apps/
 output/
 .playwright-mcp/

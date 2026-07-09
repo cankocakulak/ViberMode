@@ -80,6 +80,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **game-lab-bootstrap** | `packs/vibermode/workflows/game/lab-bootstrap.md` | Future greenfield setup for a modular game prototype lab |
 | **game-from-zero** | `packs/vibermode/workflows/game/from-zero.md` | Future upper workflow for bootstrap plus first signature prototype |
 | **app-autopilot** | `packs/vibermode/workflows/app-autopilot.md` | Resolves a known app by name and routes change, self-improve, or submit-only work through existing quality and release gates |
+| **slack-codex-operator** | `packs/vibermode/workflows/slack-codex-operator.md` | Processes explicit Slack mentions, DMs, and active threads into Codex actions, Slack replies, approval requests, and heartbeat reports |
 | **paywall-review-optimizer** | `packs/vibermode/workflows/paywall-review-optimizer.md` | Audits and improves app paywall timing, onboarding-to-value, and review prompt strategy |
 | **paywall-creator** | `packs/vibermode/workflows/paywall-creator.md` | Creates or adapts template-based mobile paywall surfaces |
 | **mobile-competitor-teardown** | `packs/vibermode/workflows/mobile-competitor-teardown.md` | Builds competitor research packs for app onboarding, paywalls, pricing, monetization, and review prompt patterns |
@@ -128,6 +129,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **tiktok-ads-operator** workflow" → Read `adapters/codex/skills/tiktok-ads-operator/SKILL.md`
 - "Use the **google-ads-operator** workflow" → Read `adapters/codex/skills/google-ads-operator/SKILL.md`
 - "Use the **app-autopilot** workflow" → Read `packs/vibermode/workflows/app-autopilot.md`
+- "Use the **slack-codex-operator** workflow" → Read `packs/vibermode/workflows/slack-codex-operator.md`
 - "Use the **paywall-review-optimizer** workflow" → Read `packs/vibermode/workflows/paywall-review-optimizer.md`
 - "Use the **paywall-creator** workflow" → Read `packs/vibermode/workflows/paywall-creator.md`
 - "Use the **mobile-competitor-teardown** workflow" → Read `packs/vibermode/workflows/mobile-competitor-teardown.md`

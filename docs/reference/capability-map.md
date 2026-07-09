@@ -59,6 +59,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I already have specs and want implementation execution | `spec-to-code` |
 | I want the full idea-to-code path | `product-to-code` |
 | I want to name an app and have Codex improve, prepare, or submit it | `app-autopilot` |
+| I want Codex/Rox to act on explicit Slack mentions, DMs, or active threads | `slack-codex-operator` |
 | I want to add or audit compliant mobile app rating/review prompts | `mobile-rating-review-integrator` |
 | I want to optimize app paywall timing, onboarding monetization, or review prompts | `paywall-review-optimizer` |
 | I want to create or replace a mobile paywall from a reusable template | `paywall-creator` |
@@ -883,6 +884,26 @@ Use focused workflows as the primary surface. `game-prototype-lab` remains as a 
 - Surfaces:
   - Codex: `viber-app-autopilot`
   - Cursor: not currently projected
+
+#### `slack-codex-operator`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `primary`
+- Purpose: Process explicit Slack handoffs into Codex actions, Slack thread replies, approval requests, state/policy updates, and heartbeat reports
+- Use when:
+  - a Slack user mentions Codex/Rox in a channel or thread
+  - the operator receives a DM
+  - a previously activated Slack thread has new replies
+  - a heartbeat automation should process pending Slack tasks
+- Distinction:
+  - This is mention/DM/active-thread driven, not broad routine channel triage.
+  - `#customer-success` remains outside routine scanning unless explicitly requested for a specific mention or scoped exception.
+  - Low-risk reversible work may be performed before replying; risky writes require owner approval.
+- Surfaces:
+  - Codex: `viber-slack-codex-operator`
+  - Cursor: not currently projected
+  - Any tool: `slack-codex-operator` via `AGENTS.md`
 
 ### Support workflows
 

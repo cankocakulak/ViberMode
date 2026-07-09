@@ -709,6 +709,18 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: packs/vibermode/workflows/app-autopilot.md
 
+  - id: slack-codex-operator
+    kind: workflow
+    callability: always-callable
+    tier: primary
+    family: operations
+    purpose: process explicit Slack handoffs, DMs, mentions, and active threads into Codex actions, Slack replies, approval requests, policy/state updates, and heartbeat reports
+    surfaces:
+      codex_skill: viber-slack-codex-operator
+      cursor_command: null
+      any_tool_agent: slack-codex-operator
+      canonical_workflow: packs/vibermode/workflows/slack-codex-operator.md
+
   - id: idea-research-backlog
     kind: workflow
     callability: artifact-aware
