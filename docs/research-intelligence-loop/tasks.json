@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "project": "research-intelligence-loop",
+  "updated_at": "2026-07-10T00:00:00.000Z",
+  "phasePlan": {
+    "order": ["core"]
+  },
+  "tasks": [
+    {
+      "id": "task-1",
+      "phase": "core",
+      "title": "Add selection-rationale gate and candidate generation",
+      "status": "completed",
+      "files": [
+        "scripts/idea-backlog.mjs",
+        "scripts/research-app-store-gap.mjs"
+      ],
+      "validation": [
+        "node --check scripts/idea-backlog.mjs",
+        "node --check scripts/research-app-store-gap.mjs"
+      ]
+    },
+    {
+      "id": "task-2",
+      "phase": "core",
+      "title": "Add daily research brief output",
+      "status": "completed",
+      "files": [
+        "package.json",
+        "scripts/research-daily-brief.mjs"
+      ],
+      "validation": [
+        "node --check scripts/research-daily-brief.mjs",
+        "npm run research:daily-brief -- --research-dir <temp-research-dir>"
+      ]
+    },
+    {
+      "id": "task-3",
+      "phase": "core",
+      "title": "Update workflow and operation docs",
+      "status": "completed",
+      "files": [
+        "packs/vibermode/roles/product/app-researcher.md",
+        "packs/vibermode/workflows/app-opportunity-research.md",
+        "packs/vibermode/workflows/idea-research-backlog.md",
+        "docs/research-source-contract.md",
+        "docs/use-cases/app-opportunity-research.md",
+        "docs/operations/codex-automations.md",
+        "docs/operations/app-factory-automation-overview.md",
+        "docs/operations/app-factory-state.md"
+      ],
+      "validation": [
+        "npm run validate"
+      ]
+    }
+  ]
+}

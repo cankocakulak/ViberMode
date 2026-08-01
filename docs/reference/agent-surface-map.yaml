@@ -817,6 +817,18 @@ capabilities:
       any_tool_agent: null
       canonical_workflow: docs/operations/codex-operational-capabilities.md
 
+  - id: mobile-attribution-operator
+    kind: workflow
+    callability: always-callable
+    tier: support
+    family: operations
+    purpose: add or audit AppsFlyer mobile attribution, ad-network partner setup, and RevenueCat purchase or revenue forwarding
+    surfaces:
+      codex_skill: viber-mobile-attribution-operator
+      cursor_command: null
+      any_tool_agent: null
+      canonical_workflow: docs/operations/mobile-attribution-appsflyer-setup.md
+
   - id: paywall-review-optimizer
     kind: workflow
     callability: always-callable
@@ -852,6 +864,42 @@ capabilities:
       cursor_command: null
       any_tool_agent: mobile-competitor-teardown
       canonical_workflow: packs/vibermode/workflows/mobile-competitor-teardown.md
+
+  - id: mobile-growth-strategist
+    kind: workflow
+    callability: artifact-aware
+    tier: support
+    family: operations
+    purpose: build mobile app growth strategy, positioning, creative pillars, acquisition route, and measurement tasks
+    surfaces:
+      codex_skill: mobile-growth-strategist
+      cursor_command: null
+      any_tool_agent: mobile-growth-strategist
+      canonical_workflow: packs/vibermode/workflows/mobile-growth-strategy.md
+
+  - id: ad-creative-lab
+    kind: workflow
+    callability: artifact-aware
+    tier: support
+    family: operations
+    purpose: generate mobile ad creative briefs, copy, scripts, storyboards, prompts, asset manifests, and compliance notes
+    surfaces:
+      codex_skill: ad-creative-lab
+      cursor_command: null
+      any_tool_agent: ad-creative-lab
+      canonical_workflow: packs/vibermode/workflows/ad-creative-lab.md
+
+  - id: paid-acquisition-launcher
+    kind: workflow
+    callability: artifact-aware
+    tier: support
+    family: operations
+    purpose: convert approved growth strategy and creatives into approval-gated paid acquisition launch plans
+    surfaces:
+      codex_skill: paid-acquisition-launcher
+      cursor_command: null
+      any_tool_agent: paid-acquisition-launcher
+      canonical_workflow: packs/vibermode/workflows/paid-acquisition-launcher.md
 
   - id: meta-ads-operator
     kind: workflow

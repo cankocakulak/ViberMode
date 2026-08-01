@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "updated_at": "2026-07-10T00:00:00.000Z",
+  "completed_tasks": [
+    "task-1",
+    "task-2",
+    "task-3"
+  ],
+  "notes": "Implemented selection rationale v4, daily brief generation, and recurring research/Slack-reporting workflow documentation."
+}

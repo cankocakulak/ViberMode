@@ -43,6 +43,21 @@ Do not write the token into prompts, repo files, git remotes, or logs.
 
 ## Research Data Flow
 
+Cross-run idea research is stored separately from dated research packs:
+
+```text
+ideas/research/[idea-id]/
+├── candidate.json
+├── evidence.jsonl
+├── decisions.jsonl
+├── evaluation.json
+└── evaluations/
+```
+
+`candidate.json` is the current snapshot. Evidence and decisions are append-only. Each evidence record declares whether it `supports`, `contradicts`, or is `neutral` toward the current hypothesis; contradictory evidence never opens a positive gate. `evaluation.json` is the current deterministic gate result, while `evaluations/` preserves dated history. A candidate becomes factory `ready` only after validation plus explicit brainstorm, PRD, and readiness decisions.
+
+The configured `#product-ideas` Slack root message is a projection of this state, not a database. Its thread binding is stored on the candidate and in Rox active-thread state.
+
 Standalone app research output should live outside `ideas/backlog.json` until it has been reviewed.
 
 Recommended layout:
@@ -55,21 +70,23 @@ sources/
 
 research-runs/
 └── 2026-05-27/
-        └── education-us/
-            ├── source-inventory.json
-            ├── normalized-apps.jsonl
-            ├── market-signals.jsonl
-            ├── market-source-summary-apptweak-keyword-ranking.json
-            ├── market-source-summary-apptweak-keyword-ranking.md
-            ├── public-scan-clusters.json
-            ├── public-scan-summary.json
-            ├── public-scan-summary.md
-            ├── clusters.json
+    └── education-us/
+        ├── source-inventory.json
+        ├── normalized-apps.jsonl
+        ├── market-signals.jsonl
+        ├── market-source-summary-apptweak-keyword-ranking.json
+        ├── market-source-summary-apptweak-keyword-ranking.md
+        ├── public-scan-clusters.json
+        ├── public-scan-summary.json
+        ├── public-scan-summary.md
+        ├── clusters.json
         ├── opportunities.json
         ├── gap-research-plant-nature-id.json
         ├── gap-research-plant-nature-id.md
         ├── rejected.json
         ├── decision.md
+        ├── daily-brief.md
+        ├── cofounder-slack-report.md
         └── backlog-candidates.json
 ```
 
@@ -122,6 +139,15 @@ node scripts/research-app-store-gap.mjs \
 ```
 
 This records live search and public review sources, writes `gap-research-[cluster].json/.md`, and updates `backlog-candidates.json` with reviewable candidate drafts. Review those drafts before upserting anything into `ideas/backlog.json`.
+
+Write a daily research brief and Slack-ready co-founder report:
+
+```bash
+npm run research:daily-brief -- \
+  --research-dir $VIBERMODE_WORKSPACE_ROOT/app-factory-state/research-runs/2026-05-27/education-us
+```
+
+This creates `daily-brief.md` and `cofounder-slack-report.md`. It does not send Slack messages; use a configured Slack connector or automation only after the report is reviewed and sanitized.
 
 ## Backlog Commands
 
@@ -264,7 +290,7 @@ Setup guidance is documented in `docs/operations/android-play-submission-guidanc
 ## Failure Handling
 
 - Missing `GH_TOKEN`: stop and fix Keychain or environment setup.
-- No eligible ideas: Stage 1 research must add or mark an idea `ready`.
+- No eligible ideas: Stage 1 research must add or mark an idea `ready`; daily research may also leave follow-up notes without promoting a candidate when evidence is still weak.
 - Repo creation failure: verify token permissions for ViberBoyz.
 - Clone failure: verify token has contents read access to the generated repo.
 - Product-to-code failure: keep the generated repo and run manifest; remediate rather than creating a duplicate repo.

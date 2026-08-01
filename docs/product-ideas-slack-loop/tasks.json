@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "project": "product-ideas-slack-loop",
+  "updated_at": "2026-07-18T00:00:00.000Z",
+  "phasePlan": {
+    "order": ["core", "ops"]
+  },
+  "tasks": [
+    {
+      "id": "task-1",
+      "phase": "core",
+      "title": "Implement persistent idea research ledger and evaluation model",
+      "status": "completed",
+      "files": [
+        "scripts/idea-research-ledger.mjs",
+        "tests/idea-research-ledger.test.mjs",
+        "package.json"
+      ]
+    },
+    {
+      "id": "task-2",
+      "phase": "core",
+      "title": "Implement Slack channel, snapshot, thread, and intent integration",
+      "status": "completed",
+      "files": [
+        "scripts/slack-rox-bot.mjs",
+        "scripts/research-slack-sync.mjs",
+        "scripts/slack-rox-context.mjs",
+        "config/slack-rox-intents.json",
+        "config/slack-rox-app-manifest.yaml"
+      ]
+    },
+    {
+      "id": "task-3",
+      "phase": "core",
+      "title": "Preserve research context through brainstorm, PRD, and factory handoff",
+      "status": "completed",
+      "files": [
+        "packs/vibermode/roles/product/app-researcher.md",
+        "packs/vibermode/roles/product/brainstormer.md",
+        "packs/vibermode/roles/product/prd.md",
+        "packs/vibermode/workflows/app-opportunity-research.md",
+        "packs/vibermode/workflows/product-to-code.md",
+        "scripts/ios-app-factory-prepare.mjs"
+      ]
+    },
+    {
+      "id": "task-4",
+      "phase": "ops",
+      "title": "Configure live Slack channel, policy, skills, and daily automation",
+      "status": "completed",
+      "files": [
+        "adapters/codex/skills/app-researcher/SKILL.md",
+        "adapters/codex/skills/slack-codex-operator/SKILL.md",
+        "docs/operations/slack-rox-playbooks.md",
+        "docs/operations/slack-rox-context-model.md",
+        "docs/operations/codex-automations.md"
+      ]
+    },
+    {
+      "id": "task-5",
+      "phase": "ops",
+      "title": "Run end-to-end validation and review",
+      "status": "completed",
+      "files": [
+        "docs/product-ideas-slack-loop/validation-report.md",
+        "docs/product-ideas-slack-loop/review.md",
+        "docs/product-ideas-slack-loop/run-state.json"
+      ]
+    }
+  ]
+}

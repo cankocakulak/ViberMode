@@ -218,6 +218,10 @@ function validateIdea(idea, index) {
     if (requiresLaunchAppealGate(idea)) {
       validateLaunchAppealGate(idea, prefix);
     }
+
+    if (requiresSelectionRationaleGate(idea)) {
+      validateSelectionRationaleGate(idea, prefix);
+    }
   }
 
   idea.factory = idea.factory || {};
@@ -230,13 +234,19 @@ function validateIdea(idea, index) {
 function requiresStrategicResearchGate(idea) {
   if (boolValue(process.env.IDEA_BACKLOG_REQUIRE_STRATEGIC_RESEARCH, false)) return true;
   const gate = idea.research?.quality_gate || idea.research?.gate_version || idea.quality_gate;
-  return gate === "strategic-research-v2" || gate === "strategic-research-v3";
+  return gate === "strategic-research-v2" || gate === "strategic-research-v3" || gate === "strategic-research-v4";
 }
 
 function requiresLaunchAppealGate(idea) {
   if (boolValue(process.env.IDEA_BACKLOG_REQUIRE_LAUNCH_APPEAL, false)) return true;
   const gate = idea.research?.quality_gate || idea.research?.gate_version || idea.quality_gate;
-  return gate === "strategic-research-v3";
+  return gate === "strategic-research-v3" || gate === "strategic-research-v4";
+}
+
+function requiresSelectionRationaleGate(idea) {
+  if (boolValue(process.env.IDEA_BACKLOG_REQUIRE_SELECTION_RATIONALE, false)) return true;
+  const gate = idea.research?.quality_gate || idea.research?.gate_version || idea.quality_gate;
+  return gate === "strategic-research-v4";
 }
 
 function requireObject(value, name) {
@@ -308,6 +318,29 @@ function validateLaunchAppealGate(idea, prefix) {
   }
 }
 
+function validateSelectionRationaleGate(idea, prefix) {
+  requireObject(idea.selection_rationale, `${prefix}.selection_rationale`);
+  for (const field of [
+    "chosen_because",
+    "evidence_summary",
+    "audience_logic",
+    "competitor_gap",
+    "why_this_wedge",
+    "why_not_alternatives",
+    "tradeoffs",
+    "confidence",
+  ]) {
+    requireValue(`${prefix}.selection_rationale.${field}`, idea.selection_rationale[field]);
+  }
+
+  if (
+    !Array.isArray(idea.selection_rationale.follow_up_questions) ||
+    idea.selection_rationale.follow_up_questions.length === 0
+  ) {
+    throw new Error(`${prefix}.selection_rationale.follow_up_questions must contain at least one follow-up question`);
+  }
+}
+
 export function validateBacklog(backlog) {
   if (backlog.schema_version !== 1) {
     throw new Error(`Unsupported backlog schema_version: ${backlog.schema_version}`);
@@ -343,6 +376,7 @@ export function buildSelection(idea, options = {}) {
     stack: idea.stack || "SwiftUI",
     product_idea: idea.product_idea,
     launch_appeal: idea.launch_appeal || null,
+    selection_rationale: idea.selection_rationale || null,
     idea,
   };
 }

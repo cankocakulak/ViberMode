@@ -35,6 +35,7 @@ Before starting, the orchestrator must resolve these inputs:
 - `repo_mode` — `existing-repo` or `greenfield`
 - `platform` and `stack` — enough runtime context for spec adaptability, bootstrap, and validation
 - optional `factory_context` — orchestrator-provided delivery constraints for factory runs, such as required onboarding, first-value, paywall shell, or copy-and-adapt pattern sources
+- optional `research_context` — stable idea ID, evidence-backed target user/problem/wedge, evaluation, open checks, and owner promotion history
 - optional `analysis_artifact` — only when existing-codebase discovery has already run
 
 For `factory_context.type = ios_app_factory`, the default local pattern source is `packs/vibermode/patterns/ios-factory/catalog.json`. External or private pattern catalogs may override or extend it, but downstream UX and task planning must still record selected onboarding/paywall pattern IDs and the app-specific adaptations required before implementation.
@@ -128,6 +129,7 @@ For existing-product work that requires codebase discovery, run `analyzer` first
 - When `workspace_bundle` is present, Stage 0 must also preserve one canonical `workspace_bundle.root`. Sibling repo paths must resolve under that root unless they are explicit symlink/reference entries such as shared `ai-services`.
 - Stage 1 must write `spec-review.md` and reach `APPROVED` before bootstrap can start.
 - Stage 1 must preserve and apply `factory_context` when provided. For user-facing apps, PRD, UX, and stories must name the first-value moment, core loop, product-specific differentiator, quality anchors, and deferred scope before spec review can approve.
+- Stage 1 must preserve `research_context` when provided. Brainstorm and PRD must distinguish evidence from inference, keep the stable idea ID and unresolved checks visible, and route material target-user/problem/wedge changes back to research validation.
 - Stage 1 must preserve `launch_appeal` when provided. PRD, UX, and stories must carry forward the hook, first-value moment, signature interaction, visual direction, storefront angle, TestFlight demo path, and anti-generic rule.
 - Stage 1 must define and preserve runtime topology before spec review can approve, including whether the first implementation is local-only, app-only, backend-backed, ai-services-assisted, third-party-services-only, or intentionally deferred-service.
 - For `factory_context.type = ios_app_factory`, PRD, UX, and stories must cover onboarding, first-value, core loop, upgrade/paywall shell, pattern adaptation, and runtime topology before spec review can approve.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mobile Attribution Operator"
+  short_description: "AppsFlyer and mobile ad attribution setup"
+  default_prompt: "Use $viber-mobile-attribution-operator to add or audit AppsFlyer, ad-network, and RevenueCat attribution for a mobile app."

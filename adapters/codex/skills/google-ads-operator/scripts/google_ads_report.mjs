@@ -258,7 +258,23 @@ async function googleAdsRequest(path, token, body = null) {
   }
   if (!response.ok || json.error) {
     const details = json.error?.message || response.statusText;
-    throw new Error(`${details} (${json.error?.status || response.status})`);
+    const googleAdsFailures = (json.error?.details || [])
+      .filter((detail) => Array.isArray(detail.errors))
+      .flatMap((detail) => detail.errors.map((error) => ({
+        error_code: error.errorCode || null,
+        message: error.message || null,
+        field_path: (error.location?.fieldPathElements || [])
+          .map((element) => element.index === undefined ? element.fieldName : `${element.fieldName}[${element.index}]`)
+          .filter(Boolean)
+          .join("."),
+      })));
+    const diagnostic = {
+      status: json.error?.status || response.status,
+      code: json.error?.code || response.status,
+      request_id: json.error?.details?.find((detail) => detail.requestId)?.requestId || null,
+      errors: googleAdsFailures,
+    };
+    throw new Error(`${details} ${JSON.stringify(diagnostic)}`);
   }
   return json;
 }
@@ -396,6 +412,36 @@ if (args.listCustomers) {
 }
 
 if (!customerId) fail("GOOGLE_ADS_CUSTOMER_ID or --customer is required");
+
+if (args.validateWriteAccess) {
+  const campaignResponse = await googleAdsRequest(
+    `customers/${customerId}/googleAds:searchStream`,
+    token,
+    { query: "SELECT campaign.resource_name, campaign.name FROM campaign WHERE campaign.status != 'REMOVED' LIMIT 1" },
+  );
+  const campaign = flattenSearchStream(campaignResponse)[0]?.campaign;
+  if (!campaign?.resourceName || !campaign?.name) {
+    fail("A campaign is required to validate write access without creating a resource");
+  }
+
+  await googleAdsRequest(`customers/${customerId}/campaigns:mutate`, token, {
+    operations: [{
+      update: {
+        resourceName: campaign.resourceName,
+        name: campaign.name,
+      },
+      updateMask: "name",
+    }],
+    validateOnly: true,
+  });
+  console.log(JSON.stringify({
+    customer_id: customerId,
+    validation: "passed",
+    validate_only: true,
+    resource_type: "campaign",
+  }, null, 2));
+  process.exit(0);
+}
 
 const query = args.query || defaultQuery();
 const response = await googleAdsRequest(`customers/${customerId}/googleAds:searchStream`, token, { query });

@@ -60,6 +60,7 @@ packs/vibermode/
 
 adapters/
   codex/        Codex skill wrappers and installer
+  claude/       Claude Code skill installer
   cursor/       Cursor slash commands and rules
 
 scripts/        CLI helpers for validation, app factory, release, and reporting
@@ -337,6 +338,18 @@ Codex skill wrappers live in:
 - `adapters/codex/skills/`
 - `adapters/codex/README.md`
 
+### Claude Code
+
+Install the same Agent Skills-compatible projection into Claude Code:
+
+```bash
+npm run install:claude
+```
+
+Skills are installed into `~/.claude/skills/`, or into
+`$CLAUDE_CONFIG_DIR/skills/` when that environment variable is set. See
+`adapters/claude/README.md` for first-install and live-reload behavior.
+
 ### Cursor
 
 Cursor slash commands live in:
@@ -378,6 +391,9 @@ npm run validate
 # Install Codex skills into ~/.codex/skills.
 npm run install:codex
 
+# Install Claude Code skills into ~/.claude/skills.
+npm run install:claude
+
 # Regenerate idea-to-TestFlight SVG and PNG visuals.
 npm run export:idea-to-testflight:all
 
@@ -411,7 +427,7 @@ Use these rules when editing the repo:
 
 - Change agent behavior in `packs/vibermode/roles/`.
 - Change multi-step operating procedures in `packs/vibermode/workflows/`.
-- Change Codex or Cursor wording only in `adapters/`.
+- Change Codex, Claude Code, or Cursor wording only in `adapters/`.
 - Put concrete service explanations in `docs/use-cases/`.
 - Put private automation, credentials, release, and connected-service guidance in `docs/operations/`.
 - Put generated visual outputs in `docs/assets/` and editable visual source in `docs/visuals/`.

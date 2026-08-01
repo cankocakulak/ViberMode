@@ -80,6 +80,8 @@ Supported signal types:
 - `keyword_rank` - keyword, rank, search volume, difficulty, and app visibility evidence
 - `market_note` - manual source notes, public report observations, trend notes, or user pain evidence
 - `app_positioning` - app metadata without enough metric fields
+- `community_pain` - summarized public Reddit, forum, support, review, or social posts that describe a repeated user problem
+- `audience_proxy` - public evidence for audience size, reachability, or demand intensity such as subreddit size, search volume, creator niche size, public survey notes, or market reports
 
 ## Column Aliases
 
@@ -100,7 +102,44 @@ The ingest script accepts common CSV/TSV/JSON field names.
 | `revenue_growth` | `Revenue Growth`, `Revenue PoP Growth`, `Revenue Delta` |
 | `rating` | `Rating`, `Average Rating`, `Average User Rating` |
 | `rating_count` | `Rating Count`, `Reviews`, `Review Count`, `User Rating Count` |
+| `url` | `URL`, `App URL`, `Store URL`, `Source URL`, `Link` |
 | `note` | `Note`, `Summary`, `Observation`, `Insight`, `Pain`, `Complaint` |
+| `evidence` | `Evidence`, `Evidence Detail`, `Source Detail` |
+
+## Problem And Audience Evidence
+
+App Store evidence is not enough by itself for backlog readiness. When possible, add at least one non-store signal class before promoting a candidate:
+
+- community pain: public Reddit/forum/support/review complaints summarized without copying long posts
+- web trend: public article, search result, launch directory, or problem page
+- keyword demand: search volume, ranking, difficulty, or long-tail intent
+- audience proxy: public community size, niche reach, learner/test taker population, creator audience, job/title count, or comparable market report
+- prior outcome: shipped/rejected factory app, retention note, TestFlight feedback, or review finding
+
+Recommended manual JSON shape:
+
+```json
+{
+  "observations": [
+    {
+      "signal_type": "community_pain",
+      "cluster": "Language learning / vocabulary",
+      "keyword": "ielts speaking",
+      "note": "Learners repeatedly ask for realistic speaking practice and immediate correction.",
+      "evidence": "Public community/search summary captured on YYYY-MM-DD.",
+      "url": "https://example.com/source",
+      "search_volume": 72
+    },
+    {
+      "signal_type": "audience_proxy",
+      "cluster": "Language learning / vocabulary",
+      "note": "Audience appears reachable through exam-prep keywords and public learner communities.",
+      "evidence": "Keyword volume plus community-size proxy.",
+      "url": "https://example.com/source"
+    }
+  ]
+}
+```
 
 ## Research Gate Usage
 
@@ -113,5 +152,8 @@ Imported source signals are directional evidence, not backlog-ready ideas by the
 - `ai_backend_strategy`
 - `differentiation_thesis`
 - Education-specific `learning_thesis`
+- for `strategic-research-v4`, `selection_rationale` explaining why this idea was chosen, why alternatives were not, the evidence summary, tradeoffs, confidence, and follow-up questions
 
 `scripts/research-app-store-gap.mjs` automatically reads `market-signals.jsonl` from the research directory and includes relevant rows in the gap report plus candidate evidence sources.
+
+Use `npm run research:daily-brief -- --research-dir <research-run>` after a run to write `daily-brief.md` and `cofounder-slack-report.md`. The latter is a Slack-ready body only; sending it requires an explicitly configured Slack connector or automation.

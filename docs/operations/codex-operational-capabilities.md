@@ -32,6 +32,12 @@ Codex is not only a code editor in this model. It can:
 
 Codex should not silently cross legal or irreversible boundaries. Store review submissions, policy declarations, paid app setup, data safety answers, and account-wide permissions are operational decisions. Codex can prepare and verify them, but the owner should approve truth-sensitive declarations.
 
+Command shorthand:
+
+- `test'e gonder` / `teste gonder` means build and upload to internal testers: internal TestFlight for iOS and Google Play internal testing for Android.
+- `ikisini de teste gonder` means run both internal tester lanes when both platform contexts resolve.
+- `submit'e gonder` / `store submit` means final store-review/public-surface submission for builds already uploaded to internal testing. This requires a supported final-submit adapter and completed/confirmed store declarations; do not treat internal upload as final submit.
+
 ## Operating Levels
 
 | Level | Meaning | Examples |
@@ -54,9 +60,11 @@ Default posture:
 | Capability | What Codex Can Do | Start Here | Main Script |
 | --- | --- | --- | --- |
 | RevenueCat access | Read projects, offerings, entitlements, apps, SDK keys, metrics, and customers; create projects when an OAuth/admin profile is configured | `docs/operations/revenuecat-access.md` | `scripts/revenuecat-api.mjs` |
+| Mobile monetization launch | Configure or audit App Store subscription products, RevenueCat entitlements/offerings/packages, app SDK/paywall wiring, IPA config gates, and TestFlight purchase validation | `docs/operations/mobile-monetization-revenuecat-launch.md` | `scripts/revenuecat-api.mjs`, `scripts/ios-inspect-ipa-config.mjs` |
 | iOS internal TestFlight | Preflight app identity, signing, assets, build archive, export IPA, upload to TestFlight, update run manifest | `docs/operations/ios-testflight-submission-guidance.md` | `scripts/ios-submit-testflight.mjs` |
 | Android internal testing | Preflight Play bootstrap, build signed AAB, upload to Google Play internal testing, update run manifest | `docs/operations/android-play-submission-guidance.md` | `scripts/android-submit-play-internal.mjs` |
 | Mobile store model | Understand the shared iOS/Android release adapter boundary | `docs/operations/mobile-store-submission-model.md` | platform-specific scripts |
+| Mobile attribution setup | Add or audit AppsFlyer attribution, Meta/Google/TikTok partner setup, and RevenueCat purchase forwarding for a mobile app | `docs/operations/mobile-attribution-appsflyer-setup.md` | browser + service-specific operator skills |
 | Store downloads to Notion | Read App Store Connect and Google Play download/install reports and optionally upsert Notion weekly rows | `docs/operations/store-downloads-notion-automation.md` | `scripts/store-downloads-to-notion.mjs` |
 | Meta Ads reporting and draft operations | Read Meta/Facebook/Instagram Ads performance; produce weekly campaign/ad/creative reports; plan paused draft campaign actions after approval | `docs/operations/meta-ads-codex-setup.md` | `adapters/codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs` |
 | TikTok Ads reporting and draft operations | Read TikTok Ads performance; produce weekly campaign/ad group/ad reports; plan paused draft TikTok API for Business actions after approval | `docs/operations/tiktok-ads-codex-setup.md` | `adapters/codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs` |

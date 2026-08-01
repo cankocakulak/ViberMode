@@ -56,6 +56,14 @@ If you do not yet understand how the workflows combine into higher-level service
 - Use `change-triager`
 - If the user wants the whole path through validation and release, use `change-to-release`
 
+### I need to grow, market, or advertise a mobile app
+
+- Use `mobile-growth-strategist` when positioning, audience posture, acquisition route, creative pillars, or growth tasks are unclear
+- Use `ad-creative-lab` when the work is to create ad briefs, copy, scripts, storyboards, image/video prompts, or asset manifests
+- Use `paid-acquisition-launcher` when approved creatives should become a paused, approval-gated paid acquisition launch plan
+- Use `mobile-attribution-operator` when AppsFlyer, SKAN, partner integrations, or purchase forwarding must be configured before paid launch
+- Use the platform operator, such as `meta-ads-operator`, `tiktok-ads-operator`, or `google-ads-operator`, for live account reads, reports, paused object creation, or approved writes
+
 ### I need to understand what this code does
 
 - Use `scout`
@@ -208,6 +216,7 @@ If you do not yet understand how the workflows combine into higher-level service
 - Start with `docs/operations/codex-operational-capabilities.md`
 - Then choose the specific runbook:
   - RevenueCat: `docs/operations/revenuecat-access.md`
+  - AppsFlyer/mobile attribution: `docs/operations/mobile-attribution-appsflyer-setup.md`
   - iOS/TestFlight: `docs/operations/ios-testflight-submission-guidance.md`
   - Android/Google Play: `docs/operations/android-play-submission-guidance.md`
   - Store downloads/Notion: `docs/operations/store-downloads-notion-automation.md`

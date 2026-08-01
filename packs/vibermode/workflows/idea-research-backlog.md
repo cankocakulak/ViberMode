@@ -56,10 +56,19 @@ research-runs/
         ├── gap-research-[cluster].md
         ├── rejected.json
         ├── decision.md
+        ├── daily-brief.md
+        ├── cofounder-slack-report.md
         └── backlog-candidates.json
 
 ideas/
 ├── backlog.json
+└── research/
+    └── [idea-id]/
+        ├── candidate.json
+        ├── evidence.jsonl
+        ├── decisions.jsonl
+        ├── evaluation.json
+        └── evaluations/
 
 factory/
 └── runs/
@@ -67,6 +76,8 @@ factory/
 ```
 
 The machine-readable backlog is `ideas/backlog.json`. It must use schema version `1` and keep the highest-priority ideas at the top through `rank` plus score ordering.
+
+The stable research ledger under `ideas/research/` exists before factory backlog readiness. It preserves evidence and decisions across daily runs and Slack discussions. Use `scripts/idea-research-ledger.mjs`; do not hand-edit append-only JSONL unless repairing documented corruption.
 
 Minimum idea shape:
 
@@ -119,6 +130,17 @@ Minimum idea shape:
     "testflight_demo_path": "The route a tester should follow during TestFlight review",
     "anti_generic_rule": "What the implementation must not become"
   },
+  "selection_rationale": {
+    "chosen_because": "Why this idea was selected over competing wedges",
+    "evidence_summary": "Readable summary of the strongest source evidence",
+    "audience_logic": "Why the target user is specific, reachable, and likely to feel the pain",
+    "competitor_gap": "Which incumbent weakness creates the opening",
+    "why_this_wedge": "Why this MVP is the right first test",
+    "why_not_alternatives": "Why adjacent or broader ideas were rejected or left researching",
+    "tradeoffs": "Main uncertainty, cost, risk, or missing evidence",
+    "confidence": "low-medium",
+    "follow_up_questions": ["What the next research or build decision should verify"]
+  },
   "evidence_sources": ["app-store-education-revenue-growth-2026-05-11"],
   "competitors": ["Comparable App A", "Comparable App B"],
   "metric_snapshot": {
@@ -163,6 +185,16 @@ queued -> reserved -> prepared -> building -> submitted -> complete
 blocked
 skipped
 ```
+
+Before any factory selection, reconcile legacy backlog labels against the stable ledger:
+
+```bash
+npm run research:ledger -- reconcile-backlog \
+  --state-root "$APP_FACTORY_STATE_ROOT" \
+  --write
+```
+
+Factory preparation requires both ledger `research_status=ready` and latest evaluation `recommendation=validated`. A legacy backlog `status=ready` is not sufficient.
 
 ## Stage 1 - Research Pack Selection
 
@@ -209,6 +241,7 @@ Each candidate must include:
 - AI/backend strategy
 - differentiation thesis
 - launch appeal: hook, first-value moment, signature interaction, visual direction, storefront angle, demo path, and anti-generic rule
+- selection rationale: chosen-because, evidence summary, audience logic, competitor gap, why-this-wedge, why-not-alternatives, tradeoffs, confidence, and follow-up questions
 - product idea prompt suitable for `product-to-code`
 - constraints for MVP scope
 
@@ -283,7 +316,8 @@ node scripts/idea-backlog.mjs select \
 - Ideas are ranked in intended priority order.
 - Every `ready` idea has evidence sources, competitors, metric snapshot, specific gap, MVP wedge, why-now, and a product idea prompt specific enough for `product-to-code`.
 - New `ready` ideas should use the `strategic-research-v2` quality gate with `market_thesis`, `ai_backend_strategy`, and `differentiation_thesis`.
-- New factory-bound `ready` ideas should use `strategic-research-v3` when possible; it adds `launch_appeal` so product-to-code has a concrete hook, first-value moment, visual direction, and TestFlight demo path.
+- `strategic-research-v3` is the legacy factory-bound gate that adds `launch_appeal`.
+- New factory-bound `ready` ideas should use `strategic-research-v4`; it keeps the v3 launch requirements and adds `selection_rationale` so the factory can explain why the idea was chosen.
 - Education ideas should not be promoted as generic "AI tutors"; they need a narrow learning loop and a clear AI role.
 - Research and backlog commits are pushed to the private state repo.
 

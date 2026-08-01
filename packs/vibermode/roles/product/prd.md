@@ -37,10 +37,13 @@ You do NOT write 50-page waterfall documents. You write the minimum needed to al
 | `context` | string | no | Business context, existing product, market situation |
 | `constraints` | string | no | Timeline, tech, budget, team constraints |
 | `factory_context` | object/string | no | Orchestrator constraints for generated apps, such as iOS factory required flows and pattern sources |
+| `research_context` | object/path | no | Stable idea ID, evidence-backed problem/audience/wedge, evaluation, open checks, and owner decisions |
 
 If an artifact path is provided, read the file before producing output.
 
 Prefer upstream artifacts over pasted summaries when both exist.
+
+When `research_context` is provided, the PRD must include a short `## Research Basis` section. Record the stable idea ID, evidence-backed premises, important metrics with capture dates, unresolved checks, and product hypotheses introduced after validation. Do not present inferred market size, revenue, demand, or willingness-to-pay as measured fact. A material change to the target user, problem, or MVP wedge must be flagged for research re-validation before implementation approval.
 
 ## Output Contract
 
@@ -66,6 +69,7 @@ Rules:
 - Do not require a backend repo unless a P0 requirement needs server-owned data, auth, jobs, APIs, cross-device sync, shared state, or external service mediation
 - The `## Summary (for downstream agents)` section is required
 - The `## Handoff Contract` section is required
+- The research idea ID and unresolved evidence checks must remain in the downstream summary when research context exists
 
 ### Artifact
 
@@ -84,6 +88,7 @@ Always produce the artifact. PRDs are reference documents.
 - `runtime_topology` must be present in the summary for app/product work, including topology mode, required repo roles, optional repo roles, service dependencies, integration posture, backend trigger, and data ownership.
 - Out-of-scope items must remain visible downstream and must not silently re-enter scope.
 - Open questions must remain visible until a later artifact resolves them explicitly.
+- Research facts must retain their source semantics; downstream stages may refine product requirements but may not silently upgrade inference to evidence.
 - When `factory_context.type` is `ios_app_factory`, the PRD must include requirements for app-specific onboarding, the first value moment/core loop, and an upgrade/paywall shell. Real RevenueCat, StoreKit, or IAP wiring should remain out of scope unless the factory context explicitly requests it.
 - For iOS factory runs, prefer `ios-app-only` or `local-only` topology unless the product idea explicitly requires backend behavior. If the PRD selects `ios-app-plus-backend`, it must name the exact P0 backend trigger.
 - If `ai-services` is useful, describe it as an optional symlink/reference operations repo unless the product itself requires direct runtime AI service integration.

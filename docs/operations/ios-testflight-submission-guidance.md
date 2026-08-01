@@ -226,6 +226,32 @@ Fallback asset preparation can:
 
 Commit and push generated app repo changes after a successful upload so the uploaded build is reproducible from source.
 
+## Monetized Build IPA Gate
+
+When the build contains subscriptions, RevenueCat, StoreKit, a paywall, or premium access gating, inspect the exported IPA before upload. Do not rely only on `xcodebuild -showBuildSettings`; generated Info.plist settings can appear in build settings while custom runtime keys are missing from the archived app.
+
+Use the reusable inspector:
+
+```bash
+npm run ios:inspect-ipa-config -- \
+  --ipa /path/to/App.ipa \
+  --expect-bundle-id com.example.app \
+  --expect-key AppEnvironmentName=Release \
+  --require-key AppRevenueCatAPIKey \
+  --require-key AppPrivacyPolicyURL \
+  --require-key AppTermsOfUseURL
+```
+
+Also require backend/runtime keys when the monetized app depends on remote services:
+
+```bash
+  --require-key AppAPIBaseURL \
+  --require-key AppWebSocketURL \
+  --expect-key AppAichologistRemoteEnabled=YES
+```
+
+The inspector redacts secret-like key values and reports only present/missing. Block TestFlight upload when this gate fails. If custom keys are missing from the archive, add an explicit app `Info.plist`, wire it with `INFOPLIST_FILE`, regenerate the Xcode project, archive again, and reinspect the exported IPA.
+
 ## Metadata Handoff
 
 Internal TestFlight does not require complete App Store listing metadata, but the factory should start carrying it before Stage 4 so later App Store review submission is not a separate discovery project.

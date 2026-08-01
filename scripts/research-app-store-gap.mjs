@@ -709,23 +709,76 @@ function buildLaunchAppeal(candidate) {
   };
 }
 
-function applyStrategicResearchGate(candidate) {
+function buildSelectionRationale(candidate, context = {}) {
+  const marketSignals = context.marketSignals || [];
+  const reviews = context.reviews || {};
+  const apps = context.apps || [];
+  const metricSnapshot = candidate.metric_snapshot || {};
+  const evidenceParts = [];
+
+  if ((metricSnapshot.revenue || metricSnapshot.downloads || metricSnapshot.rating_count) !== undefined) {
+    evidenceParts.push(
+      `metric snapshot: revenue ${money(metricSnapshot.revenue)}, downloads ${Math.round(metricSnapshot.downloads || 0).toLocaleString("en-US")}, ratings ${Math.round(metricSnapshot.rating_count || 0).toLocaleString("en-US")}`,
+    );
+  }
+  if (apps.length > 0) {
+    evidenceParts.push(`${apps.length} live App Store competitors were checked`);
+  }
+  if (Number.isFinite(Number(reviews.review_count))) {
+    evidenceParts.push(`${reviews.review_count} public reviews were probed, including ${reviews.low_review_count || 0} low-rating reviews`);
+  }
+  if (marketSignals.length > 0) {
+    evidenceParts.push(`${marketSignals.length} imported market, keyword, community, or note signals were considered`);
+  }
+
+  const confidence = candidate.status === "ready"
+    ? marketSignals.length > 0 && apps.length >= 2
+      ? "medium"
+      : "low-medium"
+    : "low";
+
+  return {
+    chosen_because: candidate.status === "ready"
+      ? `${candidate.title} is the current best candidate because it turns the cluster into a narrow, buildable MVP wedge instead of a broad category clone.`
+      : `${candidate.title} is not selected for factory use yet; it remains ${candidate.status || "researching"} until stronger cross-source evidence validates the wedge.`,
+    evidence_summary: evidenceParts.length > 0
+      ? evidenceParts.join("; ")
+      : "Only limited directional evidence was available in this pass.",
+    audience_logic: candidate.target_user
+      ? `${candidate.target_user} is the explicit audience; validate that this group has frequent enough pain and a clear acquisition channel before backlog promotion.`
+      : "The target audience still needs to be made more specific before this can be a strong factory candidate.",
+    competitor_gap: candidate.specific_gap,
+    why_this_wedge: candidate.mvp_wedge,
+    why_not_alternatives: "Broader category clones and over-covered incumbent jobs should stay rejected or researching unless a narrower job, audience, or distribution angle is proven.",
+    tradeoffs: candidate.ai_backend_strategy?.cost_or_risk ||
+      "The main tradeoff is moving too early from directional App Store signals into product generation before community, keyword, and audience evidence confirm demand.",
+    confidence,
+    follow_up_questions: [
+      "Which non-App-Store user-pain sources confirm this job?",
+      "How large and reachable is the target audience?",
+      "Which competitor weakness is visible enough to explain in the first App Store screenshots?",
+    ],
+  };
+}
+
+function applyStrategicResearchGate(candidate, context = {}) {
   candidate.market_thesis = candidate.market_thesis || buildMarketThesis(candidate);
   candidate.ai_backend_strategy = candidate.ai_backend_strategy || strategicAiBackendStrategy(candidate);
   candidate.differentiation_thesis = candidate.differentiation_thesis || buildDifferentiationThesis(candidate);
   candidate.launch_appeal = candidate.launch_appeal || buildLaunchAppeal(candidate);
+  candidate.selection_rationale = candidate.selection_rationale || buildSelectionRationale(candidate, context);
 
   if (isEducationCandidate(candidate)) {
     candidate.learning_thesis = candidate.learning_thesis || buildLearningThesis(candidate);
   }
 
   candidate.research = candidate.research || {};
-  candidate.research.quality_gate = "strategic-research-v3";
+  candidate.research.quality_gate = "strategic-research-v4";
   candidate.research.signals = Array.isArray(candidate.research.signals) ? candidate.research.signals : [];
   if (!candidate.research.signals.some((signal) => signal.type === "strategic-thesis")) {
     candidate.research.signals.push({
       type: "strategic-thesis",
-      summary: `Market, AI/backend, and differentiation theses were generated for ${candidate.title}.`,
+      summary: `Market, AI/backend, differentiation, launch appeal, and selection rationale were generated for ${candidate.title}.`,
       confidence: "medium",
     });
   }
@@ -837,6 +890,16 @@ function renderMarkdown({ opportunity, apps, positioning, reviewAnalysis, market
       `MVP wedge: ${candidate.mvp_wedge}`,
       "",
       `Why now: ${candidate.why_now}`,
+      "",
+      candidate.selection_rationale
+        ? `Why selected: ${candidate.selection_rationale.chosen_because}`
+        : "",
+      candidate.selection_rationale
+        ? `Evidence: ${candidate.selection_rationale.evidence_summary}`
+        : "",
+      candidate.selection_rationale
+        ? `Tradeoffs: ${candidate.selection_rationale.tradeoffs}`
+        : "",
       "",
     ].join("\n")),
     "## Output Files",
@@ -956,7 +1019,7 @@ async function main() {
   ];
   const candidates = buildCandidates({ opportunity, apps, positioning, reviews: reviewAnalysis, sources, marketSignals });
   for (const candidate of candidates) {
-    applyStrategicResearchGate(candidate);
+    applyStrategicResearchGate(candidate, { opportunity, apps, positioning, reviews: reviewAnalysis, marketSignals });
     attachMarketSignalResearch(candidate, marketSignals);
     candidate.research.research_run = researchRunRef(researchDir);
   }

@@ -180,6 +180,47 @@ function output(result, outputFile) {
   process.stdout.write(text);
 }
 
+function buildResearchContext(selection) {
+  const idea = selection.idea || {};
+  return {
+    schema_version: 1,
+    idea_id: selection.idea_id,
+    research_status: idea.research_status || null,
+    target_user: idea.target_user || idea.audience || null,
+    problem_statement: idea.problem_statement || null,
+    category: idea.category || null,
+    cluster: idea.cluster || null,
+    specific_gap: idea.specific_gap || null,
+    mvp_wedge: idea.mvp_wedge || null,
+    why_now: idea.why_now || null,
+    metric_snapshot: idea.metric_snapshot || null,
+    evidence_sources: idea.evidence_sources || [],
+    competitors: idea.competitors || [],
+    market_thesis: idea.market_thesis || null,
+    ai_backend_strategy: idea.ai_backend_strategy || null,
+    differentiation_thesis: idea.differentiation_thesis || null,
+    selection_rationale: idea.selection_rationale || null,
+    learning_thesis: idea.learning_thesis || null,
+    research: idea.research || null,
+  };
+}
+
+function assertResearchReady(selection, stateRoot) {
+  if (!boolValue(process.env.IDEA_FACTORY_REQUIRE_RESEARCH_LEDGER, true)) return;
+  const researchDir = path.join(stateRoot, "ideas", "research", selection.idea_id);
+  const candidateFile = path.join(researchDir, "candidate.json");
+  const evaluationFile = path.join(researchDir, "evaluation.json");
+  if (!fs.existsSync(candidateFile) || !fs.existsSync(evaluationFile)) {
+    throw new Error(`Idea ${selection.idea_id} is missing stable research ledger state; run research:ledger import-backlog, evaluate, and owner promotion before factory preparation`);
+  }
+  const researchCandidate = JSON.parse(fs.readFileSync(candidateFile, "utf8"));
+  const evaluation = JSON.parse(fs.readFileSync(evaluationFile, "utf8"));
+  if (researchCandidate.research_status !== "ready" || evaluation.recommendation !== "validated") {
+    const missing = (evaluation.missing_checks || []).join(", ") || "owner readiness decision";
+    throw new Error(`Idea ${selection.idea_id} has not passed the research ledger gate: status=${researchCandidate.research_status}, recommendation=${evaluation.recommendation}, missing=${missing}`);
+  }
+}
+
 function printUsage() {
   process.stdout.write(`Usage:
   GH_TOKEN=... node scripts/ios-app-factory-prepare.mjs \\
@@ -540,6 +581,8 @@ async function main() {
     return;
   }
 
+  assertResearchReady(selection, stateRoot);
+
   const factoryWorkspace = resolveFactoryWorkspace(selection, args, workspaceRoot);
   const previewRepoUrl = `https://github.com/${destinationOwner}/${selection.repo_name}.git`;
 
@@ -555,6 +598,7 @@ async function main() {
           repo_url: previewRepoUrl,
           product_idea: selection.product_idea,
           launch_appeal: selection.launch_appeal || null,
+          research_context: buildResearchContext(selection),
           repo_mode: "greenfield",
           platform: selection.platform,
           stack: selection.stack,
@@ -642,6 +686,7 @@ async function main() {
       stack: selection.stack,
       product_idea: selection.product_idea,
       launch_appeal: selection.launch_appeal || null,
+      research_context: buildResearchContext(selection),
     },
     repository: repoResult,
     workspace: workspaceResult,
@@ -657,6 +702,7 @@ async function main() {
       repo_url: repoResult.clone_url,
       product_idea: selection.product_idea,
       launch_appeal: selection.launch_appeal || null,
+      research_context: buildResearchContext(selection),
       repo_mode: "greenfield",
       platform: selection.platform,
       stack: selection.stack,

@@ -44,7 +44,7 @@ Preferred inputs:
 
 ## Workflow Coverage
 
-- `viber-idea-research` runs Stage 1 only: opportunity research, research-pack output, backlog validation, private state commit/push.
+- `viber-idea-research` runs Stage 1 only: opportunity research, research-pack output, backlog validation, private state commit/push. In daily mode it should collect cross-source evidence, write `daily-brief.md` and `cofounder-slack-report.md`, and avoid promoting a candidate unless the `strategic-research-v4` selection-rationale gate is satisfied.
 - `manual-viber-game-full-production-pass` runs `$viber-game-full-production-pass` against Game With Water. It creates one new playable game candidate with core logic, characterful design, guided progression, 20 meaningful levels, self-iteration, quality/novelty evidence, bugfix remediation, screenshots when practical, and final validation. It must not upgrade an existing prototype.
 - `manual-viber-game-quality-scorecard` runs `$viber-game-quality-scorecard` against Game With Water. It scores one named or inferred playable prototype, or the current prototype portfolio, with a concrete hyper-casual quality rubric and routes exact next workflow prompts.
 - `manual-viber-game-visual-novelty-audit` runs `$viber-game-visual-novelty-audit` against Game With Water. It compares a named or newest prototype against recent prototypes/screenshots and routes repeated/generic visual language to `game-design-character`.
@@ -75,7 +75,12 @@ Use app-specific automations only when:
 
 ## Notes
 
+The `viber-idea-research` daily run should first perform a bounded maintenance check, then always investigate at least one fresh theme. Existing ideas are due only for an explicit Slack request, an incomplete pack, evidence at least seven days old, a material market event, or an open check that current sources can answer. Recently evaluated ideas with unchanged gaps stay on cooldown; owner/interview/usability-test blockers must not trigger repeated public scans. The run may append sourced evidence and deterministic evaluations autonomously, but it must not create owner promotion decisions, repos, PRDs, or factory runs.
+
+When `PRODUCT_IDEAS_SLACK_CHANNEL_ID` is configured, the automation maintains one concise root card per idea. The root explains only the product, audience, problem, and core experience. Initial research and every later material update belong to the same idea thread. A no-change run may update the private daily brief without posting to Slack.
+
 - No legacy external-orchestrator automation is currently configured.
+- Cross-idea co-founder digests are opt-in. Routine daily runs keep `cofounder-slack-report.md` private and do not create a second channel-level post for an idea; an explicit digest may be sent only when the target is configured and the report contains no secrets, raw paid-source rows, or private account identifiers.
 - Do not use historical generated workspace paths such as `.vibermode-generated-ios-apps` or old `Documents/Codex` generated-app folders for new runs.
 - New generated products should use the configured generated-products root with the app repo at `[repo-name]/ios-app/`.
 - Shared `ai-services` may be attached by setting `VIBERMODE_AI_SERVICES_PATH` or `AI_SERVICES_PATH`; it should be a bundle-level symlink/reference, not copied into the generated app repo.

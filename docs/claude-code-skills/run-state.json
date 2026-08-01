@@ -1,0 +1,9 @@
+{
+  "project": "claude-code-skills",
+  "updated": "2026-07-22",
+  "completed_tasks": ["T1", "T2", "T3", "T4"],
+  "in_progress_tasks": [],
+  "blocked_tasks": [],
+  "blockers": [],
+  "next_step": "Restart any Claude Code session that was open before the first install, then invoke a ViberMode skill by name."
+}

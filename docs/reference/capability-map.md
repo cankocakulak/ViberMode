@@ -63,6 +63,9 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I want to add or audit compliant mobile app rating/review prompts | `mobile-rating-review-integrator` |
 | I want to optimize app paywall timing, onboarding monetization, or review prompts | `paywall-review-optimizer` |
 | I want to create or replace a mobile paywall from a reusable template | `paywall-creator` |
+| I want to plan mobile app growth, positioning, acquisition route, creative pillars, or growth tasks | `mobile-growth-strategist` |
+| I want to generate mobile ad creative briefs, copy, scripts, storyboards, or asset prompts | `ad-creative-lab` |
+| I want to turn approved creatives into a paid acquisition launch plan with paused draft specs | `paid-acquisition-launcher` |
 | I want to produce a new fuller playable game with 20 levels, character design, progression, and iteration evidence | `game-full-production-pass` |
 | I want to know whether a game prototype is actually good enough | `game-quality-scorecard` |
 | I want to catch repeated or generic visual language across games | `game-visual-novelty-audit` |
@@ -86,6 +89,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I want to upload a generated iOS app to internal TestFlight | `ios-submit-testflight` |
 | I want to upload a generated Android app to Google Play internal testing | `android-submit-play-internal` |
 | I want to know what Codex can read/write across RevenueCat, iOS, Android, store metadata, or reporting APIs | `docs/operations/codex-operational-capabilities.md` |
+| I want to add or audit AppsFlyer attribution with Meta, Google Ads, TikTok, and RevenueCat purchase forwarding | `docs/operations/mobile-attribution-appsflyer-setup.md` |
 | I want to analyze or safely manage Meta/Facebook/Instagram ads | `meta-ads-operator` |
 | I want to analyze or safely manage TikTok ads | `tiktok-ads-operator` |
 | I want to analyze or safely manage Google Ads | `google-ads-operator` |
@@ -1034,11 +1038,28 @@ Use focused workflows as the primary surface. `game-prototype-lab` remains as a 
 - Kind: `workflow`
 - Callability: `always-callable`
 - Tier: `support`
-- Purpose: Coordinate store products, RevenueCat configuration, and app paywall or purchase wiring
+- Purpose: Coordinate store products, RevenueCat configuration, app paywall or purchase wiring, and release-time IPA purchase config gates
 - Use when:
   - the request spans in-app products, subscription packages, RevenueCat offerings, and app-side paywall/purchase behavior
+  - the request needs an end-to-end subscription launch path across App Store Connect, RevenueCat, SDK keys, paywall code, TestFlight, and purchase validation
 - Surfaces:
   - Codex: `viber-mobile-monetization-operator`
+  - Cursor: not currently projected
+
+#### `mobile-attribution-operator`
+
+- Kind: `workflow`
+- Callability: `always-callable`
+- Tier: `support`
+- Purpose: Add or audit AppsFlyer mobile attribution, ad-network partner setup, and RevenueCat purchase/revenue forwarding
+- Use when:
+  - the request mentions AppsFlyer, mobile attribution, Meta/Google/TikTok partner integrations, cost connections, RevenueCat -> AppsFlyer forwarding, or matching a new app to the Ozard/Sınav Oyunları attribution baseline
+- Distinction:
+  - Use this for attribution setup and acquisition measurement readiness.
+  - Use `mobile-monetization-operator` for store products, RevenueCat offerings, entitlements, and purchase setup.
+  - Use the ad-operator skills for campaign reporting or campaign mutations after attribution is wired.
+- Surfaces:
+  - Codex: `viber-mobile-attribution-operator`
   - Cursor: not currently projected
 
 #### `paywall-review-optimizer`
@@ -1076,6 +1097,63 @@ Use focused workflows as the primary surface. `game-prototype-lab` remains as a 
   - Codex: `paywall-creator`
   - Cursor: not currently projected
   - Any tool: `paywall-creator` via `AGENTS.md`
+
+#### `mobile-growth-strategist`
+
+- Kind: `workflow`
+- Callability: `artifact-aware`
+- Tier: `support`
+- Purpose: Build mobile app growth strategy from product docs, competitor evidence, monetization state, acquisition channels, measurement readiness, and policy constraints
+- Use when:
+  - a known app needs acquisition positioning, creative pillars, funnel route selection, or growth task planning
+  - the user asks how to go from product docs to paid/social launch work
+  - the app is policy-sensitive and needs claims/targeting guardrails before creative generation
+- Distinction:
+  - Use this before creative production when the wedge, audience posture, destination, or metrics are unclear.
+  - Use `ad-creative-lab` once briefs, scripts, copy, or asset prompts are needed.
+  - Use `paid-acquisition-launcher` once assets are approved and launch specs are needed.
+- Surfaces:
+  - Codex: `mobile-growth-strategist`
+  - Cursor: not currently projected
+  - Any tool: `mobile-growth-strategist` via `AGENTS.md`
+
+#### `ad-creative-lab`
+
+- Kind: `workflow`
+- Callability: `artifact-aware`
+- Tier: `support`
+- Purpose: Generate mobile ad creative briefs, copy variants, scripts, storyboards, static/video concepts, prompts, and asset manifests
+- Use when:
+  - the user wants Meta/TikTok/Google/ASA/social creatives for a mobile app
+  - creative concepts need compliance notes or policy-sensitive copy cleanup
+  - product screenshots, mockups, or UGC scripts need to become production-ready ad inputs
+- Distinction:
+  - Use this for creative content and asset planning.
+  - Use `mobile-growth-strategist` for positioning and acquisition-route decisions.
+  - Use `paid-acquisition-launcher` for campaign structure and platform preflight.
+- Surfaces:
+  - Codex: `ad-creative-lab`
+  - Cursor: not currently projected
+  - Any tool: `ad-creative-lab` via `AGENTS.md`
+
+#### `paid-acquisition-launcher`
+
+- Kind: `workflow`
+- Callability: `artifact-aware`
+- Tier: `support`
+- Purpose: Convert approved mobile growth strategy and ad creatives into approval-gated paid acquisition launch plans
+- Use when:
+  - approved creatives should become campaign/ad set/ad draft specs
+  - platform preflight, naming, budget assumptions, audience posture, UTMs, and tracking requirements need to be planned before writes
+  - the launch route must choose between app install, beta/TestFlight, landing/waitlist, or web conversion
+- Distinction:
+  - Use this for launch architecture and paused draft specs.
+  - Use platform operators for live reads, reporting, paused object creation, and approved writes.
+  - Do not use it to activate spend directly.
+- Surfaces:
+  - Codex: `paid-acquisition-launcher`
+  - Cursor: not currently projected
+  - Any tool: `paid-acquisition-launcher` via `AGENTS.md`
 
 #### `meta-ads-operator`
 
@@ -1161,7 +1239,8 @@ Use focused workflows as the primary surface. `game-prototype-lab` remains as a 
 
 ### Claude Code and other generic tools
 
-- Use `AGENTS.md`
+- Install Claude Code skills with `npm run install:claude`
+- Use `AGENTS.md` as the generic-tool fallback
 - Canonical role names remain the stable surface
 
 ## Simplification Notes

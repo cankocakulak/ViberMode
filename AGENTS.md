@@ -84,6 +84,10 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 | **paywall-review-optimizer** | `packs/vibermode/workflows/paywall-review-optimizer.md` | Audits and improves app paywall timing, onboarding-to-value, and review prompt strategy |
 | **paywall-creator** | `packs/vibermode/workflows/paywall-creator.md` | Creates or adapts template-based mobile paywall surfaces |
 | **mobile-competitor-teardown** | `packs/vibermode/workflows/mobile-competitor-teardown.md` | Builds competitor research packs for app onboarding, paywalls, pricing, monetization, and review prompt patterns |
+| **mobile-growth-strategist** | `packs/vibermode/workflows/mobile-growth-strategy.md` | Builds mobile app growth strategy, positioning, creative pillars, acquisition route, and measurement tasks |
+| **ad-creative-lab** | `packs/vibermode/workflows/ad-creative-lab.md` | Generates mobile ad creative briefs, copy, scripts, storyboards, prompts, and compliance notes |
+| **paid-acquisition-launcher** | `packs/vibermode/workflows/paid-acquisition-launcher.md` | Converts approved growth and creative inputs into approval-gated paid acquisition launch plans |
+| **mobile-attribution-operator** | `adapters/codex/skills/mobile-attribution-operator/SKILL.md` | Adds or audits AppsFlyer attribution, ad-network partner setup, and RevenueCat purchase forwarding for mobile apps |
 | **meta-ads-operator** | `adapters/codex/skills/meta-ads-operator/SKILL.md` | Analyzes Meta/Facebook/Instagram Ads performance and safely plans or performs Marketing API actions with paused-by-default write workflows |
 | **tiktok-ads-operator** | `adapters/codex/skills/tiktok-ads-operator/SKILL.md` | Analyzes TikTok Ads performance and safely plans or performs TikTok API for Business actions with paused-by-default write workflows |
 | **google-ads-operator** | `adapters/codex/skills/google-ads-operator/SKILL.md` | Analyzes Google Ads performance and safely plans or performs Google Ads API actions with paused-by-default write workflows |
@@ -133,6 +137,9 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **paywall-review-optimizer** workflow" → Read `packs/vibermode/workflows/paywall-review-optimizer.md`
 - "Use the **paywall-creator** workflow" → Read `packs/vibermode/workflows/paywall-creator.md`
 - "Use the **mobile-competitor-teardown** workflow" → Read `packs/vibermode/workflows/mobile-competitor-teardown.md`
+- "Use the **mobile-growth-strategist** workflow" → Read `packs/vibermode/workflows/mobile-growth-strategy.md`
+- "Use the **ad-creative-lab** workflow" → Read `packs/vibermode/workflows/ad-creative-lab.md`
+- "Use the **paid-acquisition-launcher** workflow" → Read `packs/vibermode/workflows/paid-acquisition-launcher.md`
 - "Use the **game-prototype-lab** workflow" → Read `packs/vibermode/workflows/game/prototype-lab.md` and route to the smallest focused game workflow
 - "Use the **game-new-prototype** workflow" → Read `packs/vibermode/workflows/game/new-prototype.md`
 - "Use the **game-signature-prototype** workflow" → Read `packs/vibermode/workflows/game/signature-prototype.md`

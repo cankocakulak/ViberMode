@@ -9,6 +9,7 @@
 - Derive or confirm `project-name` first so every stage writes to the same artifact set.
 - Move in order: `brainstormer -> prd -> ux-designer -> user-stories -> spec-reviewer`.
 - Preserve any orchestrator-provided `factory_context` through PRD, UX, stories, and spec review.
+- Preserve any orchestrator-provided `research_context` through brainstorm, PRD, UX, stories, and spec review.
 - Keep IDs stable across reruns: requirements, UX flows, and story IDs should persist.
 - Stop at `spec-review` until the result is `APPROVED` or `BLOCKED`.
 - Do not enter bootstrap or task planning from inside this workflow.
@@ -43,6 +44,7 @@ Inputs:
 - optional: `docs/[project-name]/analysis.md`
 - optional constraints or direction bias
 - optional factory context, such as iOS factory required flows and pattern sources
+- optional research context with stable idea ID, evaluation, evidence summary, open checks, and owner decisions
 - optional prior `docs/[project-name]/spec-review.md` when rerunning
 
 Outputs:
@@ -52,6 +54,7 @@ Success Criteria:
 - clear problem framing
 - recommended direction chosen
 - constraints and technical bets are explicit
+- validated premises stay sourced and new hypotheses are marked for re-validation
 - artifact includes summary and handoff contract
 
 Next Step:
@@ -70,6 +73,7 @@ Inputs:
 - optional: `docs/[project-name]/analysis.md`
 - optional audience, product context, constraints
 - optional factory context, such as iOS factory required flows and pattern sources
+- optional research context inherited from brainstorm/orchestrator
 - optional prior `docs/[project-name]/spec-review.md` when rerunning
 
 Outputs:
@@ -82,6 +86,7 @@ Success Criteria:
 - runtime topology is explicit, including topology mode, required repo roles, optional/deferred repo roles, service dependencies, integration posture, backend trigger, and data ownership
 - out-of-scope is clear
 - artifact includes summary and handoff contract
+- research basis distinguishes evidence, inference, and unresolved validation checks
 
 Next Step:
 `ux-designer`

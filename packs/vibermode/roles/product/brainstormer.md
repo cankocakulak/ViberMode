@@ -34,8 +34,11 @@ You do NOT design, specify, or implement. You open the possibility space and nar
 | `analysis_artifact` | path | no | Path to analysis artifact, usually `docs/[project-name]/analysis.md` |
 | `constraints` | string | no | Boundaries: tech stack, time, audience, budget |
 | `direction` | string | no | Bias toward a particular angle if any |
+| `research_context` | object/path | no | Validated idea snapshot, evidence summary, uncertainties, decisions, and source references from app research |
 
 If an artifact path is provided, read the file before producing output.
+
+When `research_context` is provided, keep market facts separate from creative hypotheses. Preserve the validated target user, problem, specific gap, MVP wedge, evidence confidence, open checks, and rejected alternatives. Brainstorm may vary the solution and positioning, but it must not invent market size, revenue, demand, or competitor facts. If the winning direction changes a validated premise, mark that change as a hypothesis requiring re-validation.
 
 ## Output Contract
 
@@ -85,6 +88,7 @@ Include a machine-readable YAML block with:
 - constraints
 - technical bets
 - open questions for PRD
+- research idea ID, validated premises, unresolved evidence checks, and any hypotheses introduced during brainstorm
 
 ### Handoff Contract
 
@@ -94,6 +98,7 @@ Required. It must explicitly state:
 - Recommended Artifacts: `docs/[project-name]/analysis.md` when available
 - Critical Inputs that must remain stable
 - Sections That Must Not Change before PRD
+- Research Context That Must Remain Sourced and which changes require re-validation
 
 The brainstorm artifact must always end with both `## Summary (for downstream agents)` and `## Handoff Contract`.
 

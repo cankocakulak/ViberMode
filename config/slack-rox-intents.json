@@ -1,0 +1,362 @@
+{
+  "version": 1,
+  "channel_domains": {
+    "C0BJ9S4A4HF": "product-research",
+    "product-ideas": "product-research",
+    "C08FC35G74J": "growth",
+    "growth": "growth",
+    "C090F1TGQG5": "customer-success",
+    "customer-success": "customer-success"
+  },
+  "platforms": {
+    "ios": ["ios", "iphone", "ipad", "apple", "testflight", "app store", "appstore"],
+    "android": ["android", "google play", "play console", "aab", "apk"],
+    "backend": ["backend", "api", "server", "worker", "queue"],
+    "web": ["web", "website", "site", "control center", "panel"]
+  },
+  "intents": [
+    {
+      "id": "idea-validate",
+      "domain": "product-research",
+      "workflow": "app-opportunity-research",
+      "playbook": "product-research#validate-or-deepen",
+      "risk": "read-only-research-then-private-state-write",
+      "anchors": ["validate", "dogrula", "kanit", "reddit", "arastir", "pazar", "kitle"],
+      "examples": [
+        "bu fikri validate et",
+        "reddit kanitini derinlestir",
+        "kitleyi ve pazar buyuklugunu arastir",
+        "bu ihtiyac gercek mi bak",
+        "web ve app store kanitlarini yenile"
+      ]
+    },
+    {
+      "id": "idea-compare",
+      "domain": "product-research",
+      "workflow": "app-opportunity-research",
+      "playbook": "product-research#compare-market",
+      "risk": "read-only-research-then-private-state-write",
+      "anchors": ["karsilastir", "rakip", "competitor", "pricing", "fiyat", "gelir"],
+      "examples": [
+        "rakipleri ve fiyatlari karsilastir",
+        "bu uygulamalar ne kadar kazaniyor",
+        "alternatiflerle yan yana koy",
+        "competitor pricing analizi yap"
+      ]
+    },
+    {
+      "id": "idea-park",
+      "domain": "product-research",
+      "workflow": "app-opportunity-research",
+      "playbook": "product-research#park",
+      "risk": "owner-decision-private-state-write",
+      "anchors": ["park", "beklet", "ertelemek", "sonra"],
+      "examples": [
+        "bu fikri park et",
+        "bunu sonra bakmak uzere beklet",
+        "simdilik ertele"
+      ]
+    },
+    {
+      "id": "idea-reject",
+      "domain": "product-research",
+      "workflow": "app-opportunity-research",
+      "playbook": "product-research#reject",
+      "risk": "owner-decision-private-state-write",
+      "anchors": ["reddet", "ele", "kapat", "vazgec"],
+      "examples": [
+        "bu fikri reddet",
+        "bunu eleyelim",
+        "fikri kapat"
+      ]
+    },
+    {
+      "id": "idea-promote-brainstorm",
+      "domain": "product-research",
+      "workflow": "brainstormer",
+      "playbook": "product-research#promote-brainstorm",
+      "risk": "owner-promotion-and-evidence-gate",
+      "anchors": ["brainstorm", "beyin", "varyasyon", "konsept"],
+      "examples": [
+        "bunu brainstorma hazirla",
+        "fikir varyasyonlarini calis",
+        "brainstorm asamasina gecir"
+      ]
+    },
+    {
+      "id": "idea-promote-prd",
+      "domain": "product-research",
+      "workflow": "prd",
+      "playbook": "product-research#promote-prd",
+      "risk": "owner-promotion-and-evidence-gate",
+      "anchors": ["prd", "gereksinim", "spec", "urun dokumani"],
+      "examples": [
+        "bunun prd sini hazirla",
+        "urun gereksinimlerine gec",
+        "fikri spec asamasina al"
+      ]
+    },
+    {
+      "id": "idea-status",
+      "domain": "product-research",
+      "workflow": "app-opportunity-research",
+      "playbook": "product-research#status",
+      "risk": "read-only",
+      "anchors": ["durum", "status", "skor", "eksik", "sonuc"],
+      "examples": [
+        "bu fikrin durumu ne",
+        "hangi kanitlar eksik",
+        "research skoru kac",
+        "son degerlendirme ne diyor"
+      ]
+    },
+    {
+      "id": "final-submit",
+      "domain": "release",
+      "workflow": "change-to-release",
+      "playbook": "growth#final-submit-existing-build",
+      "risk": "owner-command-and-store-gates",
+      "anchors": ["submit", "review", "store"],
+      "examples": [
+        "gonderilen buildi submit et",
+        "submit e gonder",
+        "review a gonder",
+        "store submit",
+        "yukledigim buildi submit et"
+      ]
+    },
+    {
+      "id": "internal-release",
+      "domain": "release",
+      "workflow": "change-to-release",
+      "playbook": "growth#mobile-internal-release",
+      "risk": "owner-command-and-release-gates",
+      "anchors": ["test", "testflight", "internal", "build", "aab", "apk"],
+      "examples": [
+        "teste gonder",
+        "ikisini de teste gonder",
+        "testflight a al",
+        "google play internal a yukle",
+        "main den build al",
+        "ios ve android build al upload et"
+      ]
+    },
+    {
+      "id": "main-update",
+      "domain": "code",
+      "workflow": "repo-change",
+      "playbook": "growth#main-update",
+      "risk": "protected-branch-policy",
+      "anchors": ["main", "master"],
+      "examples": [
+        "main e at",
+        "main e yolla",
+        "main e mergele",
+        "main e pushla",
+        "main branchine gonder"
+      ]
+    },
+    {
+      "id": "code-change",
+      "domain": "code",
+      "workflow": "repo-change",
+      "playbook": "shared#bounded-repo-change",
+      "risk": "low-when-bounded",
+      "anchors": ["yap", "duzelt", "fix", "ekle", "degistir", "iyilestir", "bug"],
+      "examples": [
+        "bunu duzelt",
+        "su bug i fixle",
+        "bu ozelligi ekle",
+        "ekrani iyilestir",
+        "sorunu coz"
+      ]
+    },
+    {
+      "id": "investigate",
+      "domain": "shared",
+      "workflow": "repo-change",
+      "playbook": "shared#read-first-investigation",
+      "risk": "read-only-first",
+      "anchors": ["bak", "incele", "kontrol", "neden", "niye", "ara", "bul"],
+      "examples": [
+        "bi bakar misin",
+        "neden olmuyor",
+        "sorunu incele",
+        "kontrol eder misin",
+        "root cause bul"
+      ]
+    },
+    {
+      "id": "status",
+      "domain": "shared",
+      "workflow": "slack-codex-operator",
+      "playbook": "shared#status",
+      "risk": "read-only",
+      "anchors": ["durum", "status", "bitti", "ne oldu", "sonuc", "nerede"],
+      "examples": [
+        "durum ne",
+        "bitti mi",
+        "ne oldu",
+        "sonuc var mi",
+        "nerede kaldi"
+      ]
+    },
+    {
+      "id": "analytics-gap",
+      "domain": "growth",
+      "workflow": "repo-change",
+      "playbook": "growth#analytics-event-gap",
+      "risk": "read-only-then-bounded-code",
+      "anchors": ["mixpanel", "analytics", "event", "tracking", "purchase", "paywall"],
+      "examples": [
+        "mixpanel event gelmiyor",
+        "purchase started tracking eksik",
+        "paywall eventlerini kontrol et",
+        "analytics gap var",
+        "event propertyleri yanlis"
+      ]
+    },
+    {
+      "id": "attribution-health",
+      "domain": "growth",
+      "workflow": "mobile-attribution-operator",
+      "playbook": "growth#attribution-health",
+      "risk": "read-only-first",
+      "anchors": ["appsflyer", "attribution", "meta", "tiktok", "google ads", "install"],
+      "examples": [
+        "appsflyer saglik kontrolu",
+        "install eventleri geliyor mu",
+        "meta tiktok google baglantilarina bak",
+        "attribution calisiyor mu",
+        "first open gorunmuyor"
+      ]
+    },
+    {
+      "id": "payment-analytics-reconcile",
+      "domain": "growth",
+      "workflow": "repo-change",
+      "playbook": "growth#payment-analytics-reconcile",
+      "risk": "read-only-first",
+      "anchors": ["stripe", "mixpanel", "odeme", "payment", "checkout", "satin"],
+      "examples": [
+        "stripe ile mixpanel tutmuyor",
+        "odeme analytics sayilari farkli",
+        "checkout eventlerini karsilastir",
+        "purchase sayisi neden eksik"
+      ]
+    },
+    {
+      "id": "cs-login-auth",
+      "domain": "customer-success",
+      "workflow": "repo-change",
+      "playbook": "customer-success#login-auth-readonly",
+      "risk": "privacy-aware-read-only",
+      "anchors": ["login", "giris", "oturum", "sifre", "auth"],
+      "examples": [
+        "kullanici giris yapamiyor",
+        "login sorunu var",
+        "sifre dogru ama acilmiyor",
+        "oturum neden dusuyor"
+      ]
+    },
+    {
+      "id": "cs-subscription-entitlement",
+      "domain": "customer-success",
+      "workflow": "repo-change",
+      "playbook": "customer-success#subscription-entitlement-readonly",
+      "risk": "billing-read-only-first",
+      "anchors": ["abonelik", "subscription", "entitlement", "premium", "pro", "trial"],
+      "examples": [
+        "aboneligi var ama premium acilmiyor",
+        "subscription entitlement kontrol et",
+        "trial suresi yanlis",
+        "pro gorunmuyor"
+      ]
+    },
+    {
+      "id": "cs-checkout-payment",
+      "domain": "customer-success",
+      "workflow": "repo-change",
+      "playbook": "customer-success#checkout-payment-readonly",
+      "risk": "billing-read-only-first",
+      "anchors": ["odeme", "payment", "checkout", "stripe", "iptal", "refund", "iade"],
+      "examples": [
+        "odeme alindi ama abonelik yok",
+        "checkout calismiyor",
+        "stripe iptal durumuna bak",
+        "iade veya iptal incele"
+      ]
+    },
+    {
+      "id": "cs-notification-delay",
+      "domain": "customer-success",
+      "workflow": "repo-change",
+      "playbook": "customer-success#notification-delay-readonly",
+      "risk": "read-only-first",
+      "anchors": ["bildirim", "notification", "telegram", "gecik", "mesaj", "queue", "worker"],
+      "examples": [
+        "telegram bildirimi gec geldi",
+        "bildirim neden gecikiyor",
+        "notification queue ya bak",
+        "mesaj gitmedi"
+      ]
+    },
+    {
+      "id": "cs-student-search",
+      "domain": "customer-success",
+      "workflow": "repo-change",
+      "playbook": "customer-success#student-search-deploy-mismatch",
+      "risk": "privacy-aware-read-only",
+      "anchors": ["ogrenci", "student", "arama", "search", "control center", "panel"],
+      "examples": [
+        "ogrenci aramada cikmiyor",
+        "control center kullaniciyi bulamiyor",
+        "student search calismiyor",
+        "panelde hesap gorunmuyor"
+      ]
+    },
+    {
+      "id": "cs-external-integration",
+      "domain": "customer-success",
+      "workflow": "slack-codex-operator",
+      "playbook": "customer-success#external-integration-status",
+      "risk": "external-admin-read-only-first",
+      "anchors": ["intercom", "stripe", "baglanti", "entegrasyon", "reconnect"],
+      "examples": [
+        "intercom stripe baglantisi koptu",
+        "entegrasyonu tekrar bagla",
+        "intercomda stripe gorunmuyor",
+        "reconnect durumuna bak"
+      ]
+    },
+    {
+      "id": "context-update",
+      "domain": "shared",
+      "workflow": "slack-codex-operator",
+      "playbook": "shared#context-update",
+      "risk": "source-and-durability-check",
+      "anchors": ["hatirla", "bundan sonra", "context", "baglam", "repo", "proje", "ismi", "adi"],
+      "examples": [
+        "bundan sonra bunu hatirla",
+        "bu kanal bu proje icin",
+        "repo burada",
+        "projenin adi degisti",
+        "contexti guncelle"
+      ]
+    },
+    {
+      "id": "cancel",
+      "domain": "shared",
+      "workflow": "slack-codex-operator",
+      "playbook": "shared#cancel-confirmation",
+      "risk": "requester-or-owner-confirmation",
+      "anchors": ["iptal", "vazgec", "dur", "birak", "cancel"],
+      "examples": [
+        "bu isi iptal et",
+        "vazgectim dur",
+        "taski kapat",
+        "devam etme"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "project": "claude-code-skills",
+  "updated": "2026-07-22",
+  "phasePlan": {
+    "order": ["core", "ops"]
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Add the Claude Code skill adapter and installer",
+      "status": "complete",
+      "phase": "core",
+      "validation": [
+        "bash -n adapters/claude/install/install-skills.sh"
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Wire package command, documentation, and reference validation",
+      "status": "complete",
+      "phase": "core",
+      "validation": [
+        "npm run validate"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Validate installation in an isolated Claude config directory",
+      "status": "complete",
+      "phase": "core",
+      "validation": [
+        "CLAUDE_CONFIG_DIR=<temporary-directory> npm run install:claude"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Install ViberMode skills into the real Claude Code config",
+      "status": "complete",
+      "phase": "ops",
+      "validation": [
+        "npm run install:claude"
+      ]
+    }
+  ]
+}

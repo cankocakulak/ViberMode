@@ -7,10 +7,12 @@ const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "
 const yamlPath = path.join(repoRoot, "docs/reference/agent-surface-map.yaml");
 const agentsPath = path.join(repoRoot, "AGENTS.md");
 const codexInstallScriptPath = path.join(repoRoot, "adapters/codex/install/install-skills.sh");
+const claudeInstallScriptPath = path.join(repoRoot, "adapters/claude/install/install-skills.sh");
 
 const yaml = fs.readFileSync(yamlPath, "utf8");
 const agentsText = fs.readFileSync(agentsPath, "utf8");
 const codexInstallScript = fs.readFileSync(codexInstallScriptPath, "utf8");
+const claudeInstallScript = fs.readFileSync(claudeInstallScriptPath, "utf8");
 
 const errors = [];
 const warnings = [];
@@ -222,6 +224,7 @@ if (fs.existsSync(cursorCommandsRoot)) {
 const executableScriptRoots = [
   path.join(repoRoot, "scripts"),
   path.join(repoRoot, "adapters/codex/install"),
+  path.join(repoRoot, "adapters/claude/install"),
 ];
 
 for (const scriptRoot of executableScriptRoots) {
@@ -251,6 +254,14 @@ for (const sourceRootName of ["packs", "adapters", "docs", "scripts"]) {
 
 if (!codexInstallScript.includes('SUPPORT_BUNDLE="$CODEX_SKILLS/viber-mode"')) {
   errors.push("Codex install script is missing the shared viber-mode support bundle");
+}
+
+if (!claudeInstallScript.includes('SUPPORT_BUNDLE="$CLAUDE_SKILLS/viber-mode"')) {
+  errors.push("Claude install script is missing the shared viber-mode support bundle");
+}
+
+if (!claudeInstallScript.includes('CLAUDE_CONFIG_DIR')) {
+  errors.push("Claude install script should respect CLAUDE_CONFIG_DIR");
 }
 
 if (warnings.length > 0) {

@@ -4,9 +4,11 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveRoxContext } from "./slack-rox-context.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const defaultStatePath = path.join(repoRoot, ".codex", "slack-codex-operator", "state.json");
+const defaultPolicyPath = path.join(repoRoot, ".codex", "slack-codex-operator", "policy.yml");
 const defaultKeychainService = "viberboyz-slack-rox-bot-token";
 const defaultScanChannels = "team-operation,team-cs,team-hr,customer-success";
 const defaultExcludedRoutineChannels = "customer-success";
@@ -44,9 +46,13 @@ function usage() {
   return `Usage:
   node scripts/slack-rox-bot.mjs check-keychain [--keychain-service NAME]
   printf '%s' "$SLACK_ROX_BOT_TOKEN" | node scripts/slack-rox-bot.mjs save-keychain [--keychain-service NAME]
-  node scripts/slack-rox-bot.mjs probe [--keychain-service NAME]
-  node scripts/slack-rox-bot.mjs scan [--after ISO_OR_EPOCH] [--channels team-operation,team-cs] [--state-path PATH]
+  node scripts/slack-rox-bot.mjs probe [--keychain-service NAME] [--channels policy|team-operation,team-cs]
+  node scripts/slack-rox-bot.mjs scan [--after ISO_OR_EPOCH] [--channels policy|team-operation,team-cs] [--state-path PATH]
+  node scripts/slack-rox-bot.mjs ensure-channel --name product-ideas [--private] [--purpose "text"] [--topic "text"]
   node scripts/slack-rox-bot.mjs send --channel C123 --message "text" [--thread-ts TS]
+  node scripts/slack-rox-bot.mjs edit --channel C123 --ts TS --message "text"
+  node scripts/slack-rox-bot.mjs delete --channel C123 --ts TS
+  node scripts/slack-rox-bot.mjs upload --channel C123 --file /path/image.png [--message "caption"] [--thread-ts TS] [--title "Title"]
 
 Token lookup order:
   SLACK_ROX_BOT_TOKEN, SLACK_BOT_TOKEN, then macOS Keychain service ${defaultKeychainService}
@@ -101,7 +107,7 @@ async function slackApi(method, payload = {}) {
   const body = new URLSearchParams();
   for (const [key, value] of Object.entries(payload)) {
     if (value === undefined || value === null) continue;
-    body.set(key, String(value));
+    body.set(key, typeof value === "object" ? JSON.stringify(value) : String(value));
   }
   const response = await fetch(`https://slack.com/api/${method}`, {
     method: "POST",
@@ -143,6 +149,16 @@ function splitList(value) {
     .map((item) => item.replace(/^#/, ""));
 }
 
+function boolValue(value, fallback = false) {
+  if (value === undefined || value === null || value === "") return fallback;
+  if (typeof value === "boolean") return value;
+  return ["1", "true", "yes", "y", "on"].includes(String(value).toLowerCase());
+}
+
+function policyPath() {
+  return path.resolve(args["policy-path"] || process.env.SLACK_ROX_POLICY_PATH || defaultPolicyPath);
+}
+
 function statePath() {
   return path.resolve(args["state-path"] || process.env.SLACK_ROX_STATE_PATH || defaultStatePath);
 }
@@ -151,6 +167,67 @@ function loadState() {
   const target = statePath();
   if (!fs.existsSync(target)) return { active_threads: {} };
   return JSON.parse(fs.readFileSync(target, "utf8"));
+}
+
+function unquoteYamlScalar(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/,$/, "")
+    .trim();
+}
+
+function policyBlock(lines, key) {
+  const start = lines.findIndex((line) => line.trim() === `${key}:`);
+  if (start === -1) return [];
+  const baseIndent = lines[start].match(/^\s*/)[0].length;
+  const block = [];
+  for (let i = start + 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      block.push(line);
+      continue;
+    }
+    const indent = line.match(/^\s*/)[0].length;
+    if (indent <= baseIndent) break;
+    block.push(line);
+  }
+  return block;
+}
+
+function extractYamlValues(lines, keys) {
+  const values = [];
+  const keyPattern = new RegExp(`^(?:-\\s*)?(${keys.join("|")}):\\s*(.+)$`);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const match = trimmed.match(keyPattern);
+    if (!match) continue;
+    const value = unquoteYamlScalar(match[2]);
+    if (value && value !== "[]" && value !== "{}") values.push(value);
+  }
+  return values;
+}
+
+function policyScanChannels() {
+  const target = policyPath();
+  if (!fs.existsSync(target)) return [];
+  const lines = fs.readFileSync(target, "utf8").split(/\r?\n/);
+  const identifiers = [
+    ...extractYamlValues(policyBlock(lines, "mention_scan_channels"), ["id", "name"]),
+    ...extractYamlValues(policyBlock(lines, "channel_contexts"), ["channel_id", "channel_name"]),
+  ];
+  return [...new Set(identifiers)];
+}
+
+function configuredScanChannels() {
+  const raw = args.channels || process.env.SLACK_ROX_SCAN_CHANNELS;
+  if (raw && raw !== "policy") return raw;
+  const fromPolicy = policyScanChannels();
+  if (fromPolicy.length > 0) return fromPolicy.join(",");
+  if (raw === "policy") throw new Error(`No scan channels found in policy: ${policyPath()}`);
+  return defaultScanChannels;
 }
 
 function afterTs() {
@@ -193,7 +270,7 @@ function channelMatches(channel, wanted) {
 }
 
 async function resolveScanChannels() {
-  const names = splitList(args.channels || process.env.SLACK_ROX_SCAN_CHANNELS || defaultScanChannels);
+  const names = splitList(configuredScanChannels());
   const wanted = new Set(names);
   const explicitIds = names.filter((name) => /^[CGD][A-Z0-9]+$/.test(name));
   const explicitChannels = [];
@@ -473,7 +550,19 @@ async function commandScan() {
     ...threadResults.flatMap((result) => result.candidates),
     ...dmResults.flatMap((result) => result.candidates),
     ...activeThreadCandidates,
-  ];
+  ].map((candidate) => {
+    if (!candidate.text) return candidate;
+    const routingText = candidate.root_text ? `${candidate.root_text}\n${candidate.text}` : candidate.text;
+    return {
+      ...candidate,
+      routing: resolveRoxContext({
+        text: routingText,
+        channelId: candidate.channel_id,
+        channelName: candidate.channel_name,
+        policyPath: policyPath(),
+      }),
+    };
+  });
   console.log(JSON.stringify({
     status: "ok",
     oldest,
@@ -482,6 +571,40 @@ async function commandScan() {
     channel_errors: [...channelResults, ...threadResults, ...dmResults].filter((result) => result.error).map((result) => ({ channel: result.channel, error: result.error })),
     warnings: [...channelResults, ...threadResults, ...dmResults].filter((result) => result.warning).map((result) => ({ channel: result.channel, warning: result.warning })),
     candidates,
+  }, null, 2));
+}
+
+async function commandEnsureChannel() {
+  const name = String(args.name || "").trim().replace(/^#/, "").toLowerCase();
+  if (!name) throw new Error("--name is required");
+  if (!/^[a-z0-9_-]{1,80}$/.test(name)) throw new Error("--name must be a valid Slack channel name");
+  const isPrivate = boolValue(args.private, false);
+  const conversations = await listConversations("public_channel,private_channel");
+  let channel = conversations.find((item) => item.name === name || item.name_normalized === name);
+  let created = false;
+  if (!channel) {
+    const result = await slackApi("conversations.create", { name, is_private: isPrivate });
+    channel = result.channel;
+    created = true;
+  } else if (Boolean(channel.is_private) !== isPrivate) {
+    throw new Error(`#${name} already exists with is_private=${Boolean(channel.is_private)}; requested is_private=${isPrivate}`);
+  }
+  if (args.purpose) {
+    await slackApi("conversations.setPurpose", { channel: channel.id, purpose: args.purpose });
+  }
+  if (args.topic) {
+    await slackApi("conversations.setTopic", { channel: channel.id, topic: args.topic });
+  }
+  const auth = await authContext();
+  console.log(JSON.stringify({
+    status: created ? "created" : "exists",
+    team_id: auth.team_id,
+    channel: {
+      id: channel.id,
+      name: channel.name,
+      is_private: Boolean(channel.is_private),
+      is_member: channel.is_member ?? true,
+    },
   }, null, 2));
 }
 
@@ -498,6 +621,75 @@ async function commandSend() {
   console.log(JSON.stringify({ status: "sent", channel: sent.channel, ts: sent.ts, link }, null, 2));
 }
 
+async function commandEdit() {
+  if (!args.channel) throw new Error("--channel is required");
+  if (!args.ts) throw new Error("--ts is required");
+  if (!args.message) throw new Error("--message is required");
+  const updated = await slackApi("chat.update", {
+    channel: args.channel,
+    ts: args.ts,
+    text: args.message,
+  });
+  const link = await permalink(args.channel, updated.ts);
+  console.log(JSON.stringify({ status: "updated", channel: updated.channel, ts: updated.ts, link }, null, 2));
+}
+
+async function commandDelete() {
+  if (!args.channel) throw new Error("--channel is required");
+  if (!args.ts) throw new Error("--ts is required");
+  await slackApi("chat.delete", { channel: args.channel, ts: args.ts });
+  console.log(JSON.stringify({ status: "deleted", channel: args.channel, ts: args.ts }, null, 2));
+}
+
+async function commandUpload() {
+  if (!args.channel) throw new Error("--channel is required");
+  if (!args.file) throw new Error("--file is required");
+
+  const filePath = path.resolve(String(args.file));
+  const stat = fs.statSync(filePath);
+  if (!stat.isFile()) throw new Error(`--file is not a regular file: ${filePath}`);
+  if (stat.size <= 0) throw new Error(`--file is empty: ${filePath}`);
+
+  const filename = args.filename || path.basename(filePath);
+  const title = args.title || filename;
+  const upload = await slackApi("files.getUploadURLExternal", {
+    filename,
+    length: stat.size,
+  });
+
+  const uploadResponse = await fetch(upload.upload_url, {
+    method: "POST",
+    headers: {
+      "Content-Type": args["content-type"] || "application/octet-stream",
+      "Content-Length": String(stat.size),
+    },
+    body: fs.readFileSync(filePath),
+  });
+  const uploadBody = await uploadResponse.text();
+  if (!uploadResponse.ok) {
+    const detail = uploadBody ? ` body=${uploadBody.slice(0, 200)}` : "";
+    throw new Error(`Slack file upload failed: status=${uploadResponse.status}${detail}`);
+  }
+
+  const completePayload = {
+    files: [{ id: upload.file_id, title }],
+    channel_id: args.channel,
+  };
+  if (args.message) completePayload.initial_comment = args.message;
+  if (args["thread-ts"]) completePayload.thread_ts = args["thread-ts"];
+
+  const completed = await slackApi("files.completeUploadExternal", completePayload);
+  const file = completed.files?.[0] || null;
+  console.log(JSON.stringify({
+    status: "uploaded",
+    channel: args.channel,
+    file_id: upload.file_id,
+    filename,
+    title,
+    link: file?.permalink || null,
+  }, null, 2));
+}
+
 try {
   if (command === "help" || args.help) {
     process.stdout.write(usage());
@@ -509,8 +701,16 @@ try {
     await commandProbe();
   } else if (command === "scan") {
     await commandScan();
+  } else if (command === "ensure-channel") {
+    await commandEnsureChannel();
   } else if (command === "send") {
     await commandSend();
+  } else if (command === "edit") {
+    await commandEdit();
+  } else if (command === "delete") {
+    await commandDelete();
+  } else if (command === "upload") {
+    await commandUpload();
   } else {
     throw new Error(`Unknown command: ${command}\n\n${usage()}`);
   }

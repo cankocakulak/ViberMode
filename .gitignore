@@ -17,6 +17,7 @@ build/
 .ads.env
 .ads.env.local
 .vibermode-automation.env
+.vibermode-automation.env.bak.*
 .store-downloads-apps*.json
 reports/store-reviews/
 docs/operations/app-registry.local.json

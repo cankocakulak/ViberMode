@@ -99,6 +99,25 @@ function firstPath(object, paths) {
   return null;
 }
 
+function cloneJson(value) {
+  if (!value || typeof value !== "object") return null;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function releaseContext(input) {
+  const context = cloneJson(input.release_context) || {};
+  if (input.app_store_connect) context.app_store_connect = cloneJson(input.app_store_connect);
+  if (input.google_play) context.google_play = cloneJson(input.google_play);
+  if (input.store) context.store = cloneJson(input.store);
+  return Object.keys(context).length > 0 ? context : null;
+}
+
+function mergeReleaseContext(primary, fallback) {
+  if (!primary) return fallback || null;
+  if (!fallback) return primary;
+  return { ...fallback, ...primary };
+}
+
 function inferPlatform(candidate) {
   const declared = String(candidate.platform || "").toLowerCase();
   if (["ios", "android", "web", "custom"].includes(declared)) return declared;
@@ -150,6 +169,7 @@ function normalizeCandidate(input, source) {
     run_manifest_path: input.run_manifest_path ? path.resolve(input.run_manifest_path) : null,
     bundle_id: input.bundle_id || null,
     package_name: input.package_name || null,
+    release_context: releaseContext(input),
     default_release_target: input.default_release_target || defaultReleaseTarget(platform),
     submit_when_ready_default: Boolean(input.submit_when_ready_default),
     forbid_dirty: Array.isArray(input.forbid_dirty) ? input.forbid_dirty.map((item) => path.resolve(item)) : [],
@@ -231,6 +251,7 @@ function manifestToCandidate(manifestPath) {
     bundle_id: autopilot.bundle_id || firstPath(manifest, [["bundle_id"], ["app", "bundle_id"], ["selected_idea", "bundle_id"]]),
     package_name: autopilot.package_name || firstPath(manifest, [["package_name"], ["application_id"], ["android", "package_name"]]),
     default_release_target: autopilot.default_release_target,
+    release_context: autopilot.release_context || manifest.release_context,
     submit_when_ready_default: autopilot.submit_when_ready_default,
     forbid_dirty: autopilot.forbid_dirty,
   }, `manifest:${manifestPath}`);
@@ -275,6 +296,7 @@ function dedupe(candidates) {
       run_manifest_path: existing.run_manifest_path || candidate.run_manifest_path,
       bundle_id: existing.bundle_id || candidate.bundle_id,
       package_name: existing.package_name || candidate.package_name,
+      release_context: mergeReleaseContext(existing.release_context, candidate.release_context),
       default_release_target: existing.default_release_target || candidate.default_release_target,
       submit_when_ready_default: existing.submit_when_ready_default || candidate.submit_when_ready_default,
       forbid_dirty: [...new Set([...(existing.forbid_dirty || []), ...(candidate.forbid_dirty || [])])],

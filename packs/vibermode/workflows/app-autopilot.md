@@ -6,7 +6,7 @@
 
 - Use this when the user names an app and asks to improve, fix, prepare, or submit it without providing every repo path and manifest detail.
 - Resolve the app through an app registry first, then through local workspace discovery.
-- Choose exactly one mode: `change-to-release`, `self-improve`, `growth-experiment`, or `submit-only`.
+- Choose exactly one mode: `change-to-release`, `self-improve`, `growth-experiment`, `submit-only`, or `store-submit`.
 - Prefer existing workflows over new behavior:
   - `change-to-release` for requested changes
   - `brainstormer` or `ux-designer` for growth/product experiment ideation when needed
@@ -14,6 +14,8 @@
   - `ios-submit-testflight` for iOS internal TestFlight
   - `android-submit-play-internal` for Android internal testing
 - Do not submit to TestFlight or Google Play internal testing until release gates pass.
+- Treat "test'e gonder", "teste gonder", and "internal test'e yolla" as internal tester release intent. If both iOS and Android contexts are resolved or the user says both platforms, run both platform submitters.
+- Treat "submit'e gonder" and "store submit" as final store-review/public-surface intent for builds already uploaded to internal testing. Do not confuse it with internal tester upload.
 - In `self-improve` and `growth-experiment`, the workflow may release only when the user requested release and the app has real screenshot or video evidence for changed user-facing flows.
 
 ## Pipeline
@@ -41,7 +43,8 @@ Optional:
 
 - `change_request` - inline notes, screenshots, bug reports, or feedback
 - `change_request_path` - file containing notes
-- `release_target` - `none`, `ios-testflight`, or `android-play-internal`
+- `release_target` - `none`, `ios-testflight`, `android-play-internal`, or `all-internal-test`
+- `source_ref` - optional build source such as `main`, `master`, `release/*`, a tag, or a commit SHA
 - `platform_policy` - default `release-only`
 - `registry_path` - private JSON app registry; default discovery uses `VIBERMODE_APP_REGISTRY`, `docs/operations/app-registry.local.json`, generated run manifests, and generated workspaces
 - `max_self_improve_items` - default `3`
@@ -92,8 +95,20 @@ Examples that should resolve to `submit-only`:
 ```text
 quiet envelope'i testflight'a al
 quiet envelope release-only
-quiet envelope icin sadece submit dene
+quiet envelope icin sadece test'e gonder
 bu app hazirsa google play internal'a yukle
+quiet envelope'i ios ve android internal test'e yolla
+quiet envelope main branchinden testflight'a al
+main'den build al, google play internal'a yukle
+```
+
+Examples that should resolve to `store-submit`:
+
+```text
+quiet envelope'i submit'e gonder
+test'e yukledigim buildleri store submit et
+ios ve android'de internal'a gonderdiklerimi submit'e al
+gonderilen buildi review'a yolla
 ```
 
 Examples that should resolve to `change-to-release`:
@@ -108,8 +123,11 @@ Intent rules:
 - App aliases are matched case-insensitively and punctuation-insensitively.
 - Treat "bak", "gez", "kendin bak", "iyilestir", "toparla", "major sorunlari bul", "self improve", and "test etmeye deger hale getir" as `self-improve` signals unless explicit change notes dominate.
 - Treat "intentini anla", "growth", "buyume", "daha cok indirme", "daha cok user", "activation", "retention", "kreatif session", "experiment", "deneme", "fantazyagormatik", and "ne gerekiyorsa karar ver" as `growth-experiment` signals.
-- Treat "TestFlight'a al", "internal test'e yolla", "Google Play internal'a yukle", "hazirsa yayinla", "submit et", and "release'e al" as release intent.
-- Treat "sadece submit", "release-only", "kod degistirme", and "yalniz yukle" as `submit-only`.
+- Treat "TestFlight'a al", "test'e gonder", "teste gonder", "internal test'e yolla", "Google Play internal'a yukle", "hazirsa internal'a yolla", and "release'e al" as internal tester release intent.
+- Treat "sadece test", "release-only", "kod degistirme", and "yalniz yukle" as `submit-only` when the destination is TestFlight or Play internal testing.
+- Treat "main branchinden build", "main'den build al", "main build'i test'e gonder", and "main'den TestFlight/Google Play internal" as `submit-only` with `source_ref=main` unless channel/repo policy names another release source.
+- Treat "submit'e gonder", "submit et", "store submit", "review'a gonder", and "gonderdiklerimi submit'le" as `store-submit` when the context says a build is already uploaded to internal testing or the user explicitly asks for store review/final submit.
+- If the user says only "submit" and the context does not distinguish internal tester upload from final store review submission, ask one concrete question.
 - If the user says not to upload, keep `release_target=none` and `submit_when_ready=false`.
 - If `growth-experiment` and `self-improve` both match, choose `growth-experiment` when the user mentions growth, downloads, users, activation, retention, creative product direction, or deciding what to build.
 - If both change notes and self-improve language exist, use `change-to-release` for the notes and add a bounded self-audit only when the user explicitly asks the agent to look for more issues.
@@ -144,12 +162,24 @@ Resolved context should include:
   "artifact_root": "/absolute/path/to/app/repo/docs/studybud",
   "change_request_path": "/absolute/path/to/app/repo/docs/studybud/change-request.md",
   "run_manifest_path": "/absolute/path/to/factory/runs/run-id.json",
+  "bundle_id": "com.example.studybud",
+  "package_name": null,
   "default_release_target": "ios-testflight",
+  "release_context": {
+    "app_store_connect": {
+      "app_id": "1234567890",
+      "bundle_id": "com.example.studybud",
+      "run_manifest_path": "/absolute/path/to/factory/runs/run-id.json",
+      "internal_test_command": "node scripts/ios-submit-testflight.mjs --run-manifest RUN_MANIFEST --submit --commit-state",
+      "final_submit_supported": false,
+      "manual_console_url": "https://appstoreconnect.apple.com/apps/1234567890/appstore"
+    }
+  },
   "forbid_dirty": []
 }
 ```
 
-Do not store secrets in the registry. Use it only for paths, app identity, release target defaults, and safe scope metadata.
+Do not store secrets in the registry. Use it only for paths, app identity, release target defaults, safe scope metadata, and non-secret store routing hints.
 
 Resolver helper:
 
@@ -159,7 +189,7 @@ npm run app:resolve -- --app StudyBud
 
 The resolver reads `VIBERMODE_APP_REGISTRY`, `docs/operations/app-registry.local.json`, `VIBERMODE_WORKSPACE_ROOT`, `APP_FACTORY_STATE_ROOT`, `VIBERMODE_GENERATED_PRODUCTS_ROOT`, generated product workspaces, and app factory run manifests when available. It returns the resolved context object that this workflow should use.
 
-When submission is requested and `run_manifest_path` cannot be resolved, block with an exact missing-manifest message unless the delegated platform submitter has another explicit supported preflight path.
+When submission is requested and `run_manifest_path` cannot be resolved, check `release_context.*.run_manifest_path` for the requested platform. If neither path is available, block with an exact missing-manifest message unless the delegated platform submitter has another explicit supported preflight path.
 
 ## Mode Selection
 
@@ -320,9 +350,51 @@ Rules:
 - Do not edit product code.
 - Do not generate new implementation tasks.
 - Do not relax quality gates because the user asked for a release.
+- If `source_ref` is provided, build only from a clean checkout of that source. Record the exact commit SHA in the status/report before upload.
+- Allowed release sources are `main`, `master`, configured `release/*` branches, tags, or explicit commit SHAs. If the request implies a random feature branch or dirty worktree build, ask for owner confirmation or block according to repo policy.
 - If gate evidence is missing, stop with exact blockers and suggest `self-improve` or `change-to-release`.
 - Use `ios-submit-testflight` for `ios-testflight`.
 - Use `android-submit-play-internal` for `android-play-internal`.
+- Use both submitters for `all-internal-test`. Run platform preflights first, then run each platform live upload whose preflight passes. Report partial success and exact per-platform blockers.
+- Owner phrases such as "test'e gonder", "teste gonder", "internal test'e yolla", and "ikisini de teste gonder" authorize internal TestFlight/Play internal upload after gates pass; do not ask for another approval.
+
+Internal tester commands:
+
+```bash
+# iOS internal TestFlight
+node scripts/ios-submit-testflight.mjs \
+  --run-manifest /path/to/factory/runs/ios-run.json \
+  --submit \
+  --commit-state
+
+# Android Google Play internal
+node scripts/android-submit-play-internal.mjs \
+  --run-manifest /path/to/factory/runs/android-run.json \
+  --build \
+  --submit \
+  --confirm-play-console-bootstrap \
+  --commit-state
+```
+
+### `store-submit`
+
+Use when the owner says submit'e gonder, store submit, review'a gonder, or asks to submit builds that were already uploaded to internal testing.
+
+```text
+resolved app/builds
+  -> read latest internal upload/submission state
+  -> verify final store-review adapter exists for the platform
+  -> verify required legal/privacy/store declarations are already complete or explicitly confirmed
+  -> execute supported final submit adapter, or block with exact unsupported/missing-declaration reason
+```
+
+Rules:
+
+- Do not rerun internal upload just because the user said submit. If the build is not uploaded yet, ask whether they mean "test'e gonder" first.
+- Use `release_context` only to locate the uploaded build/provider context and console page; it is not proof that final submit is supported.
+- If the owner says "gonderilen buildi submit'e gonder", use the latest uploaded build recorded in the run manifest/provider state; do not build a new artifact.
+- Do not invent final submission support. Current Stage 4 adapters cover internal TestFlight and Google Play internal testing. If no final App Store Review / Play review submit adapter exists, return `UNSUPPORTED_FINAL_SUBMIT_ADAPTER` and list the missing adapter or manual owner step.
+- Final store review, public release, production track, external TestFlight review, data safety, age rating, ads, paid app setup, and privacy declarations remain truth-sensitive. Execute only when the owner command is explicit and the required declarations are already complete or confirmed.
 
 ## Evidence Requirements
 

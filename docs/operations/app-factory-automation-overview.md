@@ -78,6 +78,7 @@ Public ViberMode surfaces:
 - `scripts/ingest-market-source.mjs`
 - `scripts/analyze-app-store-csv.mjs`
 - `scripts/research-app-store-gap.mjs`
+- `scripts/research-daily-brief.mjs`
 - `scripts/idea-backlog.mjs`
 
 Private state outputs:
@@ -98,6 +99,8 @@ research-runs/YYYY-MM-DD/[category-or-theme]/
 ├── gap-research-[cluster].md
 ├── rejected.json
 ├── decision.md
+├── daily-brief.md
+├── cofounder-slack-report.md
 └── backlog-candidates.json
 
 ideas/backlog.json
@@ -110,7 +113,8 @@ Current behavior:
 - Static App Store CSV exports are ingested as directional metric evidence.
 - Top clusters are scored by demand, revenue, growth, engagement, competition gap, buildability, novelty, and risk.
 - Live App Store/iTunes search, public review RSS, and imported market signals are used as a first-pass gap probe.
-- `ready` candidates require category, cluster, sources, competitors, metric snapshot, specific gap, MVP wedge, why-now, and a product-to-code-ready prompt.
+- `ready` candidates require category, cluster, sources, competitors, metric snapshot, specific gap, MVP wedge, why-now, selection rationale, and a product-to-code-ready prompt.
+- Daily research runs may produce only evidence, watchlist changes, rejected directions, and a co-founder brief; they should not force a ready candidate.
 - Research output can be committed without changing `ideas/backlog.json`; backlog upsert is a separate reviewed step.
 
 Recent test output:

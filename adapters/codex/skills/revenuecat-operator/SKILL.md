@@ -11,6 +11,9 @@ Read the runbook first:
 Operational overview:
 - `../viber-mode/docs/operations/codex-operational-capabilities.md`
 
+For subscription launch work that also touches App Store products, app SDK wiring, paywalls, or TestFlight, also read:
+- `../viber-mode/docs/operations/mobile-monetization-revenuecat-launch.md`
+
 Use the repo-owned wrapper when available:
 - `node ../viber-mode/scripts/revenuecat-api.mjs`
 - from a ViberMode checkout or installed support bundle: `npm run revenuecat -- <command>`
@@ -27,3 +30,4 @@ Rules:
 - Keep RevenueCat secret API keys, OAuth tokens, customer exports, and private subscriber data out of git and chat.
 - Distinguish project-scoped secret keys from account/OAuth credentials before trying project creation.
 - If the request includes app paywall UI or store product catalog changes, also use the relevant app-repo or mobile monetization workflow.
+- Do not declare RevenueCat setup purchase-ready until the app-side SDK key/config and exported IPA have been verified by the monetization workflow.

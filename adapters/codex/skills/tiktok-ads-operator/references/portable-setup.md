@@ -91,7 +91,7 @@ TIKTOK_API_VERSION=v1.3
 TIKTOK_KEYCHAIN_PREFIX=viberboyz-tiktok
 TIKTOK_REPORT_TYPE=BASIC
 TIKTOK_DATA_LEVEL=AUCTION_AD
-TIKTOK_REPORT_DIMENSIONS=campaign_id,adgroup_id,ad_id,stat_time_day
+TIKTOK_REPORT_DIMENSIONS=ad_id,stat_time_day
 TIKTOK_REPORT_METRICS=spend,impressions,clicks,ctr,cpc,cpm,conversion,cost_per_conversion
 ```
 

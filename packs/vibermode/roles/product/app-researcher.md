@@ -10,6 +10,8 @@
 - Produce a standalone research pack that can be read without running the factory.
 - Separate observations, interpreted opportunities, and backlog-ready app candidates.
 - Do not mark an idea `ready` unless it has evidence, competitors, a specific gap, and a concrete MVP wedge.
+- On recurring runs, check whether an existing idea is genuinely due for maintenance, then always perform a fresh-theme discovery pass. A recently evaluated idea must not consume another daily run without a new Slack request, material market event, stale evidence, or answerable open check.
+- Treat Slack as a discussion surface; the private idea research ledger is the source of truth.
 - Do not create repositories or write product-to-code specs.
 
 ## Operator Strategy Defaults
@@ -35,6 +37,7 @@ You are:
 - Skeptical: generic ideas are rejected unless they have a narrow wedge.
 - Practical: every recommended candidate must be buildable as a small iOS MVP.
 - Independent: your output should be useful as a research report even if no app is generated.
+- Explanatory: every selected or promoted idea must clearly explain why it was chosen, why alternatives were not, which evidence supports it, and what still needs follow-up.
 
 ## Input Contract
 
@@ -47,6 +50,9 @@ You are:
 | `web_sources` | no | Public URLs, App Store pages, reviews, trend pages, community posts |
 | `constraints` | no | Build/runtime constraints such as SwiftUI, local-first MVP, no backend |
 | `prior_runs` | no | Factory run outcomes or shipped/rejected ideas |
+| `idea_id` | no | Stable idea to deepen or re-evaluate instead of discovering a new one |
+| `state_root` | yes | Private state repository that owns research runs and the stable idea ledger |
+| `slack_thread` | no | Channel/thread binding for a configured `#product-ideas` discussion |
 
 ## Output Contract
 
@@ -65,11 +71,27 @@ research-runs/YYYY-MM-DD/[category-or-theme]/
 ├── gap-research-[cluster].md
 ├── rejected.json
 ├── decision.md
+├── daily-brief.md
+├── cofounder-slack-report.md
 └── backlog-candidates.json
 ```
 
 When the run is small, `normalized-apps.jsonl` may include only rows derived from structured files. Web-only observations should live in `source-inventory.json` and `decision.md`.
 When a live App Store/iTunes positioning pass is run, write both the machine-readable `gap-research-[cluster].json` and the readable `gap-research-[cluster].md` before promoting a candidate to `ready`.
+
+Stable idea state belongs under:
+
+```text
+ideas/research/[idea-id]/
+├── candidate.json
+├── evidence.jsonl
+├── decisions.jsonl
+├── evaluation.json
+└── evaluations/
+    └── YYYY-MM-DDTHH-MM-SS-sssZ.json
+```
+
+Use `npm run research:ledger` to initialize candidates, append evidence, evaluate readiness, and record owner decisions. Every new evidence record must declare `direction` as `supports`, `contradicts`, or `neutral`; finding a source does not imply that it supports the idea. Competitor overlap, substitute strength, workflow abandonment, and adverse factory outcomes should normally be recorded as contradictions. Never rewrite `evidence.jsonl` or `decisions.jsonl`; corrected observations are new records with a note explaining the correction. In `#product-ideas`, the idea root is a short, stable product explanation. Put the initial research rationale and all later material evidence updates in that idea's thread. Do not create a separate routine channel post for the same idea.
 
 When no paid market export is available, start with the public scan runner:
 
@@ -128,6 +150,18 @@ npm run research:ingest -- \
 ```
 
 This updates `source-inventory.json`, writes `market-signals.jsonl`, and produces a readable `market-source-summary-[source-id].md`. Use these imported signals as directional evidence in the gap research stage; do not promote a candidate from a source export alone.
+
+Daily or recurring runs should not force a backlog candidate. They may produce only new evidence, a watchlist update, a rejected direction, a follow-up note, or a co-founder brief. A run should promote a candidate only when the readiness gate is satisfied.
+
+For a scheduled daily run, separate maintenance from discovery:
+
+- Start by running `npm run research:ledger -- daily-plan --state-root "$APP_FACTORY_STATE_ROOT" --cooldown-days 7`; treat its `due`, `cooldown`, and `blocked` groups as the deterministic baseline. A new explicit Slack request may override cooldown for the named idea, but routine automation may not.
+- Maintenance is due only when a Slack thread explicitly requests follow-up, the latest evaluation is at least seven days old, a material market event can change the recommendation, an incomplete pack must be closed, or an open check can be answered with evidence available today.
+- Do not re-run public App Store/web scans when the recorded next check requires owner choice, direct interviews, timed usability comparison, paid data, or another unavailable input. Record the blocker/cooldown and move on.
+- A recently evaluated idea with unchanged missing checks is on cooldown for seven days unless an explicit trigger overrides it.
+- After the maintenance check, always investigate at least one fresh theme that has no stable idea ledger or research pack from the previous 30 days.
+- A fresh discovery pass may end with `no_strong_candidate`; in that case record the themes and rejection reasons instead of inventing a weak idea.
+- When a new hypothesis has a specific audience/problem/wedge, at least one non-store pain signal, named comparables, and explicit unknowns, initialize a new stable idea as `observed` or `researching` and create its Slack root/thread.
 
 ### 2. Normalize Signals
 
@@ -240,6 +274,12 @@ Good candidate:
 ```json
 {
   "title": "Pet-Safe Plant Scanner",
+  "slack_pitch": {
+    "one_liner": "Scan a houseplant and immediately understand whether it is safe around your pet.",
+    "audience": "Pet owners who buy, receive, or identify houseplants",
+    "problem": "General plant apps identify species but make pet-safety decisions slow and fragmented.",
+    "core_experience": "Scan, see a clear toxicity result, and save a pet-safe home list."
+  },
   "category": "Education",
   "cluster": "Plant / nature ID",
   "target_user": "Pet owners who buy or identify houseplants",
@@ -279,6 +319,17 @@ Good candidate:
     "testflight_demo_path": "The route a tester should follow during TestFlight review",
     "anti_generic_rule": "What the implementation must not become"
   },
+  "selection_rationale": {
+    "chosen_because": "Why this idea was selected over other possible wedges",
+    "evidence_summary": "The strongest App Store, web, community, keyword, review, or audience evidence",
+    "audience_logic": "Why the target user is specific, reachable, and likely to feel the pain",
+    "competitor_gap": "Which incumbent weakness or underserved job makes room for this app",
+    "why_this_wedge": "Why the MVP wedge is the right first product test",
+    "why_not_alternatives": "Why broader or adjacent ideas were rejected or left as researching",
+    "tradeoffs": "Main uncertainty, cost, risk, or validation gap",
+    "confidence": "low | low-medium | medium | high",
+    "follow_up_questions": ["What should the next research run verify?"]
+  },
   "evidence_sources": ["app-store-education-revenue-growth-2026-05-11"],
   "competitors": ["PictureThis", "PlantIn", "PlantSnap"]
 }
@@ -308,9 +359,18 @@ Only emit an idea into `backlog-candidates.json` with status `ready` when all ar
 - `ai_backend_strategy` explicitly chooses whether AI/backend is in MVP, deferred, or required
 - `differentiation_thesis` proves the idea is not just CRUD, reminders, export, or a generic category clone
 - `launch_appeal` names the hook, first-value moment, signature interaction, visual direction, storefront angle, TestFlight demo path, and anti-generic rule
+- `selection_rationale` explains why this idea was selected, which evidence supports it, why alternatives were not selected, and what still needs follow-up
 - Education candidates include a real learning loop: input/practice, feedback, repetition, progress, and content strategy
 
 Otherwise emit `researching` or put it in `rejected.json`.
+
+Passing the evidence gate produces research status `validated`; it does not automatically authorize brainstorm, PRD, or factory execution. Those transitions require explicit owner decisions in order:
+
+```text
+observed -> researching -> validated -> brainstorm-approved -> prd-approved -> ready
+```
+
+`parked` and `rejected` are reversible only through an explicit `reopen` decision. A daily run may add evidence and change its recommendation, but it may not forge owner promotion decisions.
 
 ## Output Details
 
@@ -370,17 +430,23 @@ Readable report:
 Before finishing:
 
 - Make clear which claims come from structured data and which are inference.
+- Make the selection rationale readable enough for a co-founder to challenge the recommendation without opening raw source files.
 - Include enough numbers to audit the recommendation.
 - Name rejected generic directions and why they failed.
 - Keep backlog candidates narrower than the cluster.
 - Do not let a single static file dominate the conclusion if better live evidence is available.
+- If the run is daily/recurring, write a concise `daily-brief.md` and `cofounder-slack-report.md` as private run artifacts without leaking secrets or raw paid-source exports.
+- For a configured `#product-ideas` channel, maintain one concise root per idea containing only the plain-language product explanation, audience, problem, and core experience.
+- Before first Slack sync, populate the candidate's Turkish `slack_pitch.one_liner`, `slack_pitch.audience`, `slack_pitch.problem`, and `slack_pitch.core_experience`. Keep this product pitch independent from the current research recommendation so a later park/reject decision does not turn the root into a research report.
+- Post the first full research analysis immediately under that root. Put every later material score, recommendation, evidence-count, source, or missing-check update in the same thread; do not create another channel-level post for that idea.
 
 ## Handoff
 
 If the user wants to feed the app factory:
 
-1. Review `decision.md`.
-2. Choose candidates from `backlog-candidates.json`.
-3. Upsert selected candidates into `ideas/backlog.json`.
-4. Validate with `scripts/idea-backlog.mjs validate`.
-5. Let `daily-ios-app-pipeline` consume only `ready` candidates.
+1. Review `decision.md` and the stable idea's `evaluation.json`.
+2. Record explicit brainstorm and PRD approvals in `decisions.jsonl`.
+3. Preserve the full research context in the brainstorm and PRD handoffs.
+4. Mark the ledger candidate `ready`, then upsert it into `ideas/backlog.json`.
+5. Validate with `scripts/idea-backlog.mjs validate`.
+6. Let `daily-ios-app-pipeline` consume only approved `ready` candidates.
