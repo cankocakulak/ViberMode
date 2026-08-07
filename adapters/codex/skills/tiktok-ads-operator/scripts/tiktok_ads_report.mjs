@@ -213,6 +213,50 @@ async function tiktokGet(path, params = {}) {
   return json;
 }
 
+async function checkManagementAccess() {
+  const checks = [];
+  const readEndpoints = [
+    ["campaign/get", "campaign/get/"],
+    ["adgroup/get", "adgroup/get/"],
+    ["ad/get", "ad/get/"],
+  ];
+
+  for (const [name, path] of readEndpoints) {
+    try {
+      const json = await tiktokGet(path, {
+        advertiser_id: advertiserId,
+        page_size: 1,
+      });
+      checks.push({
+        endpoint: name,
+        ok: true,
+        code: Number(json.code ?? 0),
+        returned: Array.isArray(json.data?.list) ? json.data.list.length : 0,
+      });
+    } catch (error) {
+      checks.push({
+        endpoint: name,
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const ok = checks.every((check) => check.ok);
+  console.log(JSON.stringify({
+    advertiser_id: advertiserId,
+    management_access: ok,
+    checks,
+  }, null, 2));
+
+  if (!ok) process.exitCode = 1;
+}
+
+if (args.checkManagement) {
+  await checkManagementAccess();
+  process.exit(process.exitCode || 0);
+}
+
 async function fetchReportPage(page) {
   return tiktokGet("report/integrated/get/", {
     advertiser_id: advertiserId,

@@ -117,6 +117,12 @@ Check Keychain fallback without printing secrets:
 node ~/.codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs --check-keychain
 ```
 
+Check campaign-management read scopes without modifying live objects:
+
+```bash
+node ~/.codex/skills/tiktok-ads-operator/scripts/tiktok_ads_report.mjs --check-management
+```
+
 Run a weekly Markdown report:
 
 ```bash

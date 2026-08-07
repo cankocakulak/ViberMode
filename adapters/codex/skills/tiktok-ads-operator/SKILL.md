@@ -39,6 +39,7 @@ Examples:
 
 ```bash
 node scripts/tiktok_ads_report.mjs --check-keychain
+node scripts/tiktok_ads_report.mjs --check-management
 TIKTOK_ADVERTISER_ID=123 node scripts/tiktok_ads_report.mjs --date-preset last_7d --format markdown
 TIKTOK_ADVERTISER_ID=123 node scripts/tiktok_ads_report.mjs --since 2026-06-01 --until 2026-06-15 --min-spend 100
 ```

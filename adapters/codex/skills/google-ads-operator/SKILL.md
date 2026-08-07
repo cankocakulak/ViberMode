@@ -9,6 +9,8 @@ description: Analyze, diagnose, and safely manage Google Ads accounts through th
 
 Treat Google Ads as a live spending surface. Default to read-only analysis. For any write that can create, publish, spend, increase budget, change targeting, or alter delivery, produce an explicit action plan first and wait for clear user approval unless the user has already given an exact, current-turn instruction for that specific action.
 
+The read-only default is a safety posture, not a statement that the configured credentials cannot write. Google Ads OAuth uses the `adwords` scope for API access rather than separate read and write scopes. Never report write access as unavailable merely because approval is required. When capability is in question, run `scripts/google_ads_report.mjs --validate-write-access`; if it passes, explain that writes are available but approval-gated.
+
 Never print developer tokens, service account JSON, refresh tokens, client secrets, or signed media URLs. Prefer env vars and Keychain-backed local setup:
 
 ```bash
@@ -43,11 +45,12 @@ Examples:
 
 ```bash
 node scripts/google_ads_report.mjs --check-keychain
+node scripts/google_ads_report.mjs --validate-write-access
 GOOGLE_ADS_CUSTOMER_ID=1234567890 node scripts/google_ads_report.mjs --date-preset LAST_7_DAYS --format markdown
 GOOGLE_ADS_CUSTOMER_ID=1234567890 node scripts/google_ads_report.mjs --since 2026-06-01 --until 2026-06-15
 ```
 
-The default report calls `GoogleAdsService.SearchStream` at `/v24/customers/{CUSTOMER_ID}/googleAds:searchStream` with a campaign-level GAQL query.
+The default report calls `GoogleAdsService.SearchStream` at `/v24/customers/{CUSTOMER_ID}/googleAds:searchStream` with a campaign-level GAQL query. `--validate-write-access` submits a campaign update with `validateOnly=true`; Google validates authorization and the mutate request without changing the campaign.
 
 ## Workflow Templates
 

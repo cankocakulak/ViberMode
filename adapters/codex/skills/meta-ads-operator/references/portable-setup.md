@@ -140,6 +140,14 @@ Check Keychain fallback without printing secrets:
 node ~/.codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs --check-keychain
 ```
 
+Validate management capability without changing any ad object:
+
+```bash
+node ~/.codex/skills/meta-ads-operator/scripts/meta_ads_report.mjs --validate-write-access
+```
+
+This check verifies `ads_management`, target-account access, and the account's advertising/management tasks. A passing result means write operations are available after the operator's required approval flow; it does not make a live write.
+
 Read ad accounts:
 
 ```bash
@@ -173,6 +181,8 @@ Use this prompt in the new Codex chat after the files and env vars are present:
 ```text
 Use $meta-ads-operator. Validate the local Meta Ads environment without printing secrets, then run a read-only last_7d report for META_AD_ACCOUNT_ID in Markdown format. Include account totals, campaign table, creative winners, lead/sales signals, waste watchlist, placement table, and concrete next actions. Do not perform any write actions.
 ```
+
+The bootstrap prompt above tests reporting only. It must not be interpreted as disabling management capability. For an approved write request, run `--validate-write-access`, follow `references/write-safety.md`, and create new delivery objects in `PAUSED` status unless activation is explicitly approved.
 
 ## Safety Defaults
 

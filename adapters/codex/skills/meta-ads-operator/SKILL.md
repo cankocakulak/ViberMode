@@ -9,6 +9,8 @@ description: Analyze, diagnose, and safely manage Meta Ads accounts through the 
 
 Treat Meta Ads as a live spending surface. Default to read-only analysis. For any write that can create, publish, spend, increase budget, change targeting, or alter delivery, produce an explicit action plan first and wait for a clear user approval unless the user has already given an exact, current-turn instruction for that specific action.
 
+The read-only default is a safety posture, not a statement that the configured credentials cannot write. Never report write access as unavailable merely because approval is required. When capability is in question, run `scripts/meta_ads_report.mjs --validate-write-access`; if it passes, explain that writes are available but approval-gated.
+
 Never print access tokens, app secrets, full signed media URLs containing credentials, or copied command lines that expose secrets. Prefer env vars:
 
 ```bash
@@ -39,12 +41,14 @@ Use `scripts/meta_ads_report.mjs` for repeatable account reporting. It reads env
 Examples:
 
 ```bash
+node scripts/meta_ads_report.mjs --check-keychain
+node scripts/meta_ads_report.mjs --validate-write-access
 META_AD_ACCOUNT_ID=act_123 node scripts/meta_ads_report.mjs --date-preset last_30d
 META_AD_ACCOUNT_ID=act_123 node scripts/meta_ads_report.mjs --since 2026-05-01 --until 2026-05-31 --min-spend 100
 META_AD_ACCOUNT_ID=act_123 node scripts/meta_ads_report.mjs --date-preset last_7d --format markdown
 ```
 
-The script gathers account info, campaign rollups, ad-level creative rankings, placement breakdowns, and active campaigns with no insight rows.
+The script gathers account info, campaign rollups, ad-level creative rankings, placement breakdowns, and active campaigns with no insight rows. `--validate-write-access` is read-only: it checks `ads_management`, target-account access, and the account's advertising/management tasks without creating or changing objects.
 
 ## Workflow Templates
 

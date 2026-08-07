@@ -209,6 +209,37 @@ async function graphAll(path, params = {}, maxPages = 50) {
   return data;
 }
 
+if (args.validateWriteAccess) {
+  const permissions = await graph("me/permissions");
+  const grantedScopes = (permissions.data || [])
+    .filter((permission) => permission.status === "granted")
+    .map((permission) => permission.permission)
+    .sort();
+  const normalizedAccountId = String(accountId).replace(/^act_/, "");
+  const accounts = await graphAll("me/adaccounts", {
+    fields: "id,account_id,account_status,user_tasks",
+    limit: 500,
+  });
+  const targetAccount = accounts.find((account) =>
+    String(account.account_id) === normalizedAccountId || String(account.id) === `act_${normalizedAccountId}`,
+  );
+  const userTasks = targetAccount?.user_tasks || [];
+  const hasManagementScope = grantedScopes.includes("ads_management");
+  const hasAdvertisingTask = userTasks.includes("ADVERTISE") || userTasks.includes("MANAGE");
+  const passed = hasManagementScope && Boolean(targetAccount) && hasAdvertisingTask;
+
+  console.log(JSON.stringify({
+    validation: passed ? "passed" : "failed",
+    read_only_check: true,
+    has_ads_management: hasManagementScope,
+    target_account_accessible: Boolean(targetAccount),
+    target_account_status: targetAccount?.account_status ?? null,
+    target_account_user_tasks: userTasks,
+    no_objects_changed: true,
+  }, null, 2));
+  process.exit(passed ? 0 : 2);
+}
+
 function insightParams(fields) {
   const params = { fields, level: "ad", limit: 500 };
   if (args.since && args.until) {

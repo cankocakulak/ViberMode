@@ -130,6 +130,14 @@ Check Keychain fallback without printing secrets:
 node ~/.codex/skills/google-ads-operator/scripts/google_ads_report.mjs --check-keychain
 ```
 
+Validate management capability without changing any ad object:
+
+```bash
+node ~/.codex/skills/google-ads-operator/scripts/google_ads_report.mjs --validate-write-access
+```
+
+This uses a campaign mutate request with `validateOnly=true`. A passing result means write operations are available after the operator's required approval flow; no campaign is changed.
+
 List accessible customers:
 
 ```bash
@@ -151,6 +159,8 @@ Use this prompt after the files and env vars are present:
 ```text
 Use $google-ads-operator. Validate the local Google Ads environment without printing secrets, then run a read-only LAST_7_DAYS report for GOOGLE_ADS_CUSTOMER_ID in Markdown format. Include totals, campaign table, conversion signals, waste watchlist, and concrete next actions. Do not perform any write actions.
 ```
+
+The bootstrap prompt above tests reporting only. It must not be interpreted as disabling management capability. For an approved write request, run `--validate-write-access`, follow `references/write-safety.md`, and create new delivery objects paused unless activation is explicitly approved.
 
 ## Troubleshooting
 
