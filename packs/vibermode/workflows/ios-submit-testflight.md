@@ -39,6 +39,10 @@ Recommended optional metadata:
 
 Default Keychain services:
 
+For existing/transferred apps, first check the actual iOS workspace for `ios-deployment.json` and read `docs/operations/ios-account-routing.md` when present. The binding overrides legacy defaults, requires its own Keychain namespace, and verifies exact ASC app access before any submission writes. Do not override it with a remembered account or credentials from another app. `--account-preflight --workspace <ios-root>` is an account-only read-only check, not a release-readiness result. Bound existing apps skip listing creation and require explicit `--version` and `--build-number` on submission. These rules also apply when a historical manifest is reused.
+
+The following defaults apply only to unbound workspaces:
+
 ```text
 viberboyz-apple-team-id
 viberboyz-asc-key-id

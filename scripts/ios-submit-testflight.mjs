@@ -6,6 +6,7 @@ import path from "node:path";
 import zlib from "node:zlib";
 import { spawnSync } from "node:child_process";
 import { githubApiFetch, githubGitConfigEnv } from "./github-network.mjs";
+import { readAccountProfile, loadBoundCredentials, assertBoundSubmission, verifyAccountAccess } from "./ios-account-profile.mjs";
 
 function parseArgs(argv) {
   const args = { _: [] };
@@ -145,7 +146,8 @@ function keychainService(prefix, name) {
   return `${prefix}-${name}`;
 }
 
-function loadCredentials(args) {
+function loadCredentials(args, profile = null) {
+  if (profile) return loadBoundCredentials(profile, { args, keychainRead });
   const prefix = args["keychain-prefix"] || process.env.APP_FACTORY_KEYCHAIN_PREFIX || "viberboyz";
 
   return {
@@ -1120,6 +1122,8 @@ Purpose:
   internal TestFlight.
 
 Submission readiness:
+  --account-preflight    With --workspace, verify its ios-deployment.json and ASC app access only.
+                        No manifest, project generation, archive or upload is performed.
   --prepare-assets       Generate fallback AppIcon PNGs and App Store validation settings.
   --no-prepare-assets    Disable automatic asset preparation during --submit.
   --app-name             Use a unique App Store Connect name when the display name is taken.
@@ -1383,8 +1387,28 @@ async function main() {
     return;
   }
 
+  if (boolValue(args["account-preflight"], false)) {
+    if (boolValue(args.submit, false) || boolValue(args["prepare-assets"], false)) {
+      throw new Error("--account-preflight cannot be combined with submission or asset preparation");
+    }
+    const workspace = path.resolve(requireValue("--workspace", args.workspace));
+    const profile = readAccountProfile(workspace);
+    if (!profile) throw new Error("Account preflight requires ios-deployment.json in --workspace");
+    const credentials = loadCredentials(args, profile);
+    if (args["bundle-id"]) assertBoundSubmission(profile, { bundleId: args["bundle-id"] }, args);
+    output(await verifyAccountAccess(profile, credentials), args.output);
+    return;
+  }
+
   const context = buildContext(args);
-  const credentials = loadCredentials(args);
+  const profile = readAccountProfile(context.workspacePath);
+  const credentials = loadCredentials(args, profile);
+  if (profile) {
+    assertBoundSubmission(profile, context, args);
+    context.accountVerification = await verifyAccountAccess(profile, credentials);
+    // Bound profiles describe existing apps, never create a replacement listing.
+    args["skip-produce"] = "true";
+  }
   const shouldPrepareAssets = boolValue(args["prepare-assets"], false)
     || (boolValue(args.submit, false) && !boolValue(args["no-prepare-assets"], false));
   const assetPreparation = shouldPrepareAssets
@@ -1393,6 +1417,7 @@ async function main() {
   context.assetPreparation = assetPreparation;
   const preflight = preflightResult(context, credentials);
   preflight.asset_preparation = assetPreparation;
+  preflight.account_verification = context.accountVerification || { status: "legacy_unbound" };
 
   if (!boolValue(args.submit, false)) {
     output(preflight, args.output);

@@ -1,0 +1,21 @@
+{
+  "project": "ios-account-routing",
+  "branchName": "main",
+  "description": "Per-app iOS account binding and authorized transferred app setup, without upload",
+  "docsPath": "docs/ios-account-routing",
+  "bootstrapContext": {
+    "workspacePath": "/Users/mcan/ViberMode",
+    "baseBranch": "main",
+    "workingBranch": "main",
+    "validationBaseline": {"testCommand": "node --test tests/ios-account-profile.test.mjs"}
+  },
+  "tasks": [{
+    "id": "TASK-001", "parentStoryId": "CHANGE-001", "lineage": ["CHANGE-001"],
+    "title": "Bind iOS release credentials to the app workspace",
+    "description": "Generic account guard, tests and docs; authorized EasySpell workspace signing and handoff; selective installed-runtime sync",
+    "acceptanceCriteria": ["Bound apps cannot silently use another account", "Unbound legacy account behavior remains unchanged", "Remote account preflight only reads Apple state", "EasySpell project uses the recipient team; Ozard and LLC credentials unchanged", "No secrets committed and no upload executed"],
+    "dependencies": [], "priority": 1, "status": "done",
+    "validation": {"level": "quick", "runtimeCritical": false, "commands": ["node --test tests/ios-account-profile.test.mjs", "node --check scripts/ios-submit-testflight.mjs"], "miniScenarios": [], "scenarios": ["Correct binding accepted", "Wrong prefix/team/issuer/bundle rejected", "API denial and wrong app fail closed", "Installed account preflight verifies transferred app"]},
+    "notes": "Explicit sibling scope: /Users/mcan/kids/kids-ios on codex/easyspell-learning-analytics-v1; legacy release helpers at /Users/mcan/kids/docs/easyspell/release; installed framework /Users/mcan/.codex/skills/viber-mode. Preserve unrelated dirty files. This is setup validation, not full application build/runtime validation."
+  }]
+}

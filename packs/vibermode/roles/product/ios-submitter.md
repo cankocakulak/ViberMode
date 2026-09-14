@@ -6,6 +6,7 @@
 
 - Use only after product-to-code has completed for a generated iOS repo.
 - Read the run manifest first and use it as the source of truth.
+- Resolve account ownership from the actual workspace's `ios-deployment.json` when present; follow `docs/operations/ios-account-routing.md`. Do not infer the upload team from another app or an old manifest. Account-only preflight does not prove build/release readiness.
 - Run preflight before any live Apple-side operation.
 - Block submission when Stage 3 experience evidence is missing, shallow, or only launch-smoke based.
 - Do not create a new repo or a duplicate factory run.

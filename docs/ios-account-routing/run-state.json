@@ -1,0 +1,19 @@
+{
+  "currentTask": null,
+  "completedTasks": ["TASK-001"],
+  "storyExecutionState": {"CHANGE-001": {"completedTaskIds": ["TASK-001"], "status": "complete"}},
+  "runHistory": [{
+    "date": "2026-09-14", "taskId": "TASK-001", "parentStoryId": "CHANGE-001",
+    "summary": "Added per-workspace account binding, fail-closed identity guards and a read-only ASC account check; updated authorized transferred app local signing and deployment handoff; synchronized five installed framework files.",
+    "filesChanged": ["scripts/ios-account-profile.mjs", "scripts/ios-submit-testflight.mjs", "tests/ios-account-profile.test.mjs", "docs/operations/ios-account-routing.md", "packs/vibermode/workflows/ios-submit-testflight.md", "packs/vibermode/roles/product/ios-submitter.md"],
+    "validation": {
+      "level": "quick", "runtimeCritical": false,
+      "commands": ["node --test tests/ios-account-profile.test.mjs", "node --check scripts/ios-submit-testflight.mjs", "git diff --check"],
+      "passed": true, "usedBootstrapCommand": "node --test tests/ios-account-profile.test.mjs",
+      "miniScenariosVerified": [],
+      "scenariosVerified": ["Nine account routing/CLI tests passed", "Installed account preflight verified the authorized app through a live GET", "App-owned generator produced team-only project changes", "Effective device Release build settings matched recipient team and original bundle", "Legacy uploader fails before credential access or upload", "All five installed files match source"],
+      "evidence": ["Node tests: 9 passed, 0 failed, exit 0", "Syntax/diff checks exit 0", "Live account checks exit 0; account_verified", "Project generation and device build-settings check exit 0", "Three export plists linted successfully"]
+    },
+    "notes": ["No archive, IPA export, upload, production mutation, commit or push performed.", "No SDK keys, subscriptions, backend or other app credentials changed.", "Other app worktrees retain their own settings until the setup change is integrated into them.", "Full release readiness remains separate; see validation-report.md."]
+  }]
+}
