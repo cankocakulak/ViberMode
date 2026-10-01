@@ -67,7 +67,7 @@ The artifact must state:
 - exact commands attempted
 - exit status or failure mode for each command
 - which task or scenario each command validates
-- whether the slice is `PASS`, `FAIL`, or `BLOCKED`
+- one explicit `Verdict: PASS`, `Verdict: FAIL` or `Verdict: BLOCKED` line
 - which missing setup or runtime gaps prevented stronger validation
 - which repo-owned scripts or bootstrap commands were attempted before any fallback commands
 
@@ -118,6 +118,12 @@ Always produce the artifact when project context is known.
 - Prefer repo-owned validation scripts first. If the repo exposes `./Scripts/test.sh`, `npm test`, `xcodebuild ...`, or another canonical command in bootstrap, attempt that command before inventing a weaker substitute.
 - A command listed only as prose in `run-state.json` is not evidence. Re-run the real command or mark the validation `BLOCKED`/`FAIL`.
 - For `PASS`, the report must include an explicit command result for each required build/test/runtime step, not just file-level summaries.
+
+### Structured evidence for change-to-release
+
+When `change-release-status.json` is present, use the workflow's `scopeId`, `targetRepo`, `userFacing` and required `validationCommands`. Save the command array inside its artifact directory and run `scripts/release-validation-evidence.mjs --status <status-path> --commands <commands-path>` from the support bundle/repository. This runner actually executes the approved local checks and records exits plus source binding in `validation-result.json`; do not reconstruct success evidence from memory. No live provider actions are added by this requirement. Keep the human runtime report and explicit `Verdict: PASS/FAIL/BLOCKED` as well. Runtime checks still need actual behavior evidence. Failed or source-changing checks require remediation and re-validation before review/release.
+
+Outside a release workflow, the normal validation report contract applies; do not require this extra JSON for standalone checks.
 
 ### SwiftUI / iOS Guardrails
 

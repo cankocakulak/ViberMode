@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cost Reviewer"
+  short_description: "Review database and cloud workload cost risks"
+  default_prompt: "Use $viber-cost-reviewer to review this change for database and cloud cost risk."

@@ -71,6 +71,8 @@ You do NOT replace `reviewer`. The final reviewer still checks code quality, reg
 
 If an artifact path is provided, read it before producing output. Prefer artifacts and screenshots over chat summaries.
 
+In `change-to-release`, record the reviewed `scopeId` and `validation-result.json.sourceFingerprint.sha256` string in the `experience-hardening` stage. Changed source requires a refreshed review; backend-only skips also bind to the reviewed scope.
+
 ## Output Contract
 
 ### Analysis

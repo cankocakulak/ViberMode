@@ -3,6 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { declaredVerdict, requireScope, sourceFingerprint } from './lib/release-evidence.mjs';
 
 function parseArgs(argv) {
   const args = {
@@ -76,41 +77,6 @@ function isComplete(value) {
   return normalized(value) === 'COMPLETE';
 }
 
-function isApprovedVerdict(value) {
-  const verdict = normalized(value);
-  if (!verdict) {
-    return false;
-  }
-  if (/(BLOCKED|INCOMPLETE|FAILED|FAIL|CHANGES_REQUESTED|KNOWN_GAPS|OVERRIDDEN)/.test(verdict)) {
-    return false;
-  }
-  return /(APPROVED|PASS|PASSED|READY|SKIPPED_NOT_APPLICABLE)/.test(verdict);
-}
-
-function reviewLooksApproved(text) {
-  if (!text) {
-    return false;
-  }
-
-  const upper = text.toUpperCase();
-  if (/(RELEASED_WITH_KNOWN_GAPS|KNOWN_GAPS|CHANGES_REQUESTED|BLOCKED|INCOMPLETE|FAILED|FAIL)/.test(upper)) {
-    return false;
-  }
-  return /(VERDICT\s*\n\s*`?(APPROVED|PASS|PASSED|READY_FOR_RELEASE)|NO ISSUES|APPROVED)/.test(upper);
-}
-
-function experienceLooksApproved(text) {
-  if (!text) {
-    return false;
-  }
-
-  const upper = text.toUpperCase();
-  if (/(INCOMPLETE|CHANGES_REQUESTED|BLOCKED|KNOWN_GAPS|OVERRIDDEN|LAUNCH-ONLY|NOT REACHED|COULD NOT BE VISUALLY REVIEWED|NOT DIRECTLY REVIEWED)/.test(upper)) {
-    return false;
-  }
-  return /(VERDICT\s*\n\s*`?(APPROVED|SKIPPED_NOT_APPLICABLE)|APPROVED|SKIPPED_NOT_APPLICABLE)/.test(upper);
-}
-
 function gitStatusShort(repoPath) {
   const result = spawnSync('git', ['-C', repoPath, 'status', '--short'], {
     encoding: 'utf8',
@@ -153,44 +119,47 @@ function main() {
     errors.push(`Expected releaseTarget "${args.releaseTarget}", got "${status.releaseTarget ?? 'missing'}".`);
   }
 
+  if (!['RUNNING', 'COMPLETE'].includes(status.status)) errors.push('Workflow status must be RUNNING or COMPLETE; unresolved incomplete states block release.');
+
   const repoChange = stage(status, 'repo-change');
   if (!repoChange || !isComplete(repoChange.status)) {
     errors.push('repo-change stage must be COMPLETE before release.');
   }
 
   const experience = stage(status, 'experience-hardening');
-  if (experience) {
-    if (!isComplete(experience.status)) {
-      errors.push(`experience-hardening stage must be COMPLETE before release; got "${experience.status ?? 'missing'}".`);
-    }
-    if (!isApprovedVerdict(experience.verdict)) {
-      errors.push(`experience-hardening verdict must be APPROVED or SKIPPED_NOT_APPLICABLE; got "${experience.verdict ?? 'missing'}".`);
-    }
-  }
-
-  const experienceText = readTextIfExists(resolve(artifactRoot, 'experience-review.md'));
-  if (experience && !experienceLooksApproved(experienceText)) {
-    errors.push('experience-review.md does not contain an approved/skipped verdict with acceptable surface evidence.');
-  }
-
   const finalReview = stage(status, 'final-review');
-  if (finalReview) {
-    if (!isComplete(finalReview.status)) {
-      errors.push(`final-review stage must be COMPLETE before release; got "${finalReview.status ?? 'missing'}".`);
+  if (typeof status.userFacing !== 'boolean') errors.push('status.userFacing must explicitly be true or false.');
+  const experienceVerdicts = status.userFacing === false ? ['APPROVED', 'SKIPPED_NOT_APPLICABLE'] : ['APPROVED'];
+  if (!experience || !isComplete(experience.status) || !experienceVerdicts.includes(experience.verdict)) {
+    errors.push('experience-hardening requires COMPLETE and an exact applicable verdict.');
+  }
+  if (!finalReview || !isComplete(finalReview.status) || finalReview.verdict !== 'APPROVED') {
+    errors.push('final-review requires COMPLETE and exact APPROVED verdict.');
+  }
+  for (const [file, expected] of [
+    ['review.md', ['APPROVED']],
+    ['experience-review.md', experienceVerdicts],
+    ['validation-report.md', ['PASS']]
+  ]) {
+    const text = readTextIfExists(resolve(artifactRoot, file));
+    const verdict = text && declaredVerdict(text);
+    if (!expected.includes(verdict)) errors.push(`${file} needs an explicit, unambiguous ${expected.join('/')} verdict.`);
+    if (file === 'experience-review.md' && verdict !== experience?.verdict) errors.push('Experience report and stage verdict disagree.');
+  }
+  if (!Array.isArray(status.blockers) || status.blockers.length) errors.push('status.blockers must be an explicit empty array.');
+  try {
+    const repo = requireScope(status);
+    const evidence = readJson(resolve(artifactRoot, 'validation-result.json'));
+    const current = sourceFingerprint(repo, artifactRoot);
+    if (evidence.schemaVersion !== 1 || evidence.verdict !== 'PASS' || evidence.sourceUnchangedDuringValidation !== true) throw new Error('Executed validation must record PASS with unchanged source.');
+    if (evidence.targetRepo !== repo || evidence.scopeId !== status.scopeId || resolve(evidence.artifactRoot ?? '') !== artifactRoot) throw new Error('Validation target, artifact root or scope does not match.');
+    if (evidence.sourceFingerprint?.kind !== current.kind || evidence.sourceFingerprint?.sha256 !== current.sha256) throw new Error('Source changed since validation; run validation again.');
+    for (const [name, review] of [['final-review', finalReview], ['experience-hardening', experience]]) {
+      if (review?.scopeId !== status.scopeId || review?.sourceFingerprint !== current.sha256) throw new Error(`${name} must bind its review to the current validated source and scope.`);
     }
-    if (!isApprovedVerdict(finalReview.verdict)) {
-      errors.push(`final-review verdict must be approved/pass; got "${finalReview.verdict ?? 'missing'}".`);
-    }
-  }
-
-  const reviewText = readTextIfExists(resolve(artifactRoot, 'review.md'));
-  if (!reviewLooksApproved(reviewText)) {
-    errors.push('review.md does not contain an approved final-review verdict.');
-  }
-
-  if (Array.isArray(status.blockers) && status.blockers.length > 0) {
-    errors.push(`status.blockers must be empty before release; found ${status.blockers.length}.`);
-  }
+    if (!Array.isArray(status.validationCommands) || !status.validationCommands.length || JSON.stringify(evidence.commands?.map(c => c.command)) !== JSON.stringify(status.validationCommands)) throw new Error('Executed commands must match the required validation plan.');
+    if (!Array.isArray(evidence.commands) || !evidence.commands.length || evidence.commands.some(c => typeof c.command !== 'string' || !c.command.trim() || c.exitCode !== 0 || c.signal)) throw new Error('Every required validation command must have exit code 0.');
+  } catch (error) { errors.push(`Validation evidence: ${error.message}`); }
 
   for (const repoPath of args.forbidDirty) {
     const shortStatus = gitStatusShort(resolve(repoPath));

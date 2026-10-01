@@ -61,7 +61,10 @@
     "growth:collect": "node scripts/weekly-app-growth.mjs",
     "growth:publish": "node scripts/weekly-app-growth.mjs --publish",
     "test:growth": "node --test tests/weekly-app-growth.test.mjs tests/weekly-app-meeting.test.mjs tests/weekly-app-completion.test.mjs tests/weekly-report-semantics.test.mjs tests/weekly-interpretation.test.mjs tests/weekly-funnel-presentation.test.mjs",
-    "growth:weekly": "node scripts/weekly-app-growth-refresh.mjs --publish"
+    "growth:weekly": "node scripts/weekly-app-growth-refresh.mjs --publish",
+    "skills:check:codex": "bash adapters/codex/install/install-skills.sh --check",
+    "skills:check:claude": "bash adapters/claude/install/install-skills.sh --check",
+    "change-release:validate": "node scripts/release-validation-evidence.mjs"
   },
   "keywords": [
     "ai",

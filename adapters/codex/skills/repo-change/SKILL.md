@@ -13,7 +13,9 @@ Before starting:
 3. Prefer existing `analysis.md`, `bootstrap.md`, and other pipeline artifacts when they already exist
 4. Escalate to `product-to-spec` only if the change is too large for a repo-iteration workflow
 
-Primary artifact set:
+Choose the workflow’s light or structured path based on scope and risk. Small low-risk changes use inline evidence without mandatory artifacts.
+
+Structured-path artifact set:
 - `docs/[project-name]/plan.md`
 - `docs/[project-name]/tasks.json`
 - `docs/[project-name]/run-state.json`

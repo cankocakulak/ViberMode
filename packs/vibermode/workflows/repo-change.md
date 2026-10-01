@@ -2,19 +2,21 @@
 
 > Canonical workflow for adding a feature, fixing a bug, or refining behavior inside an existing repository.
 
-## Fast Path
+## Choose execution size
 
-- Use this when the repo already exists and the request is a bounded change.
-- Do not use this for raw product ideation; escalate to `product-to-spec` if the change becomes a new product slice.
-- Use `change-to-release` instead when the user wants implementation plus TestFlight, deploy, release status, or another delivery adapter.
-- First confirm the repo root and the change request.
-- Start with `scout` for a narrow area or `analyzer` if repo context is weak.
-- Produce one approved `docs/[project-name]/plan.md` before task splitting.
-- Run `bootstrap` only if repo state, branch state, or validation path is not trustworthy.
-- Convert the approved plan into `docs/[project-name]/tasks.json` with `change-task-planner`.
-- Use `implementation-runner` one task at a time.
-- Finish with `runtime-validator` and `reviewer`.
-- If validation or review fails, route to `remediation-routing` instead of improvising a new flow.
+Use the **light path** for a localized, understood, low-risk change with one coherent validation target. Read the touched code and callers, implement within the user's scope, run the relevant check, and report changes and evidence inline. No mandatory `plan.md`, `tasks.json`, `run-state.json` or runtime artifact is needed. Existing artifacts can supply context without forcing new ones. A coherent edit across a few files can still be light.
+
+Use the **structured path** below when work has unresolved architecture, independent stages/dependencies, needs resumable execution, belongs to a factory pipeline, or changes database workload, billing, permissions or live infrastructure. Honor an explicit user request for the structured pipeline. A small diff can still be high risk.
+
+Use `change-to-release` when delivery is requested. Every live release requires its validation/evidence gate regardless of edit size. Choosing light execution never bypasses that gate.
+
+For structured execution:
+- Confirm the repo root and requested scope from available context; existing implementation authorization also covers routine local planning.
+- Read the relevant module; use `scout` or `analyzer` when understanding is insufficient.
+- Produce one `docs/[project-name]/plan.md` within the approved scope; ask only about unresolved decisions that need the user.
+- Run `bootstrap` if repo/branch/validation context needs repair.
+- Convert the plan with `change-task-planner`, then run `implementation-runner` one task per iteration.
+- Finish with appropriate runtime validation and `reviewer`; route failed pipeline findings to `remediation-routing`.
 
 ## Pipeline
 
@@ -131,7 +133,7 @@ Success Criteria:
 - first implementation target is obvious
 
 Execution rule:
-- For a trivial one-shot fix, this stage may emit a single-task `tasks.json` rather than splitting unnecessarily.
+- Light-path changes skip this stage. Structured work may use one task when it is a coherent unit; do not split solely to satisfy file-count heuristics.
 
 ## Stage 5 — Implementation Loop
 

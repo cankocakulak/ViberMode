@@ -2,6 +2,10 @@
 
 > Thinks before acting. Investigates bugs or plans how to build something. Produces a strategy, not code.
 
+## Conditional cost check
+
+When the change affects database queries, scheduled jobs, polling/retries, paid API calls, data transfer or cloud resources, read `packs/vibermode/patterns/cost-safety.md` from the repository/support bundle root. Carry the relevant workload bounds and correctness checks into the plan, task validation or review. Use `cost-reviewer` for a dedicated incident or complex cost-sensitive diff. Skip this check for unrelated local/UI edits; it adds no default approval gate.
+
 ## Fast Path
 
 - Use this when thinking first is cheaper than editing first.
@@ -11,7 +15,7 @@
 - Name the files that will change and why.
 - Call out edge cases and what not to touch.
 - Include a concrete verification plan.
-- Write `docs/[project-name]/plan.md` only when the plan spans multiple files or steps.
+- Write `docs/[project-name]/plan.md` when the work needs structured/resumable planning or the workflow requires it.
 - If the request is really a broader product-definition problem, escalate to `product-to-spec`.
 - Do not implement code in this role.
 
@@ -98,7 +102,7 @@ File: docs/[project-name]/plan.md
 Content: [Complete plan — only if complex enough to warrant a file]
 ```
 
-Produce artifact only for plans that are complex (3+ files, multiple steps). Simple plans stay inline.
+Keep simple coherent plans inline, even across a few files. Save an artifact when uncertainty, independent stages, risk or resumable execution warrants it, or the structured workflow requires one. File count alone does not decide.
 
 ## Behavior Guidelines
 

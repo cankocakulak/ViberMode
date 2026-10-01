@@ -174,6 +174,18 @@ Deliver the validated change only after implementation quality gates pass.
 
 ### Hard Release Gate
 
+Before review, set a stable `scopeId`, absolute `targetRepo`, explicit `userFacing` boolean and nonempty `validationCommands` array in `change-release-status.json`. The commands must cover the required build/test/runtime checks for this slice; never substitute a success-only command. Save the same array as `validation-commands.json` **inside the artifact directory**, then execute them through:
+
+```bash
+node scripts/release-validation-evidence.mjs \
+  --status /absolute/path/to/docs/[project-name]/change-release-status.json \
+  --commands /absolute/path/to/docs/[project-name]/validation-commands.json
+```
+
+This executes local commands in the target repo and creates `validation-result.json` with command exits, target/scope and a source fingerprint. Do not use it to run live provider operations outside the user's authorization. If checks modify source, re-run after the changes settle. Git-visible tracked/untracked source, deletions, executable bits and symlink targets are fingerprinted; the artifact directory is excluded so writing reports does not stale the evidence. Ignored environment/config, remote services and runtime behavior still need explicit report evidence; a hash alone does not validate them. Keep application code outside the artifact directory.
+
+The runtime validator must also write `validation-report.md` with `Verdict: PASS` only when the required behavior is verified. Final review and experience review each declare their own verdict explicitly (`Verdict: APPROVED`). After reviewing that source, each review stage records `scopeId` and `sourceFingerprint` (the `validation-result.json.sourceFingerprint.sha256` string). Copy these only after the reviewer has inspected the matching source; revalidation alone cannot refresh an old review. Both review stages are required and must be `COMPLETE`; backend-only work may use `SKIPPED_NOT_APPLICABLE` for experience **only** with `userFacing: false` and the same declared verdict in its report. `blockers` must be an empty array. Missing, conflicting, failed or stale evidence blocks release. Re-run validation and refresh reviews whenever source changes after review.
+
 Before any release adapter performs live provider work, run the gate checker from the ViberMode repo:
 
 ```bash
@@ -186,7 +198,7 @@ npm run change-release:gate -- \
 Gate rules:
 
 - `repo-change` must be `COMPLETE`.
-- `experience-hardening` must be `COMPLETE` with verdict `APPROVED` or `SKIPPED_NOT_APPLICABLE` for user-facing changes.
+- `experience-hardening` must be `COMPLETE` with exact `APPROVED` for user-facing changes; `SKIPPED_NOT_APPLICABLE` is allowed only for `userFacing: false`.
 - `experience-review.md` must not rely on launch-only evidence when changed visual surfaces exist.
 - final review must be approved; `RELEASED_WITH_KNOWN_GAPS`, `KNOWN_GAPS`, `INCOMPLETE`, `BLOCKED`, `CHANGES_REQUESTED`, or equivalent wording blocks release.
 - `status.blockers` must be empty.
@@ -198,7 +210,7 @@ Supported release targets:
 
 - `none` - stop after final review
 - `ios-testflight` - bump version/build as needed, run TestFlight preflight, archive/export/upload
-- `android-play-internal` - bump versionCode/versionName as needed, run Google Play preflight, build/upload AAB to internal testing
+- `android-play-internal` - prepare versionCode/versionName before source-bound validation; re-validate and refresh review if preflight changes them afterward, run Google Play preflight, build/upload AAB to internal testing
 - `web-deploy` - reserved for Vercel or another web deployment adapter
 - `custom` - caller must provide the release command and acceptance criteria
 
@@ -210,7 +222,7 @@ Use:
 Rules:
 
 - require validation, experience review when user-facing, and final review before upload
-- bump build number for every upload; bump marketing version only when requested or release policy requires it
+- prepare the final build number before source-bound validation; bump marketing version only when requested or release policy requires it. If preflight changes version/config afterward, re-validate and refresh review before the gate.
 - run preflight before live Apple-side work
 - run the hard release gate before archive/export/upload
 - never pass `--allow-incomplete` for quality failures
@@ -258,6 +270,9 @@ Minimum shape:
   "workflow": "change-to-release",
   "projectName": "[project-name]",
   "targetRepo": "/absolute/path/to/repo",
+  "scopeId": "[unique-change-scope-id]",
+  "userFacing": true,
+  "validationCommands": ["[repo-owned required build/test/runtime command]"],
   "artifactRoot": "/absolute/path/to/repo/docs/[project-name]",
   "changeRequestPath": "/absolute/path/to/repo/docs/[project-name]/change-request.md",
   "releaseTarget": "none",
@@ -278,10 +293,14 @@ Minimum shape:
     "experience-hardening": {
       "status": "PENDING",
       "artifact": "docs/[project-name]/experience-review.md",
+      "scopeId": null,
+      "sourceFingerprint": null,
       "verdict": null
     },
     "final-review": {
       "status": "PENDING",
+      "scopeId": null,
+      "sourceFingerprint": null,
       "artifact": "docs/[project-name]/review.md",
       "verdict": null
     },
@@ -333,6 +352,8 @@ docs/[project-name]/
 ├── experience-review.md
 ├── remediation.md
 ├── review.md
+├── validation-commands.json
+├── validation-result.json
 └── change-release-status.json
 ```
 

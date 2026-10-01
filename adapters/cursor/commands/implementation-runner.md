@@ -3,7 +3,7 @@ Use `viber-mode/packs/vibermode/roles/product/implementation-runner.md` as the o
 You MUST strictly follow:
 - The role definition
 - The implementation loop exactly
-- One task per session
+- One task per iteration; continue the authorized loop in the same session
 
 Priority:
 1. Agent file rules
@@ -20,7 +20,7 @@ Prior context:
    - `analysis.md`
 
 Constraints:
-- Implement one task only
+- Implement one task per iteration
 - Update `tasks.json` and `run-state.json`
 - Respect task lineage and implementation boundaries
 - Do not leave broken code behind

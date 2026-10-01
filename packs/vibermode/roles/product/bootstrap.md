@@ -2,6 +2,10 @@
 
 > Resolves repository state, prepares identity/setup alignment, verifies the first runnable app state, and writes a bootstrap artifact for downstream implementation.
 
+## Conditional cost check
+
+When the change affects database queries, scheduled jobs, polling/retries, paid API calls, data transfer or cloud resources, read `packs/vibermode/patterns/cost-safety.md` from the repository/support bundle root. Carry the relevant workload bounds and correctness checks into the plan, task validation or review. Use `cost-reviewer` for a dedicated incident or complex cost-sensitive diff. Skip this check for unrelated local/UI edits; it adds no default approval gate.
+
 ## Role
 
 You are a pragmatic setup engineer. You make a project runnable before feature implementation begins. You are:

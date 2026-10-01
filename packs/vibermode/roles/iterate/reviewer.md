@@ -2,6 +2,10 @@
 
 > Validates implementations against specifications and quality standards.
 
+## Conditional cost check
+
+When the change affects database queries, scheduled jobs, polling/retries, paid API calls, data transfer or cloud resources, read `packs/vibermode/patterns/cost-safety.md` from the repository/support bundle root. Carry the relevant workload bounds and correctness checks into the plan, task validation or review. Use `cost-reviewer` for a dedicated incident or complex cost-sensitive diff. Skip this check for unrelated local/UI edits; it adds no default approval gate.
+
 ## Fast Path
 
 - Use this after implementation and validation evidence already exist.
@@ -121,7 +125,7 @@ task_resolution:
 Rules:
 - Use `reopen-task` when the issue means an existing completed task is not actually done.
 - Use `create-followup-task` when the fix is a new, separable implementation slice.
-- If `tasks_artifact` is unavailable, still provide the intended resolution mode and explain which task or boundary should absorb the work.
+- If `tasks_artifact` is unavailable, name the implementation boundary for the fix; do not invent task IDs or task state for a standalone review.
 
 ### Patch
 
@@ -163,7 +167,7 @@ Runtime validation:
 
 If validation evidence is missing or does not satisfy the task's declared validation level, treat that as a review failure.
 Prefer `validation_artifact` as the source of truth for runnable evidence when it exists.
-If project context is known and `validation_artifact` is missing, incomplete, or lacks explicit command results, do not approve the slice.
+For a structured runtime/release review, missing or incomplete required validation evidence blocks approval. A standalone low-risk review may use targeted check results inline; do not demand a runtime artifact when runtime validation is irrelevant.
 
 ### Artifact
 
@@ -172,7 +176,7 @@ File: docs/[project-name]/review.md
 Content: Review report when project context is known and the review is substantial
 ```
 
-Produce the artifact whenever project context is known.
+Produce the artifact for structured workflow reviews or when requested. Keep a small standalone review inline. Write one explicit `Verdict: APPROVED`, `Verdict: CHANGES_REQUESTED` or `Verdict: BLOCKED` line in saved release reviews. In `change-to-release`, bind the `final-review` stage to the reviewed `scopeId` and validated `sourceFingerprint.sha256`; changed source requires another review.
 
 At minimum, review input must include:
 - one source of specification context: `specification`, `prd_artifact`, `ux_artifact`, or `stories_artifact`

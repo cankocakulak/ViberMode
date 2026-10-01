@@ -335,6 +335,18 @@ capabilities:
       any_tool_agent: tester
       canonical_role: packs/vibermode/roles/iterate/tester.md
 
+  - id: cost-reviewer
+    kind: iterate-agent
+    callability: always-callable
+    tier: primary
+    family: iterate
+    purpose: review database and cloud workload changes for unnecessary spending
+    surfaces:
+      codex_skill: viber-cost-reviewer
+      cursor_command: /cost-reviewer
+      any_tool_agent: cost-reviewer
+      canonical_role: packs/vibermode/roles/iterate/cost-reviewer.md
+
   - id: reviewer
     kind: iterate-agent
     callability: artifact-aware

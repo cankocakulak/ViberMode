@@ -1,66 +1,11 @@
 #!/bin/bash
-# Install ViberMode agents as Codex Skills
-# Usage: ./adapters/codex/install/install-skills.sh
-
-set -e
-
+# Install or check a versioned ViberMode snapshot. Unrelated skills are preserved.
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-SKILLS_SOURCE="$REPO_DIR/adapters/codex/skills"
 CODEX_SKILLS="${CODEX_HOME:-$HOME/.codex}/skills"
 SUPPORT_BUNDLE="$CODEX_SKILLS/viber-mode"
-
-if [ ! -d "$SKILLS_SOURCE" ]; then
-  echo "Error: Skills directory not found at $SKILLS_SOURCE"
-  exit 1
-fi
-
-echo "Installing ViberMode skills to $CODEX_SKILLS..."
-
-mkdir -p "$CODEX_SKILLS"
-
-# Remove ViberMode skills that used to be public Codex entry points but are now
-# internal workflow docs. This keeps the Codex skill picker aligned with the
-# curated source directory after a cleanup.
-for stale_skill in game-new-prototype game-signature-prototype game-night-loop; do
-  if [ -d "$CODEX_SKILLS/$stale_skill" ] && [ ! -d "$SKILLS_SOURCE/$stale_skill" ]; then
-    echo "  Removing stale: $stale_skill"
-    rm -rf "$CODEX_SKILLS/$stale_skill"
-  fi
-done
-
-echo "Installing shared ViberMode support bundle..."
-rm -rf "$SUPPORT_BUNDLE"
-mkdir -p "$SUPPORT_BUNDLE/packs" "$SUPPORT_BUNDLE/docs"
-cp -r "$REPO_DIR/packs/vibermode" "$SUPPORT_BUNDLE/packs/"
-cp -r "$REPO_DIR/docs/reference" "$SUPPORT_BUNDLE/docs/"
-[ -d "$REPO_DIR/docs/operations" ] && cp -r "$REPO_DIR/docs/operations" "$SUPPORT_BUNDLE/docs/"
-[ -d "$REPO_DIR/docs/architecture" ] && cp -r "$REPO_DIR/docs/architecture" "$SUPPORT_BUNDLE/docs/"
-[ -d "$REPO_DIR/docs/use-cases" ] && cp -r "$REPO_DIR/docs/use-cases" "$SUPPORT_BUNDLE/docs/"
-[ -d "$REPO_DIR/scripts" ] && cp -r "$REPO_DIR/scripts" "$SUPPORT_BUNDLE/"
-[ -f "$REPO_DIR/package.json" ] && cp "$REPO_DIR/package.json" "$SUPPORT_BUNDLE/package.json"
-cp "$REPO_DIR/README.md" "$SUPPORT_BUNDLE/README.md"
-cp "$REPO_DIR/AGENTS.md" "$SUPPORT_BUNDLE/AGENTS.md"
-
-for skill_dir in "$SKILLS_SOURCE"/*/; do
-  skill_name=$(basename "$skill_dir")
-  target="$CODEX_SKILLS/$skill_name"
-
-  if [ -d "$target" ]; then
-    echo "  Updating: $skill_name"
-    rm -rf "$target"
-  else
-    echo "  Installing: $skill_name"
-  fi
-
-  cp -r "$skill_dir" "$target"
-done
-
-echo ""
-echo "Done! Installed skills:"
-ls -1 "$SKILLS_SOURCE" | while read -r skill; do
-  [ -d "$SKILLS_SOURCE/$skill" ] && echo "  - $skill"
-done
-echo "  - viber-mode (shared support bundle)"
-echo ""
-echo "Skills are now available in Codex App and Codex CLI."
+MODE=install
+if [ "${1:-}" = --check ]; then MODE=check; shift; fi
+if [ "$#" -ne 0 ]; then echo 'Usage: install-skills.sh [--check]' >&2; exit 1; fi
+node "$REPO_DIR/scripts/skill-install-state.mjs" "$MODE" --source-root "$REPO_DIR" --skills-root "$CODEX_SKILLS" --runtime codex

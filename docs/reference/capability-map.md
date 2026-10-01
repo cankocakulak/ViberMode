@@ -50,6 +50,7 @@ For the service-level view of how workflows combine into end-to-end outcomes, st
 | I want to improve the feel of an existing UI | `ux-tweaker` |
 | I want to diagnose UX friction before changing it | `ux-investigator` |
 | I want craft-level motion, component polish, or animation review | `design-engineer` |
+| I want to review database and cloud workload cost risk | `cost-reviewer` |
 | I want to split a large or messy file safely | `modularizer` |
 | I need proof that a feature really works | `tester` |
 | I need to check whether a feature is actually wired end to end | `integration-auditor` |
@@ -1248,3 +1249,10 @@ Use focused workflows as the primary surface. `game-prototype-lab` remains as a 
 - Prefer `primary` surfaces unless you are intentionally operating inside a stage-gated pipeline.
 - Treat `support` surfaces as internal workflow stages, validation gates, or translation helpers.
 - Treat `legacy` surfaces as compatibility-only; do not recommend them for new usage.
+
+### cost-reviewer
+
+- Canonical role: `packs/vibermode/roles/iterate/cost-reviewer.md`
+- Surfaces: Codex `viber-cost-reviewer`, Cursor `/cost-reviewer`, any-tool `cost-reviewer`
+- Standalone review of query volume, scheduled work, transfer and resource lifetime.
+- Produces a cost verdict, concrete findings, workload assumptions and bounded verification. Does not approve release or provision resources.

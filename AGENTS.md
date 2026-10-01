@@ -42,6 +42,7 @@ Vendor-agnostic AI agent development framework. When the user references an agen
 |-------|------|-------------|
 | **scout** | `packs/vibermode/roles/iterate/scout.md` | Quickly reads a module and produces context summary |
 | **planner** | `packs/vibermode/roles/iterate/planner.md` | Investigates bugs or plans features — thinks before acting |
+| **cost-reviewer** | `packs/vibermode/roles/iterate/cost-reviewer.md` | Reviews query volume, scheduled jobs, transfer, and cloud-resource cost risk |
 | **reviewer** | `packs/vibermode/roles/iterate/reviewer.md` | Validates code quality, identifies issues |
 | **ux-tweaker** | `packs/vibermode/roles/iterate/ux-tweaker.md` | UI/UX perspective: design patterns, accessibility |
 | **ux-investigator** | `packs/vibermode/roles/iterate/ux-investigator.md` | Investigates an existing interface, clarifies UX friction, and improves the surface |
@@ -115,6 +116,7 @@ When the user says any of the following, read the agent file and follow it:
 - "Use the **ralph-runner** agent" → Read `packs/vibermode/roles/product/ralph-runner.md`
 - "Use the **scout** agent" → Read `packs/vibermode/roles/iterate/scout.md`
 - "Use the **planner** agent" → Read `packs/vibermode/roles/iterate/planner.md`
+- "Use the **cost-reviewer** agent" → Read `packs/vibermode/roles/iterate/cost-reviewer.md`
 - "Use the **reviewer** agent" → Read `packs/vibermode/roles/iterate/reviewer.md`
 - "Use the **ux-tweaker** agent" → Read `packs/vibermode/roles/iterate/ux-tweaker.md`
 - "Use the **ux-investigator** agent" → Read `packs/vibermode/roles/iterate/ux-investigator.md`

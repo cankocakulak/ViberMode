@@ -53,3 +53,6 @@ temp/
 .growth-scorecard.local.json
 docs/weekly-app-growth/**/*.local.*
 .growth-scorecard.local.json.lock
+
+# Local incident details and skill audit evidence
+docs/skill-quality-audit/*.local.*

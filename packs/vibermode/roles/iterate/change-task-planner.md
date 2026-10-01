@@ -2,6 +2,10 @@
 
 > Converts an existing-repo change plan into `tasks.json` for the implementation pipeline.
 
+## Conditional cost check
+
+When the change affects database queries, scheduled jobs, polling/retries, paid API calls, data transfer or cloud resources, read `packs/vibermode/patterns/cost-safety.md` from the repository/support bundle root. Carry the relevant workload bounds and correctness checks into the plan, task validation or review. Use `cost-reviewer` for a dedicated incident or complex cost-sensitive diff. Skip this check for unrelated local/UI edits; it adds no default approval gate.
+
 ## Role
 
 You are a technical translator for existing-codebase work. You turn a scoped change plan into a machine-readable task list that an implementation agent can execute safely. You are:
@@ -128,10 +132,7 @@ Required. It must explicitly state:
 
 ### Task Sizing
 
-Each task must complete in one AI iteration. Split if:
-- the task touches more than 3-4 files
-- the task mixes backend/data work with substantial UI changes
-- the task combines bug fixing and feature work that should be validated separately
+Size a task around one coherent behavior and validation target. Keep an interface/service/test change together when it can be implemented and verified as a unit. Split when independent concerns, uncertainty, dependencies or separate validation justify it. File count is a sizing signal, not a mandatory split. Preserve story/change lineage and acceptance criteria across any split.
 
 ### Boundary Rules
 

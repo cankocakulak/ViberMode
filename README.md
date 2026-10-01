@@ -299,6 +299,7 @@ Use these when a full product pipeline is too heavy.
 | I need to diagnose UX friction | `ux-investigator` |
 | I need to polish UI/UX | `ux-tweaker` |
 | I need craft-level motion/component polish | `design-engineer` |
+| I need to review database, scheduled-job or cloud cost risk | `cost-reviewer` |
 | I need to split or refactor safely | `modularizer` |
 | I need to check wiring | `integration-auditor` |
 | I need proof that behavior works | `tester` |
@@ -320,6 +321,17 @@ Install the Codex skill projection:
 ```bash
 npm run install:codex
 ```
+
+Installers require Node.js 18+. They stage the complete shared bundle and wrappers before replacing directories, restore the previous snapshot on ordinary publication failures, and preserve unrelated skills. Abrupt process termination can leave a staging directory/lock for manual recovery; this is not a global atomic filesystem swap.
+
+Check the installed snapshot without changing it:
+
+```bash
+npm run skills:check:codex
+npm run skills:check:claude
+```
+
+The shared bundle’s `install-manifest.json` records the source commit and content hashes. A source/installed difference or missing manifest returns a nonzero exit. Reinstall after pulling updates. Local `.local.*` artifacts are excluded from the shared bundle.
 
 Then ask naturally:
 

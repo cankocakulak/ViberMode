@@ -261,3 +261,7 @@ If a narrow iterate agent starts uncovering a much larger product-definition pro
 If a product workflow is too heavy for the task:
 
 - drop down to `planner`, `ux-investigator`, `modularizer`, `tester`, or another narrow iterate capability
+
+### I need to prevent database or cloud cost regressions
+
+Use `cost-reviewer` for cost incidents or cost-sensitive diffs. Planner, implementation-runner and reviewer load the shared cost reference only for relevant workloads. For a small, understood local change, `repo-change` supports direct implementation and targeted checks; use its structured path for risky or resumable work. Live releases still require the `change-to-release` evidence gate.
