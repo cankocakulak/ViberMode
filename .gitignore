@@ -48,3 +48,8 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Private growth registry, evidence and live reports
+.growth-scorecard.local.json
+docs/weekly-app-growth/**/*.local.*
+.growth-scorecard.local.json.lock

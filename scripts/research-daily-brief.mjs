@@ -150,7 +150,9 @@ function renderBrief({ title, researchDir, sources, opportunities, candidates, r
     "",
     "## Öne Çıkan Fırsatlar",
     "",
-    "| Sıra | Küme | Durum | Skor | Sonraki Araştırma |",
+    "Puanlar araştırma önceliği içindir; ticari başarı olasılığı değildir. Ticari karar için güncel stable ledger değerlendirmesini kullanın.",
+    "",
+    "| Sıra | Küme | Durum | Araştırma önceliği | Sonraki Araştırma |",
     "|---:|---|---|---:|---|",
     ...selectedOpportunities.map((opportunity) => `| ${opportunity.rank ?? ""} | ${escapePipe(opportunity.cluster)} | ${escapePipe(opportunity.status || "")} | ${opportunity.scores?.total ?? ""} | ${escapePipe(opportunity.next_research || "")} |`),
     "",
@@ -163,7 +165,7 @@ function renderBrief({ title, researchDir, sources, opportunities, candidates, r
           `### ${candidate.title}`,
           "",
           `- Durum: ${candidate.status || "bilinmiyor"}`,
-          `- Skor: ${candidate.scores?.total ?? "hesaplanmadı"}`,
+          `- Araştırma önceliği puanı: ${candidate.scores?.total ?? "hesaplanmadı"} (ticari doğrulama değildir)`,
           `- Neden seçildi: ${summary.why}`,
           `- Kanıt: ${summary.evidence}`,
           `- Riskler ve ödünler: ${summary.tradeoffs}`,
@@ -194,7 +196,7 @@ function renderSlackReport({ title, researchDir, opportunities, candidates, reje
     const summary = selectionSummary(selected);
     lines.push(
       "",
-      `*Öne çıkan aday:* ${selected.title} (${selected.status || "bilinmiyor"}, skor ${selected.scores?.total ?? "yok"})`,
+      `*Öne çıkan aday:* ${selected.title} (${selected.status || "bilinmiyor"}, araştırma önceliği ${selected.scores?.total ?? "yok"}; ticari doğrulama değildir)`,
       `*Neden:* ${summary.why}`,
       `*Kanıt:* ${summary.evidence}`,
       `*Riskler / takip:* ${summary.tradeoffs}`,

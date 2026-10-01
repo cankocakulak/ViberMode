@@ -59,8 +59,8 @@ Preferred inputs:
 - `viber-ios-app-factory-manual-runner` runs Stage 2, Stage 3, and Stage 4 as one continuous factory run against one manifest. It uses the generated product bundle layout, preserves Runtime Topology through spec review, runs `npm run workspace:topology` before bootstrap, and provisions a backend sibling only after approved specs name a P0 backend trigger.
 - `manual-plant-routine-change-to-testflight` reads `Docs/vibermode/change-request.md` inside the Plant Routine repo, applies actionable notes, validates, reviews, bumps build number, and uploads internal TestFlight when release gates pass.
 - `manual-studybud-change-to-release` is an older app-specific runner. Keep it paused unless it is rewritten to call `app-autopilot` through app resolution instead of hardcoded StudyBud paths.
-- `rox-slack-codex-operator` should run `viber-slack-codex-operator` against Slack DMs, direct mentions, and active threads since the previous heartbeat. It should not routine-scan general channel chatter, and `#customer-success` stays excluded unless explicitly mentioned or scoped by an owner.
-- `rox-slack-codex-operator` prefers the Rox bot-token path documented in `docs/operations/slack-rox-codex-operator.md`. If the token is not installed yet, it falls back to the Codex Slack connector and reports missing scopes or reauthentication blockers.
+- `rox-slack-codex-operator` should run `viber-slack-codex-operator` against Slack DMs, direct mentions, and active threads. The preferred immediate path is the Socket Mode bridge in `scripts/slack-rox-event-bridge.mjs`, installed locally with `npm run slack:rox:events:install-agent`. The heartbeat remains a slow fallback for missed events and active-thread edge cases.
+- `rox-slack-codex-operator` prefers the Rox bot-token and app-level token paths documented in `docs/operations/slack-rox-codex-operator.md`. If the app-level `xapp-` token is not installed yet, the LaunchAgent may be written with `npm run slack:rox:events -- install-agent --write-only`, but it should not be started until `npm run slack:rox:events:probe` passes.
 
 ## App-Specific Automation Policy
 

@@ -7,13 +7,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { ideaSnapshot, resolveStateRoot } from "./idea-research-ledger.mjs";
+import { renderCommercialSummary } from "./research-commercial-assessment.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const repoRoot = path.resolve(path.dirname(scriptPath), "..");
 const slackScript = path.join(repoRoot, "scripts", "slack-rox-bot.mjs");
 const defaultOperatorStatePath = path.join(repoRoot, ".codex", "slack-codex-operator", "state.json");
 const ROOT_FORMAT_VERSION = 2;
-const THREAD_FORMAT_VERSION = 2;
+const THREAD_FORMAT_VERSION = 3;
 
 const turkishLabels = {
   app_supply: "uygulama arzı",
@@ -32,7 +33,8 @@ const turkishLabels = {
   neutral: "nötr",
   observed: "gözlemleniyor",
   researching: "araştırılıyor",
-  validated: "doğrulandı",
+  validated: "ön araştırma eşiğini geçti",
+  commercial_signals_supported: "talep, ödeme, rekabet ve erişim sinyalleri",
   parked: "park edildi",
   rejected: "reddedildi",
   "brainstorm-approved": "brainstorm onaylı",
@@ -109,8 +111,6 @@ export function renderIdeaMessage(snapshot) {
     `*Kim için:* ${compact(pitch.audience || candidate.target_user || candidate.audience, 180)}`,
     `*Çözdüğü sorun:* ${compact(pitch.problem || candidate.problem_statement, 220)}`,
     `*Temel deneyim:* ${compact(pitch.core_experience || candidate.mvp_wedge, 220)}`,
-    "",
-    "_Araştırma gerekçeleri ve bütün güncellemeler bu mesajın thread'inde._",
   ].join("\n");
 }
 
@@ -138,14 +138,17 @@ export function renderResearchThread(snapshot, { previousEvaluation = null, init
   const missing = evaluation?.missing_checks || ["not_evaluated"];
   const followUps = Array.isArray(rationale.follow_up_questions) ? rationale.follow_up_questions.slice(0, 3) : [];
   const recommendation = evaluation?.recommendation || candidate.research_status || "researching";
-  const score = evaluation ? `${evaluation.score}/100` : "henüz hesaplanmadı";
-  const confidence = evaluation ? `%${Math.round(evaluation.confidence * 100)}` : "bilinmiyor";
+  const score = evaluation ? `${evaluation.research_coverage_score ?? evaluation.score}/100` : "henüz hesaplanmadı";
+  const commercial = evaluation?.commercial_assessment;
+  const nextCommercialCheck = commercial?.missing_dimensions?.map((key) => commercial.dimensions[key].next_check).find(Boolean);
   const competitors = Array.isArray(candidate.competitors) ? candidate.competitors.slice(0, 8).join(", ") : "Henüz listelenmedi";
   const update = initial ? null : renderDelta(previousEvaluation, evaluation);
 
   return [
     `*${initial ? "İlk araştırma özeti" : "Araştırma güncellemesi"} · ${compact(candidate.title, 100)} · ${evaluationDate(evaluation)}*`,
-    `*Durum:* ${trLabel(recommendation)} | *Skor:* ${score} | *Güven:* ${confidence}`,
+    `*Durum:* ${trLabel(recommendation)} | *Araştırma kapsamı:* ${score} (başarı olasılığı değildir)`,
+    `*Ticari karşılık:* ${renderCommercialSummary(commercial)}`,
+    ...(nextCommercialCheck ? [`*Öncelikli ticari kontrol:* ${compact(nextCommercialCheck, 350)}`] : []),
     `*Kanıt dengesi:* ${supportingCount} destekleyen / ${contradictingCount} çelişen`,
     ...(update ? [`*Bu turdaki değişim:* ${update}`] : []),
     "",
@@ -186,17 +189,21 @@ function evaluationSummary(evaluation) {
     score: evaluation.score,
     evidence_count: evaluation.evidence_count,
     missing_checks: evaluation.missing_checks,
+    commercial_assessment: evaluation.commercial_assessment || null,
   };
 }
 
 export function renderDelta(previous, current) {
   if (!current) return "Araştırma kaydı güncellendi; henüz değerlendirme oluşmadı.";
   if (!previous) {
-    return `İlk değerlendirme oluşturuldu: ${trLabel(current.recommendation)}, ${current.score}/100 skor ve ${current.evidence_count} kanıt.`;
+    return `İlk değerlendirme oluşturuldu: ${trLabel(current.recommendation)}, ${current.score}/100 araştırma kapsamı ve ${current.evidence_count} kanıt. ${renderCommercialSummary(current.commercial_assessment)}`;
   }
   const changes = [];
   if (previous.recommendation !== current.recommendation) changes.push(`öneri ${trLabel(previous.recommendation)} → ${trLabel(current.recommendation)}`);
-  if (previous.score !== current.score) changes.push(`skor ${previous.score} → ${current.score}`);
+  if (previous.score !== current.score) changes.push(`araştırma kapsamı ${previous.score} → ${current.score}`);
+  if (JSON.stringify(previous.commercial_assessment || null) !== JSON.stringify(current.commercial_assessment || null)) {
+    changes.push(`ticari değerlendirme güncellendi: ${current.commercial_assessment?.label || "yeniden değerlendirme gerekli"}`);
+  }
   if (previous.evidence_count !== current.evidence_count) changes.push(`kanıt ${previous.evidence_count} → ${current.evidence_count}`);
   const beforeMissing = new Set(previous.missing_checks || []);
   const resolved = [...beforeMissing].filter((item) => !(current.missing_checks || []).includes(item));
@@ -336,7 +343,7 @@ async function main() {
   if (shouldPostThread) {
     const threadMessage = renderResearchThread(snapshot, {
       previousEvaluation: needsThreadBootstrap ? null : previousEvaluation,
-      initial: needsThreadBootstrap,
+      initial: !candidate.slack?.thread_format_version,
     });
     const nextThreadHash = contentHash(threadMessage);
     if (threadContentHash !== nextThreadHash) {

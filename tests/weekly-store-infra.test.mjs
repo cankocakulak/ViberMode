@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {playExportPartition} from '../scripts/growth-scorecard/stores.mjs';
+import {windowFromStart,addDays} from '../scripts/growth-scorecard/core.mjs';
+const week=windowFromStart('2026-09-07'),app={androidPackage:'co.kantlabs.easyspell'};
+const rows=Array.from({length:7},(_,i)=>({Date:addDays(week.start,i),'Package name':app.androidPackage,'Country / region':'TR','Store listing visitors':'5','Store listing acquisitions':'1'}));
+test('official Play Package name and Country / region headers preserve all country partitions',()=>{const p=playExportPartition(rows.flatMap(r=>[r,{...r,'Country / region':'US'}]),app,week);assert.equal(p.complete,true);assert.equal(p.identityMatches,true);assert.equal(p.duplicate,false);assert.equal(p.selected.length,14);});
+test('wrong, missing or conflicting package identity cannot be published',()=>{for(const r of [{...rows[0],'Package name':'other'},{...rows[0],'Package Name':'other'},{Date:week.start,'Country / region':'TR'}])assert.equal(playExportPartition([r,...rows.slice(1)],app,week).identityMatches,false);});
+test('duplicate dimensions across account slices still fail closed',()=>{assert.equal(playExportPartition([...rows,rows[0]],app,week).duplicate,true);});
+test('partial and stale export dates never become a complete week',()=>{const partial=playExportPartition(rows.slice(0,4),app,week);assert.equal(partial.complete,false);assert.equal(partial.dates.length,4);const stale=playExportPartition(rows.map(r=>({...r,Date:addDays(r.Date,-7)})),app,week);assert.equal(stale.complete,false);assert.equal(stale.selected.length,0);});
+test('install-export Country header remains compatible and conflicting geography is rejected',()=>{const install=rows.map(r=>{const {'Country / region':country,...rest}=r;return {...rest,Country:country};});assert.equal(playExportPartition(install,app,week).identityMatches,true);assert.equal(playExportPartition([{...install[0],'Country / region':'US'},...install.slice(1)],app,week).identityMatches,false);});

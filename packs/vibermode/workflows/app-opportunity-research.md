@@ -135,7 +135,7 @@ Daily runs should:
 - treat an idea as due only for an explicit Slack follow-up, an incomplete pack, evidence at least seven days old, a material market event, or an open check that today's sources can actually answer
 - put a recently evaluated idea on a seven-day cooldown when its recommendation and missing checks are unchanged
 - never repeat a public scan when the exact next check requires owner choice, direct interviews, timed usability testing, paid data, or another unavailable input
-- after maintenance, investigate at least one fresh category/theme/cluster that has no stable idea ledger or research pack from the previous 30 days
+- after maintenance, choose an answerable market observation, opportunity hypothesis, disconfirmation or new theme; do not force a new niche every day
 - keep maintenance and fresh discovery in separate research packs when both produce material output
 - check at least two evidence classes when available: App Store, community/user pain, web/search trends, keyword demand, competitor positioning, paid/source exports, or prior factory results
 - label every ledger observation with `direction: supports | contradicts | neutral`; do not let a contradictory competitor-gap record satisfy a positive readiness check
@@ -469,3 +469,9 @@ node scripts/idea-backlog.mjs validate \
 - Weak differentiation: move candidates to `rejected.json` or `researching`.
 - Weak rationale: keep the candidate `researching`, write the missing evidence or follow-up question, and do not upsert it as `ready`.
 - Data parser failure: preserve source inventory and report the exact file/encoding/delimiter issue.
+
+## Commercial decision standard · 21 September 2026
+
+Before evaluating or publishing, read `docs/research-commercial-quality/evidence-contract.md` in the canonical ViberMode repository (/Users/mcan/ViberMode on this host). Use schema-v3 ledger assessments: research coverage and source confidence are not commercial attractiveness or success probabilities. Show all six commercial dimensions and the cheapest decisive missing check; never fill unknowns with assumptions. Passing the preliminary gate does not validate product-market fit or authorize production. Legacy scores require re-evaluation before promotion.
+
+Current user-authorized bulletins supersede older no-digest language only for the configured streams/channels. No forced new idea or US-only theme rotation. Keep stable idea cards, material thread updates, per-date bulletin deduplication and explicit owner promotion boundaries. Existing-product research uses the trigger/value/return/payment/distribution card and three close competitor comparisons defined in that contract.

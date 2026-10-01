@@ -3,6 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 import {
   appendEvidence,
@@ -14,6 +16,7 @@ import {
   recordDecision,
   reconcileBacklog,
 } from "../scripts/idea-research-ledger.mjs";
+import { assessCommercialEvidence } from "../scripts/research-commercial-assessment.mjs";
 
 function fixture() {
   const stateRoot = fs.mkdtempSync(path.join(os.tmpdir(), "idea-ledger-"));
@@ -87,15 +90,77 @@ function evidence() {
   ];
 }
 
-test("validates an idea only after store and non-store evidence are both present", () => {
+function commercialEvidence() {
+  return [
+    ["demand", "growth_signal", "downloads", 5000, "downloads"],
+    ["monetization", "revenue_signal", "revenue", 4000, "USD"],
+    ["competition", "competitor_gap", null, null, null],
+    ["distribution", "acquisition_signal", "qualified_visits", 40, "visits"],
+  ].map(([dimension, type, metric, value, unit]) => ({
+    id: `commercial-${dimension}`, type, metric, value, unit,
+    source_url: `https://example.com/observations/${dimension}`,
+    summary: `Fixture observation for ${dimension}; not real market data.`,
+    confidence: 0.8, observed_at: "2026-07-17T10:00:00Z", expires_at: "2026-08-17T10:00:00Z",
+    commercial: { dimension, relevance: "direct", scope_fit: "Same remote-student study job", basis: "observed", country: "US", platform: "iOS", population: "Named comparable focus tools or target-student test cohort", currency: "USD", period_start: "2026-07-01", period_end: "2026-07-16" },
+  }));
+}
+
+test("validates preliminary research only with scoped commercial signals, not coverage alone", () => {
   const { stateRoot } = fixture();
-  appendEvidence({ stateRoot, ideaId: "focus-room", entries: evidence() });
+  appendEvidence({ stateRoot, ideaId: "focus-room", entries: [...evidence(), ...commercialEvidence()] });
   const result = evaluateIdea({ stateRoot, ideaId: "focus-room", at: new Date("2026-07-18T10:00:00.000Z") });
   assert.equal(result.evaluation.recommendation, "validated");
   assert.equal(result.evaluation.eligible_for.brainstorm, true);
   assert.ok(result.evaluation.score >= 65);
   assert.deepEqual(result.evaluation.missing_checks, []);
   assert.equal(ideaSnapshot({ stateRoot, ideaId: "focus-room" }).candidate.research_status, "validated");
+  assert.equal(result.evaluation.commercial_assessment.dimensions.repeat_use.status, "unknown");
+  assert.match(result.evaluation.commercial_assessment.label, /ürün ve kârlılık doğrulanmadı/);
+});
+
+test("prices, community size and declared unknowns cannot validate commercial potential", () => {
+  const { stateRoot } = fixture();
+  appendEvidence({ stateRoot, ideaId: "focus-room", entries: evidence() });
+  const { evaluation } = evaluateIdea({ stateRoot, ideaId: "focus-room", at: new Date("2026-07-18T10:00:00Z") });
+  assert.ok(evaluation.research_coverage_score >= 65);
+  assert.equal(evaluation.recommendation, "researching");
+  assert.equal(evaluation.eligible_for.brainstorm, false);
+  assert.equal(evaluation.commercial_assessment.status, "insufficient_evidence");
+  assert.ok(evaluation.missing_checks.includes("commercial_signals_supported"));
+  assert.match(evaluation.confidence_meaning, /not hypothesis confidence/);
+});
+
+test("commercial gate rejects expired, adjacent, future, malformed and proxy metrics", () => {
+  const at = new Date("2026-07-18T10:00:00Z");
+  for (const change of [
+    { expires_at: "2026-07-16" },
+    { observed_at: "2026-07-19" },
+    { value: "5000" },
+    { metric: "subreddit_members" },
+    { commercial: { ...commercialEvidence()[0].commercial, relevance: "adjacent" } },
+    { commercial: { ...commercialEvidence()[0].commercial, country: "" } },
+    { commercial: { ...commercialEvidence()[0].commercial, period_start: "2026-08-01" } },
+    { direction: "neutral" },
+  ]) {
+    const entries = commercialEvidence();
+    entries[0] = { ...entries[0], ...change };
+    assert.equal(assessCommercialEvidence({}, entries, at).preliminary_gate_passed, false, JSON.stringify(change));
+  }
+});
+
+test("commercial contradictions and measured zero are visible, estimates are accepted as estimates", () => {
+  const at = new Date("2026-07-18T10:00:00Z");
+  const entries = commercialEvidence();
+  entries[1].commercial.basis = "estimate";
+  assert.equal(assessCommercialEvidence({}, entries, at).preliminary_gate_passed, true);
+  const negative = { ...entries[1], id: "counter", direction: "contradicts" };
+  let assessment = assessCommercialEvidence({}, [...entries, negative], at);
+  assert.equal(assessment.preliminary_gate_passed, false);
+  assert.equal(assessment.dimensions.monetization.status, "conflicting");
+  assert.deepEqual(assessment.dimensions.monetization.opposing_evidence_ids, ["counter"]);
+  entries[3].value = 0;
+  assessment = assessCommercialEvidence({}, entries, at);
+  assert.equal(assessment.dimensions.distribution.status, "conflicting");
 });
 
 test("keeps evidence append-only and deduplicates repeated observations", () => {
@@ -134,7 +199,7 @@ test("requires validation before promotion and records decision history", () => 
     reason: "Looks useful"
   }), /not eligible/);
 
-  appendEvidence({ stateRoot, ideaId: "focus-room", entries: evidence() });
+  appendEvidence({ stateRoot, ideaId: "focus-room", entries: [...evidence(), ...commercialEvidence()] });
   evaluateIdea({ stateRoot, ideaId: "focus-room", at: new Date("2026-07-18T10:00:00.000Z") });
   recordDecision({
     stateRoot,
@@ -148,6 +213,28 @@ test("requires validation before promotion and records decision history", () => 
   assert.equal(snapshot.candidate.research_status, "brainstorm-approved");
   assert.equal(snapshot.decisions.length, 1);
   assert.equal(snapshot.decisions[0].previous_status, "validated");
+});
+
+test("legacy validated snapshots cannot authorize promotion", () => {
+  const { stateRoot } = fixture();
+  const target = path.join(stateRoot, "ideas", "research", "focus-room", "evaluation.json");
+  fs.writeFileSync(target, JSON.stringify({ schema_version: 2, recommendation: "validated", eligible_for: { brainstorm: true } }));
+  assert.throws(() => recordDecision({ stateRoot, ideaId: "focus-room", type: "approve_brainstorm", reason: "legacy score" }), /commercial evidence gate/);
+});
+
+test("factory dry run cannot bypass commercial assessment with an old ready record", () => {
+  const { stateRoot, payload } = fixture();
+  const dir = path.join(stateRoot, "ideas", "research", "focus-room");
+  fs.writeFileSync(path.join(dir, "candidate.json"), JSON.stringify({ ...payload, research_status: "ready" }));
+  fs.writeFileSync(path.join(dir, "evaluation.json"), JSON.stringify({ schema_version: 2, recommendation: "validated" }));
+  fs.writeFileSync(path.join(stateRoot, "ideas", "backlog.json"), JSON.stringify({ schema_version: 1, ideas: [{ ...payload, status: "ready", platform: "ios", stack: "SwiftUI", repo_slug: "focus-room", rank: 1, category: "Education", cluster: "Study", why_now: "Test fixture", evidence_sources: ["https://example.com/fixture"], competitors: ["Fixture timer"] }] }));
+  const result = spawnSync(process.execPath, ["scripts/ios-app-factory-prepare.mjs", "--state-root", stateRoot, "--dry-run"], {
+    cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf8",
+    env: { PATH: process.env.PATH, HOME: os.homedir(), IDEA_FACTORY_REQUIRE_RESEARCH_LEDGER: "true" },
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /current commercial evidence evaluation/);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(stateRoot, "ideas", "backlog.json"))).ideas[0].status, "ready");
 });
 
 test("writes immutable timestamped evaluations plus a current snapshot", () => {

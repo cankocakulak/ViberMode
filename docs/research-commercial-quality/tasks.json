@@ -1,0 +1,79 @@
+{
+  "projectName": "research-commercial-quality",
+  "branchName": "main",
+  "docsPath": "docs/research-commercial-quality",
+  "phasePlan": {
+    "order": [
+      "core",
+      "ops"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "RCQ-1",
+      "phase": "core",
+      "parentStoryId": "RCQ",
+      "title": "Separate commercial signals from research coverage",
+      "status": "done",
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "Prices and audience proxies alone cannot pass the commercial gate",
+        "Expired, adjacent, unsupported and contradictory evidence cannot silently validate a market",
+        "Legacy evaluations cannot authorize promotion"
+      ],
+      "validation": {
+        "level": "quick",
+        "commands": [
+          "npm run test:idea-research"
+        ],
+        "scenarios": [
+          "Coverage-rich legacy fixture remains researching",
+          "Scoped commercial evidence qualifies only for preliminary research"
+        ]
+      }
+    },
+    {
+      "id": "RCQ-2",
+      "phase": "core",
+      "parentStoryId": "RCQ",
+      "title": "Show honest commercial conclusions and align research instructions",
+      "status": "done",
+      "dependencies": [
+        "RCQ-1"
+      ],
+      "acceptanceCriteria": [
+        "Slack distinguishes coverage from commercial assessment",
+        "No commercial confidence percentage",
+        "Daily discovery need not invent a new niche"
+      ],
+      "validation": {
+        "level": "quick",
+        "commands": [
+          "npm run test:idea-research",
+          "npm run validate"
+        ]
+      }
+    },
+    {
+      "id": "RCQ-3",
+      "phase": "ops",
+      "parentStoryId": "RCQ",
+      "title": "Apply to existing idea, automation prompts and Notion",
+      "status": "done",
+      "dependencies": [
+        "RCQ-2"
+      ],
+      "acceptanceCriteria": [
+        "Wash Window assessed without invented data",
+        "Both existing schedules and destinations preserved",
+        "Product and idea Notion cards contain useful knowns, unknowns and next tests"
+      ],
+      "validation": {
+        "level": "quick",
+        "scenarios": [
+          "Read saved evaluations, automation configs and Notion edits back"
+        ]
+      }
+    }
+  ]
+}

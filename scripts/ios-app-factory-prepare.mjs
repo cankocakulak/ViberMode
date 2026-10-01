@@ -215,6 +215,9 @@ function assertResearchReady(selection, stateRoot) {
   }
   const researchCandidate = JSON.parse(fs.readFileSync(candidateFile, "utf8"));
   const evaluation = JSON.parse(fs.readFileSync(evaluationFile, "utf8"));
+  if (evaluation.schema_version !== 3 || evaluation.commercial_assessment?.preliminary_gate_passed !== true) {
+    throw new Error(`Idea ${selection.idea_id} needs a current commercial evidence evaluation before factory preparation`);
+  }
   if (researchCandidate.research_status !== "ready" || evaluation.recommendation !== "validated") {
     const missing = (evaluation.missing_checks || []).join(", ") || "owner readiness decision";
     throw new Error(`Idea ${selection.idea_id} has not passed the research ledger gate: status=${researchCandidate.research_status}, recommendation=${evaluation.recommendation}, missing=${missing}`);

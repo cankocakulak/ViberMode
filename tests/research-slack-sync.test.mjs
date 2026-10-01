@@ -58,7 +58,7 @@ test("renders a simple Turkish root message without research detail", () => {
   assert.match(message, /\*Focus Room\*/);
   assert.match(message, /\*Kim için:\*/);
   assert.match(message, /\*Çözdüğü sorun:\*/);
-  assert.match(message, /güncellemeler bu mesajın thread'inde/);
+  assert.doesNotMatch(message, /güncellemeler bu mesajın thread'inde/);
   assert.doesNotMatch(message, /76\/100/);
   assert.doesNotMatch(message, /Reddit/);
   assert.ok(message.length < 1500);
@@ -76,15 +76,29 @@ test("renders the detailed research in the idea thread", () => {
   assert.match(message, /\*Fiyatlandırma ve gelir sinyalleri\*/);
   assert.match(message, /\*Karşı sinyaller ve riskler\*/);
   assert.ok(message.length < 8000);
+  assert.match(message, /Araştırma kapsamı/);
+  assert.match(message, /Ticari değerlendirme yenilenmeli/);
+  assert.doesNotMatch(message, /\*Güven:\*|%71/);
 });
 
 test("posts only material evaluation deltas in Turkish", () => {
   const previous = { recommendation: "researching", score: 54, evidence_count: 3, missing_checks: ["competitor_gap_supported"] };
   const current = { recommendation: "validated", score: 76, evidence_count: 5, missing_checks: [] };
   const delta = renderDelta(previous, current);
-  assert.match(delta, /öneri araştırılıyor → doğrulandı/);
+  assert.match(delta, /öneri araştırılıyor → ön araştırma eşiğini geçti/);
   assert.match(delta, /kapanan kontroller: desteklenen rakip boşluğu/);
   assert.equal(renderDelta(current, current), null);
+});
+
+test("commercial evidence changes produce a delta even when coverage is unchanged", () => {
+  const previous = { ...snapshot.evaluation, commercial_assessment: null };
+  const assessment = { label: "Ticari karşılık henüz gösterilemedi", missing_dimensions: ["demand"], dimensions: { demand: { label: "Talep", status: "unknown", next_check: "Hedef iş için talebi ölç." } } };
+  const current = { ...previous, commercial_assessment: assessment };
+  assert.match(renderDelta(previous, current), /ticari değerlendirme güncellendi/);
+  assert.equal(renderDelta(current, current), null);
+  const message = renderResearchThread({ ...snapshot, evaluation: current });
+  assert.match(message, /Ticari karşılık henüz gösterilemedi/);
+  assert.match(message, /Hedef iş için talebi ölç/);
 });
 
 test("deduplicates an explicitly requested cross-idea digest", () => {

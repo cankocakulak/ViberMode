@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-09-16",
+  "scope": "API-accessible customer 7826540166; manager 4901176544 API access HTTP 403. Never interpret unresolved account coverage as zero.",
+  "campaigns": [
+    {
+      "customer": "7826540166",
+      "campaignId": "20806680713",
+      "channel": "SEARCH",
+      "app": null,
+      "classification": "another Kant product: coaching",
+      "proof": "Explicit coaching landing page destinations",
+      "destinations": [
+        "https://kantakademi.com/paketler"
+      ],
+      "destinationFingerprint": "68c882bb88e4ec742fb12b03405d013f4a7612328486ca209ece9a0eed5746fe",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 1900.366053
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "21050989819",
+      "channel": "SEARCH",
+      "app": null,
+      "classification": "shared/unmapped",
+      "proof": "Shared marketing homepage; cross-product destination, cannot allocate app spend",
+      "destinations": [
+        "https://kantakademi.com/"
+      ],
+      "destinationFingerprint": "fb91b0a506c6daab325791f7618d418efca31de20418dc4906037d81c9e54fbb",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 3606.86318
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "21092676128",
+      "channel": "PERFORMANCE_MAX",
+      "app": null,
+      "classification": "shared/unmapped",
+      "proof": "Shared marketing homepage; cross-product destination, cannot allocate app spend",
+      "destinations": [
+        "https://kantakademi.com/"
+      ],
+      "destinationFingerprint": "fb91b0a506c6daab325791f7618d418efca31de20418dc4906037d81c9e54fbb",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 4342.394431
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "21225216846",
+      "channel": "SEARCH",
+      "app": null,
+      "classification": "another Kant product: coaching",
+      "proof": "Explicit coaching landing page destinations",
+      "destinations": [
+        "https://kantakademi.com/ilk-5000"
+      ],
+      "destinationFingerprint": "ac60c2e3e8ffdf1bb72c06442c2661fd3c04fca22f7d60c98a48d118a7fb6573",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 761.358956
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "21232735581",
+      "channel": "DEMAND_GEN",
+      "app": null,
+      "classification": "another Kant product: coaching",
+      "proof": "Explicit coaching landing page destinations",
+      "destinations": [
+        "https://kantakademi.com/paketler"
+      ],
+      "destinationFingerprint": "68c882bb88e4ec742fb12b03405d013f4a7612328486ca209ece9a0eed5746fe",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 1145.092124
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "22496030126",
+      "channel": "PERFORMANCE_MAX",
+      "app": null,
+      "classification": "shared/unmapped",
+      "proof": "Shared marketing homepage; cross-product destination, cannot allocate app spend",
+      "destinations": [
+        "https://kantakademi.com/"
+      ],
+      "destinationFingerprint": "fb91b0a506c6daab325791f7618d418efca31de20418dc4906037d81c9e54fbb",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 1062.469163
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "22568642868",
+      "channel": "DISPLAY",
+      "app": null,
+      "classification": "shared/unmapped",
+      "proof": "Shared marketing homepage; cross-product destination, cannot allocate app spend",
+      "destinations": [
+        "https://kantakademi.com/"
+      ],
+      "destinationFingerprint": "fb91b0a506c6daab325791f7618d418efca31de20418dc4906037d81c9e54fbb",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 9.166873
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "24085769673",
+      "channel": "SEARCH",
+      "app": null,
+      "classification": "shared/unmapped",
+      "proof": "Shared marketing homepage; cross-product destination, cannot allocate app spend",
+      "destinations": [
+        "https://kantakademi.com/"
+      ],
+      "destinationFingerprint": "fb91b0a506c6daab325791f7618d418efca31de20418dc4906037d81c9e54fbb",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 1146.007789
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "24087224354",
+      "channel": "MULTI_CHANNEL",
+      "app": "easyspell",
+      "classification": "EasySpell",
+      "proof": "Configured app store identity 6762075035",
+      "destinations": [],
+      "destinationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 887.47385
+    },
+    {
+      "customer": "7826540166",
+      "campaignId": "24087606152",
+      "channel": "MULTI_CHANNEL",
+      "app": "easyspell",
+      "classification": "EasySpell",
+      "proof": "Configured app store identity co.kantlabs.easyspell",
+      "destinations": [],
+      "destinationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "auditedWeek": "2026-09-07",
+      "amountTRY": 1072.537303
+    }
+  ],
+  "trackingAudit": {
+    "week": "2026-09-07",
+    "campaignsChecked": 10,
+    "adGroupsChecked": 35,
+    "spendingAdsChecked": 14,
+    "result": "No tracking template, final URL suffix or custom parameter deterministically identifies additional EasySpell/Ozard spend. Explicit nonempty UTM suffixes refer to brand, coaching competitor focus and remarketing."
+  }
+}

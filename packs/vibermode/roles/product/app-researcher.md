@@ -10,7 +10,7 @@
 - Produce a standalone research pack that can be read without running the factory.
 - Separate observations, interpreted opportunities, and backlog-ready app candidates.
 - Do not mark an idea `ready` unless it has evidence, competitors, a specific gap, and a concrete MVP wedge.
-- On recurring runs, check whether an existing idea is genuinely due for maintenance, then always perform a fresh-theme discovery pass. A recently evaluated idea must not consume another daily run without a new Slack request, material market event, stale evidence, or answerable open check.
+- On recurring runs, check whether an existing idea is genuinely due for maintenance, then choose the most useful answerable market, product or discovery question. A recently evaluated idea must not consume another daily run without a new Slack request, material market event, stale evidence, or answerable open check.
 - Treat Slack as a discussion surface; the private idea research ledger is the source of truth.
 - Do not create repositories or write product-to-code specs.
 
@@ -159,7 +159,7 @@ For a scheduled daily run, separate maintenance from discovery:
 - Maintenance is due only when a Slack thread explicitly requests follow-up, the latest evaluation is at least seven days old, a material market event can change the recommendation, an incomplete pack must be closed, or an open check can be answered with evidence available today.
 - Do not re-run public App Store/web scans when the recorded next check requires owner choice, direct interviews, timed usability comparison, paid data, or another unavailable input. Record the blocker/cooldown and move on.
 - A recently evaluated idea with unchanged missing checks is on cooldown for seven days unless an explicit trigger overrides it.
-- After the maintenance check, always investigate at least one fresh theme that has no stable idea ledger or research pack from the previous 30 days.
+- After maintenance, choose a meaningful market observation, opportunity hypothesis, disconfirmation or new theme. Do not force a new niche every day; revisit a theme when new evidence can change the decision.
 - A fresh discovery pass may end with `no_strong_candidate`; in that case record the themes and rejection reasons instead of inventing a weak idea.
 - When a new hypothesis has a specific audience/problem/wedge, at least one non-store pain signal, named comparables, and explicit unknowns, initialize a new stable idea as `observed` or `researching` and create its Slack root/thread.
 
@@ -450,3 +450,9 @@ If the user wants to feed the app factory:
 4. Mark the ledger candidate `ready`, then upsert it into `ideas/backlog.json`.
 5. Validate with `scripts/idea-backlog.mjs validate`.
 6. Let `daily-ios-app-pipeline` consume only approved `ready` candidates.
+
+## Commercial decision standard · 21 September 2026
+
+Before evaluating or publishing, read `docs/research-commercial-quality/evidence-contract.md` in the canonical ViberMode repository (/Users/mcan/ViberMode on this host). Use schema-v3 ledger assessments: research coverage and source confidence are not commercial attractiveness or success probabilities. Show all six commercial dimensions and the cheapest decisive missing check; never fill unknowns with assumptions. Passing the preliminary gate does not validate product-market fit or authorize production. Legacy scores require re-evaluation before promotion.
+
+Current user-authorized bulletins supersede older no-digest language only for the configured streams/channels. No forced new idea or US-only theme rotation. Keep stable idea cards, material thread updates, per-date bulletin deduplication and explicit owner promotion boundaries. Existing-product research uses the trigger/value/return/payment/distribution card and three close competitor comparisons defined in that contract.

@@ -43,6 +43,11 @@
     "slack:rox": "node scripts/slack-rox-bot.mjs",
     "slack:rox:probe": "node scripts/slack-rox-bot.mjs probe",
     "slack:rox:scan": "node scripts/slack-rox-bot.mjs scan",
+    "slack:rox:events": "node scripts/slack-rox-event-bridge.mjs",
+    "slack:rox:events:probe": "node scripts/slack-rox-event-bridge.mjs probe",
+    "slack:rox:events:status": "node scripts/slack-rox-event-bridge.mjs agent-status",
+    "slack:rox:events:install-agent": "node scripts/slack-rox-event-bridge.mjs install-agent",
+    "slack:rox:events:uninstall-agent": "node scripts/slack-rox-event-bridge.mjs uninstall-agent",
     "slack:rox:context": "node scripts/slack-rox-context.mjs",
     "test:slack-rox-context": "node --test tests/slack-rox-context.test.mjs",
     "test:idea-research": "node --test tests/idea-research-ledger.test.mjs tests/research-slack-sync.test.mjs",
@@ -52,7 +57,11 @@
     "reviews:stores:reply:backlog": "node scripts/store-review-ops.mjs --reply --include-backlog --max-results 200",
     "validate:references": "node scripts/validate-reference-map.mjs",
     "validate:task-phases": "node scripts/validate-task-phases.mjs",
-    "validate": "npm run validate:references && npm run validate:task-phases"
+    "validate": "npm run validate:references && npm run validate:task-phases",
+    "growth:collect": "node scripts/weekly-app-growth.mjs",
+    "growth:publish": "node scripts/weekly-app-growth.mjs --publish",
+    "test:growth": "node --test tests/weekly-app-growth.test.mjs tests/weekly-app-meeting.test.mjs tests/weekly-app-completion.test.mjs tests/weekly-report-semantics.test.mjs tests/weekly-interpretation.test.mjs tests/weekly-funnel-presentation.test.mjs",
+    "growth:weekly": "node scripts/weekly-app-growth-refresh.mjs --publish"
   },
   "keywords": [
     "ai",

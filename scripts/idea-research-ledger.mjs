@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assessCommercialEvidence } from "./research-commercial-assessment.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const defaultStateRoot = path.join(os.homedir(), "ViberModeWorkspaces", "app-factory-state");
@@ -32,6 +33,10 @@ export const EVIDENCE_TYPES = new Set([
   "pricing",
   "user_interview",
   "factory_outcome",
+  "payment_signal",
+  "acquisition_signal",
+  "usage_signal",
+  "unit_economics",
 ]);
 
 export const EVIDENCE_DIRECTIONS = new Set(["supports", "contradicts", "neutral"]);
@@ -336,6 +341,7 @@ export function evaluateIdea({ stateRoot, ideaId, at = new Date() }) {
     item.type === "competitor_gap" && item.confidence >= 0.7
   ));
   const criticalBlockers = unresolvedCriticalBlockers(candidate);
+  const commercialAssessment = assessCommercialEvidence(candidate, allEvidence, at);
   const checks = {
     problem_defined: nonEmpty(candidate.problem_statement || candidate.product_idea),
     audience_defined: nonEmpty(candidate.target_user || candidate.audience),
@@ -347,6 +353,7 @@ export function evaluateIdea({ stateRoot, ideaId, at = new Date() }) {
     metrics_known_or_unknown_explicit: metricsExplicit(candidate, evidence),
     no_critical_blocker: criticalBlockers.length === 0,
     no_strong_competitor_contradiction: strongCompetitorContradictions.length === 0,
+    commercial_signals_supported: commercialAssessment.preliminary_gate_passed,
   };
   const scoreParts = {
     problem_and_audience: checks.problem_defined && checks.audience_defined ? 10 : 0,
@@ -371,6 +378,7 @@ export function evaluateIdea({ stateRoot, ideaId, at = new Date() }) {
     "metrics_known_or_unknown_explicit",
     "no_critical_blocker",
     "no_strong_competitor_contradiction",
+    "commercial_signals_supported",
   ];
   const missing = requiredChecks.filter((key) => !checks[key]);
   const evidenceClasses = [...evidenceTypes].sort();
@@ -382,14 +390,18 @@ export function evaluateIdea({ stateRoot, ideaId, at = new Date() }) {
       ? "parked"
       : isValidated ? "validated" : "researching";
   const evaluation = {
-    schema_version: 2,
+    schema_version: 3,
     idea_id: candidate.id,
     evaluated_at: at.toISOString(),
     research_status: candidate.research_status,
     recommendation,
     score,
+    research_coverage_score: score,
+    score_meaning: "Research evidence coverage, not commercial attractiveness or success probability",
+    commercial_assessment: commercialAssessment,
     score_parts: scoreParts,
     confidence: Number((evidence.reduce((sum, item) => sum + item.confidence, 0) / Math.max(1, evidence.length)).toFixed(2)),
+    confidence_meaning: "Mean recorded source confidence, including contradictory sources; not hypothesis confidence",
     evidence_count: evidence.length,
     supporting_evidence_count: supportingEvidence.length,
     contradicting_evidence_count: contradictingEvidence.length,
@@ -439,6 +451,10 @@ export function recordDecision({ stateRoot, ideaId, type, reason, actor = null, 
   if (!nonEmpty(reason)) throw new Error("decision reason is required");
   const latestEvaluationPath = path.join(ideaDirectory(stateRoot, candidate.id), "evaluation.json");
   const latestEvaluation = fs.existsSync(latestEvaluationPath) ? readJson(latestEvaluationPath) : null;
+  if (["approve_brainstorm", "approve_prd", "mark_ready"].includes(type)
+    && (latestEvaluation?.schema_version !== 3 || !latestEvaluation?.commercial_assessment?.preliminary_gate_passed)) {
+    throw new Error("Idea is not eligible for promotion; re-evaluate with the commercial evidence gate first");
+  }
   if (type === "approve_brainstorm" && !latestEvaluation?.eligible_for?.brainstorm) {
     throw new Error("Idea is not eligible for brainstorm; resolve the evaluation's missing checks first");
   }
@@ -580,7 +596,8 @@ export function reconcileBacklog({ stateRoot, backlogPath = path.join(stateRoot,
     const evaluationPath = path.join(directory, "evaluation.json");
     const stableCandidate = fs.existsSync(stableCandidatePath) ? readJson(stableCandidatePath) : null;
     const evaluation = fs.existsSync(evaluationPath) ? readJson(evaluationPath) : null;
-    const isApproved = stableCandidate?.research_status === "ready" && evaluation?.recommendation === "validated";
+    const isApproved = stableCandidate?.research_status === "ready" && evaluation?.recommendation === "validated"
+      && evaluation?.schema_version === 3 && evaluation?.commercial_assessment?.preliminary_gate_passed === true;
     if (isApproved) {
       approved.push(idea.id);
       continue;

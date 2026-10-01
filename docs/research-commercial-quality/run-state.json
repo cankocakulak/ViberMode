@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "currentTask": null,
+  "completedTasks": [
+    "RCQ-1",
+    "RCQ-2",
+    "RCQ-3"
+  ],
+  "phaseExecutionState": {
+    "core": "complete",
+    "ops": "complete"
+  },
+  "storyExecutionState": {
+    "RCQ": "complete"
+  },
+  "runHistory": [
+    {
+      "completedAt": "2026-09-21T14:13:16.478096+00:00",
+      "taskIds": [
+        "RCQ-1",
+        "RCQ-2",
+        "RCQ-3"
+      ],
+      "validationLevel": "quick",
+      "commands": [
+        {
+          "command": "npm run test:idea-research",
+          "exitCode": 0,
+          "result": "18 passed"
+        },
+        {
+          "command": "npm run validate",
+          "exitCode": 1,
+          "result": "Pre-existing unrelated executable permission failures; see report"
+        },
+        {
+          "command": "npm run validate:task-phases",
+          "exitCode": 0
+        },
+        {
+          "command": "git diff --check",
+          "exitCode": 0
+        }
+      ],
+      "verifiedScenarios": [
+        "Commercial gate, legacy promotion and factory dry run",
+        "Real Wash Window reevaluation and local rendering",
+        "Automation metadata and Notion readback"
+      ],
+      "slicePassed": true,
+      "fullRepositoryPassed": false,
+      "validationReport": "validation-report.md"
+    }
+  ]
+}
